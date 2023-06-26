@@ -39,6 +39,12 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
+            <groupId>com.vaadin</groupId>
+            <!-- ArtifactId is vaadin-core to use only free components -->
+            <artifactId>vaadin-core</artifactId>
+        </dependency>
+		
+		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-spring-boot-starter</artifactId>
 		</dependency>
