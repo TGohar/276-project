@@ -1,9 +1,7 @@
 package trackour.trackour.models;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -19,23 +17,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import lombok.Data;
-
-@Data
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository repository;
 
-    /**
-     * public int doSomething (int ...a) {
-      int sum = 0;
-      for (int i : a)
-           sum += i;
-        return sum;
-    }
-     * @param user
-     * @return
-     */
     public CustomUserDetailsService(UserRepository repository) {
         this.repository = repository;
     }
