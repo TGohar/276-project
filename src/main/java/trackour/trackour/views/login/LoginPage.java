@@ -14,7 +14,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-import trackour.trackour.security.SecurityViewHandler;
+import trackour.trackour.security.SecurityViewService;
 // import trackour.trackour.views.signup.SignUpView;
 import trackour.trackour.views.signup.SignupPageView;
 
@@ -24,13 +24,13 @@ import trackour.trackour.views.signup.SignupPageView;
 
 public class LoginPage extends VerticalLayout implements BeforeLeaveObserver, BeforeEnterObserver {
     
-    SecurityViewHandler securityViewHandler;
+    SecurityViewService securityViewService;
 
     private LoginForm login = new LoginForm();
 
     // inject view auth handler
-    public LoginPage(SecurityViewHandler securityViewHandler) {
-        this.securityViewHandler = securityViewHandler;
+    public LoginPage(SecurityViewService securityViewService) {
+        this.securityViewService = securityViewService;
 
         addClassName("login-view");
         setSizeFull();
@@ -51,35 +51,10 @@ public class LoginPage extends VerticalLayout implements BeforeLeaveObserver, Be
         add(new H1("Trackour"), login, signUpLink);
     }
 
-    /*
-    Dialog handleForgotPasswordDialog() {
-        Dialog dialog = new Dialog();
-
-        VerticalLayout resetDialogLayout = new VerticalLayout();
-
-        EmailField dialogEmailField = new EmailField("Email");
-
-        dialog.setHeaderTitle("Forgot Password");
-        Button saveButton = new Button("Send");
-        Button cancelButton = new Button("Cancel", e -> dialog.close());
-
-        saveButton.addClickListener(clickEvent -> {
-            System.out.println(dialogEmailField.getValue());
-        });
-
-        resetDialogLayout.add(dialogEmailField);
-        dialog.add(resetDialogLayout);
-        dialog.getFooter().add(cancelButton);
-        dialog.getFooter().add(saveButton);
-        return dialog;
-    }
-    */
-
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-        // this method call reroutes get requests to this view if the current session is already authenticated
-        // getUI().get().getPage().addJavaScript("window.location.href = 'myurl'");
-        this.securityViewHandler.handleAnonymousOnly(beforeEnterEvent, false);
+        // this method call reroutes get requests to this view if the current session is already authenticated or "excludeFromPage" is true
+        this.securityViewService.handleAnonymousOnly(beforeEnterEvent, false);
         if (beforeEnterEvent.getLocation()
                 .getQueryParameters()
                 .getParameters()
@@ -89,10 +64,5 @@ public class LoginPage extends VerticalLayout implements BeforeLeaveObserver, Be
     }
 
     @Override
-    public void beforeLeave(BeforeLeaveEvent event) {
-        // reroute to error page
-        if (event.hasUnknownReroute()){
-            System.out.println("Rerouting to Error Page!");
-        }
-    }
+    public void beforeLeave(BeforeLeaveEvent event) {}
 }

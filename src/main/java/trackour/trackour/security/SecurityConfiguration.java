@@ -38,7 +38,7 @@ public class SecurityConfiguration extends VaadinWebSecurity {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         
         authProvider.setUserDetailsService(this.customUserDetailsService);
-        authProvider.setPasswordEncoder(customUserDetailsService.passwordEncoder());
+        authProvider.setPasswordEncoder(CustomUserDetailsService.passwordEncoder());
     
         return authProvider;
     }
@@ -60,22 +60,13 @@ public class SecurityConfiguration extends VaadinWebSecurity {
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        // Can be used for rest api endpoints
-        // http.authorizeHttpRequests(requests -> requests.requestMatchers("/signup").permitAll());
-        // http.authorizeHttpRequests(requests -> requests.requestMatchers("/secret").hasAnyRole("ADMIN"));
-
-        // http
-        // .authorizeHttpRequests(auth -> 
-        // auth
-        // .requestMatchers("/*").hasAnyRole(Role.ADMIN.getName()));
+        // filters here
         super.configure(http);
 
         
         
-        // Register your login view to the view access checker mechanism
-        setLoginView(http, LoginPage.class,"/login");
-        // session fixatioon protection
-        // VaadinService.reinitializeSession(VaadinService.getCurrentRequest());
+        // Login view passed to the view access checker mechanism
+        this.setLoginView(http, LoginPage.class,"/login");
     }
     
 }

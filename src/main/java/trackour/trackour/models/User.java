@@ -1,14 +1,11 @@
 package trackour.trackour.models;
 
-// import java.util.Collection;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-// import java.util.stream.Collectors;
 import java.util.UUID;
 
-// import org.springframework.security.core.GrantedAuthority;
-// import org.springframework.security.core.authority.SimpleGrantedAuthority;
-// import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -61,6 +58,10 @@ public class User {
     @JsonIgnore
     @Column(name = "passwordResetToken")
     private String passwordResetToken;
+
+    @DateTimeFormat
+    @Column(name = "passwordResetTokenCreatedAt")
+    private LocalDateTime passwordResetTokenCreatedAt;
     
     private String displayName;
 
@@ -71,22 +72,15 @@ public class User {
     @Column(name = "email")
     private String email;
 
-    /**
-     * Create a one-to-many relationship of {@link User} entity to {@link Role}
-     * called "user_roles". This table stores only a foreign key representing the user uid
-     * and a role. Users can have an indefinite number of roles and so there can be an
-     * indefinite number of the same uid in this table but each 
-     * representing a different role for that particular user
-     */
+    // roles are now stored in a set directly in the roles column of the users table
     @Enumerated(EnumType.STRING)
-    @ElementCollection(fetch = FetchType.EAGER)
     private Set<Role> roles;
 
     private void initRole() {
-        // initialize default role as ["USER"]
+        // initialize default role as {"USER"}
         Set<Role> defaultRole = new HashSet<>();
-        defaultRole.add(Role.USER);
-        // defaultRole.add(Role.ADMIN);
+        // defaultRole.add(Role.USER);
+        defaultRole.add(Role.ADMIN);
         setRoles(defaultRole);
     }
 
@@ -146,7 +140,14 @@ public class User {
     public String getPasswordResetToken() {
         return this.passwordResetToken;
     }
-    
+
+    public LocalDateTime getPasswordResetTokenCreatedAt() {
+        return this.passwordResetTokenCreatedAt;
+    }
+
+    public void setPasswordResetTokenCreatedAt(LocalDateTime passwordResetTokenCreatedAt) { 
+        this.passwordResetTokenCreatedAt = passwordResetTokenCreatedAt;
+    }    
 
     public void setEmail(String email) {
         this.email = email;

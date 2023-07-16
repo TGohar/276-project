@@ -1,5 +1,9 @@
 package trackour.trackour.views.forgotPassword;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -21,17 +25,17 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 import trackour.trackour.models.CustomUserDetailsService;
 import trackour.trackour.models.User;
-import trackour.trackour.security.SecurityViewHandler;
+import trackour.trackour.security.SecurityViewService;
 //import trackour.trackour.views.signup.CustomSignupForm;
 
-@Route("resetPassword/token")
+@Route("resetPassword")
 @PageTitle("Reset Password")
 @AnonymousAllowed
 
 public class ResetPasswordView extends VerticalLayout implements BeforeLeaveObserver, BeforeEnterObserver, HasUrlParameter<String> {
 
     @Autowired
-    SecurityViewHandler securityViewHandler;
+    SecurityViewService securityViewService;
 
     @Autowired
     CustomUserDetailsService userService;
@@ -45,39 +49,55 @@ public class ResetPasswordView extends VerticalLayout implements BeforeLeaveObse
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         // this method call reroutes get requests to this view if the current session is already authenticated
-        this.securityViewHandler.handleAnonymousOnly(beforeEnterEvent, true);
-        if (beforeEnterEvent.getLocation()
-                .getQueryParameters()
-                .getParameters()
-                .containsKey("error")) {
-        }
+        this.securityViewService.handleAnonymousOnly(beforeEnterEvent, true);
     }
 
     @Override
-    public void beforeLeave(BeforeLeaveEvent event) {
-        // reroute to error page
-        if (event.hasUnknownReroute()){
-            System.out.println("Rerouting to Error Page!");
-        }
-    }
+    public void beforeLeave(BeforeLeaveEvent event) {}
 
     @Override
     public void setParameter(BeforeEvent event, String parameter){
         this.token = parameter;
 
-        if (userService.getByPasswordResetToken(parameter).isPresent()) {
-            this.user = userService.getByPasswordResetToken(parameter).get();
+        System.out.println("this.token: " + this.token);
 
+        Optional<User> existingUser = userService.getByPasswordResetToken(parameter);
+
+        if (existingUser.isPresent()) {
+            this.user = existingUser.get();
+            if (isResetLinkExpired(user)) {
+                System.out.println("showing error page since token is expired");
+                // else display an error page
+                event.rerouteTo("error");
+            };
+            // delete token
+            user.setPasswordResetToken(null);
+            user.setPasswordResetTokenCreatedAt(null);
+            userService.update(user);
             this.resetPasswordForm = new ResetPasswordForm(userService, user);
-        
             // Center the form
             setAlignItems(FlexComponent.Alignment.CENTER);
 
             add(resetPasswordForm);
         }
+        else{
+            System.out.println("showing error page since token is invalid");
+            // else display an error page
+            event.rerouteTo("error");
+        }
     }
 
-    public ResetPasswordView(SecurityViewHandler securityViewHandler, CustomUserDetailsService userService) {
+    private boolean isResetLinkExpired(User existingUser) {
+        final Integer HRS24_IN_SECONDS = 86400;
+        if (existingUser == null) return false;
+        LocalDateTime currDateTime = LocalDateTime.now();
+        var dateTimeDiff = existingUser.getPasswordResetTokenCreatedAt().until(currDateTime, ChronoUnit.SECONDS);
+        System.out.println("getPasswordResetTokenCreatedAt(): " + existingUser.getPasswordResetTokenCreatedAt());
+        return dateTimeDiff >= HRS24_IN_SECONDS;
+    }
+
+    public ResetPasswordView(SecurityViewService securityViewService, CustomUserDetailsService userService) {
+        this.securityViewService = securityViewService;
         this.userService = userService;
     }
     

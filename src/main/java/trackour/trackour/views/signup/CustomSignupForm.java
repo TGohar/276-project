@@ -25,7 +25,7 @@ import trackour.trackour.views.login.LoginPage;
 public class CustomSignupForm extends FormLayout {
         
         private final String emailValidationRegex = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@" 
-        + "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";;
+        + "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
 
         private H3 title;
 
@@ -98,11 +98,26 @@ public class CustomSignupForm extends FormLayout {
                         System.out.println("Registering user is:");
                         userService.printUserObj(newUser);
 
+                        // unable to properly implement hashing technique atm so will either drop that or tryb again later
+                        String encodedPassword = CustomUserDetailsService.passwordEncoder().encode(newUser.getPassword());
+                        newUser.setPassword(encodedPassword);
+                        userService.printUserObj(newUser);
+
+                        // extra validation
+                        // if displayName was submitted as empty, use the username string in place of it
+                        if (newUser.getDisplayName().isEmpty()) {newUser.setDisplayName(newUser.getUsername());};
+
+                        // then register new user
                         userService.registerUser(newUser);
-                        UI.getCurrent().navigate("redirect:/login");
+                        UI.getCurrent().navigate("/login");
                 }
         });
    }
+
+   public boolean isEmailAlreadyPresent(String emailValue) {
+        return userService.getByEmail(emailValue).isPresent();
+   }
+
    private boolean isEmailValidByRegex(String value) {
         Pattern pattern = Pattern.compile(this.emailValidationRegex);
         return pattern.matcher(value).matches();
@@ -110,34 +125,34 @@ public class CustomSignupForm extends FormLayout {
 
 private void doBindFormToValidationRules(Binder<User> binder) {
         // binding fields to user model object
-        // Shorthand for cases without extra configuration
         binder.forField(displayName)
         .bind(User::getDisplayName,  User::setDisplayName);
 
-        // Start by defining the Field instance to use
+        // username validation
         binder.forField(usernameField)
-        .asRequired("This field is required")
+        .asRequired("This field is required.")
         // e.g., check if the password meets the required complexity rules
-        .withValidator(value -> isValidUsername(value), "Username must be >=3 characters")
-        .withValidator(value -> isUserNameUnique(value), "That Username already exists. Try again with a different Username")
+        .withValidator(value -> isValidUsername(value), "Username must be >=3 characters.")
+        .withValidator(value -> isUserNameUnique(value), "That Username already exists. Try again with a different Username.")
         .bind(User::getUsername, User::setUsername);
 
-        // Shorthand for cases without extra configuration
+        // email validation
         binder.forField(email)
-        .asRequired("This field is required")
-        .withValidator(value -> isEmailValidByRegex(value),"Invalid email address")
-        .withValidator(new EmailValidator("Invalid email address", false))
+        .asRequired("This field is required.")
+        .withValidator(value -> !isEmailAlreadyPresent(value), "That email address already exists.  Try again with a different Email address.")
+        .withValidator(value -> isEmailValidByRegex(value), "Invalid email address.")
+        .withValidator(new EmailValidator("Invalid email address.", false))
         .bind(User::getEmail,  User::setEmail);
 
-        // Shorthand for cases without extra configuration
+        // password validation
         binder.forField(passwordField)
-        .asRequired("This field is required")
-        .withValidator(value -> isValidPassword(value), "Password must be >=8 characters ")
+        .asRequired("This field is required.")
+        .withValidator(value -> isValidPassword(value), "Password must be >=8 characters.")
         .bind(User::getPassword,  User::setPassword);
 
         // handle confirmPassword
         binder.forField(passwordConfirmField)
-        .asRequired("This field is required")
+        .asRequired("This field is required.")
         .withValidator(value -> value.equals(passwordField.getValue()), "Passwords do not match.")
         .bind(User::getPassword,  User::setPassword);
 }
@@ -161,42 +176,38 @@ private void doDesignForm() {
 }
 
 private boolean isUserNameUnique(String username) {
-        // is already present && then false
-        System.out.println("isPresent(): "
-         + username 
-         + " : " 
-         + userService.getByUsername(username).isPresent());
+        // is already present, then false
         return !userService.getByUsername(username).isPresent();
-   }
+}
 
-   private boolean isValidUsername(String username) {
+private boolean isValidUsername(String username) {
         if (username.isEmpty()) return false;
         // Perform validation logic and return true or false based on the result
         // e.g., check if the username meets the required criteria
         return !username.isEmpty() && username.length() >= 3;
-    }
+}
 
-    private boolean isValidPassword(String password) {
+private boolean isValidPassword(String password) {
         if (password.isEmpty()) return false;
         // Perform validation logic and return true or false based on the result
         // e.g., check if the password meets the required complexity rules
         return password.length() >= 8;
-    }
+}
 
-   public PasswordField getPasswordField() { return passwordField; }
+public PasswordField getPasswordField() { return passwordField; }
 
-   public PasswordField getPasswordConfirmField() { return passwordConfirmField; }
+public PasswordField getPasswordConfirmField() { return passwordConfirmField; }
 
-   public Span getErrorMessageField() { return errorMessageField; }
+public Span getErrorMessageField() { return errorMessageField; }
 
-   public Button getSubmitButtonElement() { return submitButtonElement; }
+public Button getSubmitButtonElement() { return submitButtonElement; }
 
-   private void setRequiredIndicatorIsVisible(HasValueAndElement<?, ?>... components) {
-       Stream
+private void setRequiredIndicatorIsVisible(HasValueAndElement<?, ?>... components) {
+        Stream
         .of(components)
                 .forEach(component -> {
                         component.setRequiredIndicatorVisible(true);
                 });
-   }
+        }
 
 }

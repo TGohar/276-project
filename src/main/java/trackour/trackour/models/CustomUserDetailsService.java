@@ -30,7 +30,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.repository = repository;
     }
 
-    public Optional<User> get(Long uid) {
+    public Optional<User> getByUid(Long uid) {
         return repository.findByUid(uid);
     }
 
@@ -75,8 +75,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     private static Collection<? extends GrantedAuthority> getAuthorities(User user) {
         System.out.println(user.getDisplayName() + " has roles:");
         return user.getRoles().stream().map(authority -> {
-            System.out.println(authority.getName());
-            return new SimpleGrantedAuthority("ROLE_" + authority.getName());
+            System.out.println(authority.roleToString());
+            return new SimpleGrantedAuthority(authority.roleToRoleString());
         }).collect(Collectors.toList());
     }
     
@@ -92,7 +92,6 @@ public class CustomUserDetailsService implements UserDetailsService {
             objStr = objMapper.writeValueAsString(user);
             System.out.println(objStr);
         } catch (JsonProcessingException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -102,34 +101,11 @@ public class CustomUserDetailsService implements UserDetailsService {
      * To just get an instance of the encoder, call {@code passwordEncoder()}
      * @return {@link BCryptPasswordEncoder} encrypted String
      */
-    public PasswordEncoder passwordEncoder(){
+    public static PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * Recieve new user credentials, validates then updates database with this new user,
-     * @param username
-     * @param password
-     */
-    public boolean registerUser(String username, String password) {
-        User newUser = new User();
-        newUser.setUsername(username);
-        // unable to properly implement hashing technique atm so will either drop that or tryb again later
-        String encodedPassword = passwordEncoder().encode(password);
-        newUser.setPassword(encodedPassword);
-        printUserObj(newUser);
-        return this.submitUser(newUser);
-    }
-
     public boolean registerUser(User newUser) {
-        // unable to properly implement hashing technique atm so will either drop that or tryb again later
-        String encodedPassword = passwordEncoder().encode(newUser.getPassword());
-        newUser.setPassword(encodedPassword);
-        printUserObj(newUser);
-
-        // extra validation
-        // if displayName was submitted as empty, use the username string in place of it
-        newUser.setDisplayName(newUser.getUsername());
         return this.submitUser(newUser);
     }
 
@@ -152,7 +128,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         String encodedPassword = passwordEncoder().encode(oldUser.getPassword());
         oldUser.setPassword(encodedPassword);
         printUserObj(oldUser);
-
         update(oldUser);
 
         return true;

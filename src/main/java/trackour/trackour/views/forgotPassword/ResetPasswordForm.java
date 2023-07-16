@@ -1,5 +1,7 @@
 package trackour.trackour.views.forgotPassword;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -18,6 +20,8 @@ import trackour.trackour.models.User;
 import trackour.trackour.views.login.LoginPage;
 
 public class ResetPasswordForm extends VerticalLayout {
+
+    @Autowired
     CustomUserDetailsService userService;
 
     User user;
@@ -33,7 +37,9 @@ public class ResetPasswordForm extends VerticalLayout {
 
     RouterLink loginLink;
 
-    public ResetPasswordForm(CustomUserDetailsService userService, User user){
+    public ResetPasswordForm(
+        CustomUserDetailsService userService, 
+        User user){
         this.userService = userService;
         this.user = user;
 
