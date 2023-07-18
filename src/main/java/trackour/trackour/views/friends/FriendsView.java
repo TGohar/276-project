@@ -92,20 +92,6 @@ public class FriendsView extends VerticalLayout{
             add(navigation.generateNavBar(), layout);
             
 
-            //User currentUser = customUserDetailsService.getByUsername(securityService.getAuthenticatedUser().getUsername()).get();
-            /*
-            List<Long> friends = new ArrayList<Long>();
-            
-            friends.add((long) 100);
-            friends.add((long) 200);
-            friends.add((long) 300);
-
-            currentUser.setFriendRequests(friends);
-
-            customUserDetailsService.update(currentUser);
-
-            currentUser = customUserDetailsService.getByUsername(securityService.getAuthenticatedUser().getUsername()).get();
-            */
             if(currentUser.getFriendRequests() != null) {
                 System.out.println("Friend requests: " + Arrays.toString(currentUser.getFriendRequests().toArray()));
             }
