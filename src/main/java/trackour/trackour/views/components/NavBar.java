@@ -120,7 +120,7 @@ public class NavBar {
         HorizontalLayout logoArea = new HorizontalLayout();
         logoArea.setWidthFull();
         logoArea.setAlignSelf(FlexComponent.Alignment.CENTER);
-        logoArea.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        logoArea.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
         // logoArea.getStyle().set("background-color", "red");
 
         H1 logo = new H1("Trackour");
@@ -160,76 +160,17 @@ public class NavBar {
         UI.getCurrent().navigate(navigationTarget);
     }
 
-    // private void routeTo(String navigationTarget) {
-    //     UI.getCurrent().navigate(navigationTarget);
-    // }
-
     public HorizontalLayout generateComponent() {
-
-        // .setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
-        // routeTabs.add(new RouterLink("FRIENDS", FriendsView.class));
-
-        // String sessionUsername = this.sessionObject.getUsername();
-        // // since logged in, no need to verify if this optional is empty
-        // String displayNameString = customUserDetailsService.getByUsername(sessionUsername).get().getDisplayName();
-        // Text displayNameTxt = new Text("@" + displayNameString);
-        // Button signUpButton = new Button("Sign Up");
-        // signUpButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        // signUpButton.addClassName("button-hover-effect");
-        // signUpButton.addClickListener(event -> {
-        //     UI.getCurrent().navigate("signUp");
-        // });
-
-        // Button exploreButton = new Button("Explore");
-        // exploreButton.addClickListener(e -> exploreButton.getUI().ifPresent(ui -> ui.navigate("Explore")));
-
-        // ComboBox<String> languageComboBox = new ComboBox<>();
-        // languageComboBox.setPlaceholder("Music language");
-        // languageComboBox.setItems("English", "Punjabi", "Spanish", "French", "German", "Hindi");
-
-        // TextField searchField = new TextField();
-        // searchField.setPlaceholder("Search Songs, Albums, Artists");
-        // searchField.setPrefixComponent(new Icon("lumo", "search"));
-        // searchField.addValueChangeListener(e -> {
-
-        //         searchValue=e.getValue();
-
-        //         if(searchValue!=null && searchValue.length()!=0){
-        //             searchField.getUI().ifPresent(ui -> ui.navigate("searchResult"));
-        //         }
-        //         else{
-        //            Notification.show("Please enter the name of the song, album or artist you want to search"); 
-        //         }
-        //         });
-
-        // Icon mediaIcon = new Icon(VaadinIcon.MUSIC);
-        // Button mediaShelfButton = new Button("Media Shelf", mediaIcon);
-        // HorizontalLayout topNavButtons = new HorizontalLayout(displayNameTxt);
-        // topNavButtons.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
-        // topNavButtons.getStyle().set("gap", "10px"); // Add spacing between the buttons
-
-        // HorizontalLayout graphics = new HorizontalLayout();
-        // graphics.add(h1, exploreButton);
-        // graphics.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
-
-        // // Create a layout for the h1 and buttons
-        // HorizontalLayout topNavBar = new HorizontalLayout(graphics, searchField, languageComboBox, mediaShelfButton,
-        //         topNavButtons);
-        // topNavBar.setAlignItems(FlexComponent.Alignment.CENTER);
-        // topNavBar.setWidthFull();
-        // // topNavBar.expand(exploreButton);
-        // topNavBar.expand(h1);
-        // topNavBar.expand(searchField);
-        // topNavBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
         HorizontalLayout navHorizontalLayout = new HorizontalLayout();
         navHorizontalLayout.setPadding(true);
-        navHorizontalLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.AROUND);
         navHorizontalLayout.setWidthFull();
+        navHorizontalLayout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        navHorizontalLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.AROUND);
 
         navHorizontalLayout.add(
-            generateRouteTabs(),
             generateLogo(),
+            generateRouteTabs(),
             generateMenuBar()
         );
 
