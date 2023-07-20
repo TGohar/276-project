@@ -1,45 +1,24 @@
 package trackour.trackour.views.components;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.avatar.Avatar;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.H5;
-import com.vaadin.flow.component.html.H6;
 import com.vaadin.flow.component.html.Hr;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 // import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.TabsVariant;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.dom.DomEventListener;
-import com.vaadin.flow.dom.DomListenerRegistration;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.HighlightConditions;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLink;
 
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.model.Role;
@@ -70,11 +49,11 @@ public class NavBar {
     private HorizontalLayout generateRouteTabs() {
         HorizontalLayout routeTabsArea = new HorizontalLayout();
         routeTabsArea.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
-        routeTabsArea.setJustifyContentMode(FlexComponent.JustifyContentMode.AROUND);
+        routeTabsArea.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
         routeTabsArea.setWidthFull();
         // routeTabsArea.getStyle().set("background-color", "blue");
 
-        RouteTabs routeTabs = new RouteTabs();
+        Tabs routeTabs = new Tabs();
         routeTabs.setWidthFull();
         // routeTabs.getStyle().set("background-color", "red");
 
@@ -105,7 +84,8 @@ public class NavBar {
             dashboard,
             friends,
             explore,
-            advancedSearch);
+            advancedSearch
+        );
         // if the session is an admin, reveal the link/tab to the secret page
         SimpleGrantedAuthority sessionAdminRoleObj = new SimpleGrantedAuthority(Role.ADMIN.roleToRoleString());
         if (sessionObject.getAuthorities().contains(sessionAdminRoleObj)) {
@@ -177,26 +157,26 @@ public class NavBar {
         return navHorizontalLayout;
     }
 
-    private static class RouteTabs extends Tabs implements BeforeEnterObserver {
-        private final Map<RouterLink, Tab> routerLinkTabMap = new HashMap<>();
+    // private static class RouteTabs extends Tabs implements BeforeEnterObserver {
+    //     private final Map<RouterLink, Tab> routerLinkTabMap = new HashMap<>();
 
-        public void add(RouterLink routerLink) {
-            routerLink.setHighlightCondition(HighlightConditions.sameLocation());
-            routerLink.setHighlightAction(
-                    (link, shouldHighlight) -> {
-                        if (shouldHighlight)
-                            setSelectedTab(routerLinkTabMap.get(routerLink));
-                    });
-            routerLinkTabMap.put(routerLink, new Tab(routerLink));
-            add(routerLinkTabMap.get(routerLink));
-        }
+    //     public void add(RouterLink routerLink) {
+    //         routerLink.setHighlightCondition(HighlightConditions.sameLocation());
+    //         routerLink.setHighlightAction(
+    //                 (link, shouldHighlight) -> {
+    //                     if (shouldHighlight)
+    //                         setSelectedTab(routerLinkTabMap.get(routerLink));
+    //                 });
+    //         routerLinkTabMap.put(routerLink, new Tab(routerLink));
+    //         add(routerLinkTabMap.get(routerLink));
+    //     }
 
-        @Override
-        public void beforeEnter(BeforeEnterEvent event) {
-            // In case no tabs will match
-            setSelectedTab(null);
-        }
-    }
+    //     @Override
+    //     public void beforeEnter(BeforeEnterEvent event) {
+    //         // In case no tabs will match
+    //         setSelectedTab(null);
+    //     }
+    // }
 
     public static String getSearchValue(){
             return searchValue;

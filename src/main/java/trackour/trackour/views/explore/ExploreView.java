@@ -68,7 +68,8 @@ public class ExploreView extends VerticalLayout {
 
         int counter = 0;
 
-        for (Category category : categories) {
+        try {
+            for (Category category : categories) {
             Image coverImage = new Image(category.getIcons()[0].getUrl(), "Category Cover");
             coverImage.setWidth("200px");
             coverImage.setHeight("200px");
@@ -92,6 +93,9 @@ public class ExploreView extends VerticalLayout {
 
             rowLayout.add(catLayout);
             counter++;
+        }
+        } catch (Exception e) {
+            // TODO: handle exception
         }
 
         if (rowLayout.getComponentCount() > 0) {
