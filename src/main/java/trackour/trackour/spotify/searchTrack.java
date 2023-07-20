@@ -36,13 +36,11 @@ public class SearchTrack {
 
   private void initialize() {
     this.clientCred = new ClientCred();
-    if (clientCred.isAccessTokenExpired()){
-      this.accessToken = clientCred.getAccessToken();
-      this.spotifyApi = new SpotifyApi.Builder()
-              .setAccessToken(accessToken)
-              .build();
-      this.searchTracksRequest = spotifyApi.searchTracks(q).build();
-    }
+    this.accessToken = clientCred.getAccessToken();
+    this.spotifyApi = new SpotifyApi.Builder()
+            .setAccessToken(accessToken)
+            .build();
+    this.searchTracksRequest = spotifyApi.searchTracks(q).build();
   }
 
   public void searchTracks_Sync() {

@@ -32,6 +32,7 @@ import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
+import trackour.trackour.views.components.NavBar;
 import trackour.trackour.model.User;
 // import trackour.trackour.security.SecurityViewService;
 
@@ -54,54 +55,15 @@ public class AdminUsersView extends VerticalLayout {
                 this.customUserDetailsService = customUserDetailsService;
 
                 this.setHeightFull();
-
-                add(doDesignNavBar(), doDesignGrid());
+                add(generateNavBar(), generateGrid());
         }
 
-        private HorizontalLayout doDesignNavBar() {
-                H1 header = new H1("Trackour");
-
-                String sessionUsername = securityViewHandler.getSessionOptional().get().getUsername();
-                // securityViewHandler.getAuthenticatedRequestSession().getUsername();
-                // since logged in, no need to verify if this optional is empty
-                String displayNameString = customUserDetailsService.getByUsername(sessionUsername).get()
-                                .getDisplayName();
-                Text displayNameTxt = new Text(displayNameString);
-                Button signUpButton = new Button("Sign Up");
-                signUpButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-                signUpButton.addClassName("button-hover-effect");
-                signUpButton.addClickListener(event -> {
-                        UI.getCurrent().navigate("signUp");
-                });
-
-                Button LoginButton = new Button("Logout");
-                LoginButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-                LoginButton.addClassName("button-hover-effect");
-                LoginButton.addClickListener(event -> {
-                        securityViewHandler.logOut();
-                });
-
-                ComboBox<String> languageComboBox = new ComboBox<>();
-                languageComboBox.setPlaceholder("Music language");
-                languageComboBox.setItems("English", "Punjabi", "Spanish", "French", "German", "Hindi");
-
-                TextField searchField = new TextField();
-                searchField.setPlaceholder("Search Any Music");
-
-                HorizontalLayout topNavButtons = new HorizontalLayout(displayNameTxt, LoginButton);
-                topNavButtons.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
-                topNavButtons.getStyle().set("gap", "10px"); // Add spacing between the buttons
-                // Create a layout for the header and buttons
-                HorizontalLayout topNavBar = new HorizontalLayout(header, searchField, languageComboBox, topNavButtons);
-                topNavBar.setAlignItems(FlexComponent.Alignment.CENTER);
-                topNavBar.setWidthFull();
-                topNavBar.expand(header);
-                topNavBar.expand(searchField);
-                topNavBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-                return topNavBar;
+        private HorizontalLayout generateNavBar() {
+                NavBar nav = new NavBar(customUserDetailsService, securityViewHandler);
+                return nav.generateComponent();
         }
 
-        private Grid<User> doDesignGrid() {
+        private Grid<User> generateGrid() {
                 Grid<User> grid1 = new Grid<>(User.class, false);
                 grid1.setColumnRendering(ColumnRendering.LAZY);
                 Grid.Column<User> uidColumn = grid1.addColumn(User::getUid).setHeader("Uid").setSortable(true);

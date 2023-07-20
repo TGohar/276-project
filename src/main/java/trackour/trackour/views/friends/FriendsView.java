@@ -88,7 +88,7 @@ public class FriendsView extends VerticalLayout{
             layout.setSizeFull();
             layout.add(friendRequestLayout, currentFriendsLayout);
 
-            add(navigation.generateNavBar(), layout);
+            add(navigation.generateComponent(), layout);
             
 
             //User currentUser = customUserDetailsService.getByUsername(securityService.getAuthenticatedUser().getUsername()).get();

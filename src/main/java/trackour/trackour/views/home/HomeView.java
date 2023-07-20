@@ -35,6 +35,7 @@ import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.spotify.NewReleases;
 import trackour.trackour.views.components.NavBar;
+import trackour.trackour.views.components.SimpleSearchFiield;
 
 @Route("")
 // Admins are users but also have the "admin" special role so pages that can be
@@ -47,56 +48,12 @@ public class HomeView extends VerticalLayout {
 
     public HomeView(SecurityViewService securityViewHandler,
             CustomUserDetailsService customUserDetailsService) {
-        // H1 header = new H1("Trackour");
-
-        // Optional<UserDetails> username = securityViewHandler.getRequestSession();
-        // String sessionUsername = username.get().getUsername();
-        // String displayNameString =
-        // customUserDetailsService.getByUsername(sessionUsername).get().getDisplayName();
-        // Text displayNameTxt = new Text("@" + displayNameString);
-        // Button signUpButton = new Button("Sign Up");
-        // signUpButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        // signUpButton.addClassName("button-hover-effect");
-        // signUpButton.addClickListener(event -> {
-        // UI.getCurrent().navigate("signUp");
-        // });
-
-        // Button LoginButton = new Button("Logout");
-        // LoginButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        // LoginButton.addClassName("button-hover-effect");
-        // LoginButton.addClickListener(event -> {
-        // securityViewHandler.logOut();
-        // });
-
-        // ComboBox<String> languageComboBox = new ComboBox<>();
-        // languageComboBox.setPlaceholder("Music language");
-        // languageComboBox.setItems("English", "Punjabi", "Spanish", "French",
-        // "German", "Hindi");
-
-        // TextField searchField = new TextField();
-        // searchField.setPlaceholder("Search Music");
-        // searchField.setPrefixComponent(new Icon("lumo", "search"));
-
-        // Button mediaShelfButton = new Button("Media Shelf", new
-        // Icon(VaadinIcon.MUSIC));
-
-        // HorizontalLayout topNavButtons = new HorizontalLayout(exploreButton,
-        // searchField, languageComboBox,
-        // mediaShelfButton, displayNameTxt, LoginButton);
-        // topNavButtons.addClassName("topNavButtons");
-        // topNavButtons.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
-        // topNavButtons.setWidthFull();
-
-        // HorizontalLayout topNavBar = new HorizontalLayout(header, topNavButtons);
-
-        // topNavBar.setAlignItems(FlexComponent.Alignment.CENTER);
-        // topNavBar.setWidthFull();
-        // topNavBar.expand(searchField);
-        // topNavBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-
-        
-        NavBar obj = new NavBar(customUserDetailsService, securityViewHandler);
-        add(obj.generateNavBar());
+        NavBar nav = new NavBar(customUserDetailsService, securityViewHandler);
+        SimpleSearchFiield simpleSearch = new SimpleSearchFiield();
+        add(
+            nav.generateComponent(),
+            simpleSearch.generateComponent()
+        );
 
         H2 newRelease = new H2("New Releases");
         newRelease.getStyle().set("margin-left", "25px");

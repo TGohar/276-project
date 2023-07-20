@@ -27,17 +27,15 @@ public class NewReleases {
 
     private void initialize() {
         this.clientCred = new ClientCred();
-        if (clientCred.isAccessTokenExpired()){
-            this.accessToken = clientCred.getAccessToken();
-            this.spotifyApi = new SpotifyApi.Builder()
-                    .setAccessToken(accessToken)
-                    .build();
-            this.getListOfNewReleasesRequest = spotifyApi.getListOfNewReleases()
-                    // .country(CountryCode.SE)
-                    // .limit(10)
-                    // .offset(0)
-                    .build();
-        }
+        this.accessToken = clientCred.getAccessToken();
+        this.spotifyApi = new SpotifyApi.Builder()
+                .setAccessToken(accessToken)
+                .build();
+        this.getListOfNewReleasesRequest = spotifyApi.getListOfNewReleases()
+                // .country(CountryCode.SE)
+                // .limit(10)
+                // .offset(0)
+                .build();
     }
     public void getListOfNewReleases_Sync() {
         initialize();

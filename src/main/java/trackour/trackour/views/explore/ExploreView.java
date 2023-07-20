@@ -24,6 +24,7 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import se.michaelthelin.spotify.model_objects.specification.Category;
 
 import trackour.trackour.spotify.Explore;
+import trackour.trackour.views.components.NavBar;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
 
@@ -34,6 +35,8 @@ import trackour.trackour.security.SecurityViewService;
 public class ExploreView extends VerticalLayout {
     public ExploreView(SecurityViewService securityViewHandler,
             CustomUserDetailsService customUserDetailsService) {
+
+        NavBar nav = new NavBar(customUserDetailsService, securityViewHandler);
 
         Explore xplore = new Explore();
 
@@ -52,6 +55,7 @@ public class ExploreView extends VerticalLayout {
         greetings.setAlignItems(FlexComponent.Alignment.START);
         greetings.add(header, smileSpan);
 
+        add(nav.generateComponent());
         add(greetings);
         List<Category> categories = xplore.getCategories();
 

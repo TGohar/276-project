@@ -28,17 +28,15 @@ public class Explore {
 
     private void initialize() {
         this.clientCred = new ClientCred();
-        if (clientCred.isAccessTokenExpired()){
-            this.accessToken = clientCred.getAccessToken();
-            this.spotifyApi = new SpotifyApi.Builder()
-                    .setAccessToken(accessToken)
-                    .build();
-            this.getListOfCategoriesRequest = spotifyApi.getListOfCategories().build();
-                    // .country(CountryCode.SE)
-                    // .limit(10)
-                    // .offset(0)
-                    // .build();
-        }
+        this.accessToken = clientCred.getAccessToken();
+        this.spotifyApi = new SpotifyApi.Builder()
+                .setAccessToken(accessToken)
+                .build();
+        this.getListOfCategoriesRequest = spotifyApi.getListOfCategories().build();
+                // .country(CountryCode.SE)
+                // .limit(10)
+                // .offset(0)
+                // .build();
     }
 
     public void getListOfCategories_Sync() {

@@ -1,7 +1,8 @@
 package trackour.trackour.views.searchResult;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import trackour.trackour.spotify.SearchTrack;
-
+import trackour.trackour.views.components.NavBar;
+import trackour.trackour.views.components.SimpleSearchFiield;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,9 +32,16 @@ import trackour.trackour.security.SecurityViewService;
 
 @AnonymousAllowed
 
-public class searchResultView extends VerticalLayout {
-    public searchResultView(SecurityViewService securityViewHandler,
+public class SearchResultView extends VerticalLayout {
+    public SearchResultView(SecurityViewService securityViewHandler,
     CustomUserDetailsService customUserDetailsService) {
+
+
+        NavBar navigation = new NavBar(customUserDetailsService, securityViewHandler);
+        add(navigation.generateComponent());
+
+        SimpleSearchFiield simpleSearch = new SimpleSearchFiield();
+        add(simpleSearch.generateComponent());
 
         SearchTrack searchTracks = new SearchTrack();
         Optional<UserDetails> username = securityViewHandler.getSessionOptional();
