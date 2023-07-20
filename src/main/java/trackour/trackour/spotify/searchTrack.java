@@ -8,9 +8,9 @@ import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.specification.Paging;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.requests.data.search.simplified.SearchTracksRequest;
+import trackour.trackour.views.components.NavBar;
+
 import org.apache.hc.core5.http.ParseException;
-// import trackour.trackour.views.home.HomeView;
-import trackour.trackour.views.home.NavBar;
 
 import java.io.IOException;
 import java.util.concurrent.CancellationException;

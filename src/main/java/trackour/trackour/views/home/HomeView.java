@@ -34,6 +34,7 @@ import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.spotify.NewReleases;
+import trackour.trackour.views.components.NavBar;
 
 @Route("")
 // Admins are users but also have the "admin" special role so pages that can be

@@ -22,7 +22,7 @@ import jakarta.annotation.security.RolesAllowed;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.model.User;
 import trackour.trackour.security.SecurityViewService;
-import trackour.trackour.views.home.NavBar;
+import trackour.trackour.views.components.NavBar;
 
 @Route("friends")
 @PageTitle("Friends")

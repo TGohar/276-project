@@ -1,4 +1,4 @@
-package trackour.trackour.views.home;
+package trackour.trackour.views.components;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +27,7 @@ import com.vaadin.flow.router.RouterLink;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.friends.FriendsView;
+import trackour.trackour.views.home.HomeView;
 
 public class NavBar {
     SecurityViewService securityViewHandler;
