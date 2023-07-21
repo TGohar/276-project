@@ -1,5 +1,4 @@
 package trackour.trackour.views.components;
-
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
@@ -7,7 +6,9 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 
-public class SimpleSearchFiield {
+public class SimpleSearchField extends HorizontalLayout {
+
+    public SimpleSearchField() {}
 
     public HorizontalLayout generateComponent() {
         HorizontalLayout simpleSearchComponent = new HorizontalLayout();

@@ -4,7 +4,10 @@ import java.util.List;
 // import java.util.Optional;
 // import org.springframework.security.core.userdetails.UserDetails;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.applayout.AppLayout;
 //import com.vaadin.flow.component.Text;
 //import com.vaadin.flow.component.UI;
 //import com.vaadin.flow.component.button.Button;
@@ -26,7 +29,7 @@ import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.spotify.NewReleases;
 import trackour.trackour.views.components.NavBar;
 import trackour.trackour.views.components.SimpleCarousel;
-import trackour.trackour.views.components.SimpleSearchFiield;
+import trackour.trackour.views.components.SimpleSearchField;
 
 @Route("")
 // Admins are users but also have the "admin" special role so pages that can be
@@ -37,14 +40,17 @@ public class HomeView extends VerticalLayout {
     MenuBar mobileVMenuBar;
     Component mobileView;
 
+    @Autowired
+    SecurityViewService securityViewHandler;
+    
+    @Autowired
+    CustomUserDetailsService customUserDetailsService;
+
     public HomeView(SecurityViewService securityViewHandler,
             CustomUserDetailsService customUserDetailsService) {
         NavBar nav = new NavBar(customUserDetailsService, securityViewHandler);
-        SimpleSearchFiield simpleSearch = new SimpleSearchFiield();
-        add(
-            nav.generateComponent(),
-            simpleSearch.generateComponent()
-        );
+        AppLayout navBar = nav.generateNavComponent(false);
+        SimpleSearchField simpleSearch = new SimpleSearchField();
 
         H2 newRelease = new H2("New Releases");
         newRelease.getStyle().set("margin-left", "25px");
@@ -53,10 +59,22 @@ public class HomeView extends VerticalLayout {
         NewReleases newReleases = new NewReleases();
         List<AlbumSimplified> albums = newReleases.getNewReleases();
         SimpleCarousel trendingCarousel = new SimpleCarousel(albums);
-        add(newRelease, trendingCarousel.generateComponent());
-
+        
         H2 utiliy = new H2("Audio Utility");
         utiliy.getStyle().set("margin-left", "25px");
-        add(utiliy);
+        VerticalLayout content = new VerticalLayout();
+        // content.getStyle().setBackground("lime");
+
+        // set the contents
+        content.add(
+            newRelease,
+            simpleSearch,
+            trendingCarousel.generateComponent(),
+            utiliy
+        );
+        // set the contents container
+        navBar.setContent(content);
+        // add the nav component to this view
+        add(navBar);
     }
 }

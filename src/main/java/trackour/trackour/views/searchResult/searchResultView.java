@@ -2,7 +2,7 @@ package trackour.trackour.views.searchResult;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import trackour.trackour.spotify.SearchTrack;
 import trackour.trackour.views.components.NavBar;
-import trackour.trackour.views.components.SimpleSearchFiield;
+import trackour.trackour.views.components.SimpleSearchField;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,9 +38,9 @@ public class SearchResultView extends VerticalLayout {
 
 
         NavBar navigation = new NavBar(customUserDetailsService, securityViewHandler);
-        add(navigation.generateComponent());
+        add(navigation.generateNavComponent(false));
 
-        SimpleSearchFiield simpleSearch = new SimpleSearchFiield();
+        SimpleSearchField simpleSearch = new SimpleSearchField();
         add(simpleSearch.generateComponent());
 
         SearchTrack searchTracks = new SearchTrack();

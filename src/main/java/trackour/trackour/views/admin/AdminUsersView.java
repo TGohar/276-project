@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.ColumnRendering;
 import com.vaadin.flow.component.grid.Grid;
@@ -50,16 +51,20 @@ public class AdminUsersView extends VerticalLayout {
                 this.customUserDetailsService = customUserDetailsService;
 
                 this.setHeightFull();
-                add(generateNavBar(), generateGrid());
+                AppLayout navigationComponent = generateNavBar();
+                navigationComponent.setContent(generateGrid());
+                add(navigationComponent);
         }
 
-        private HorizontalLayout generateNavBar() {
+        private AppLayout generateNavBar() {
                 NavBar nav = new NavBar(customUserDetailsService, securityViewHandler);
-                return nav.generateComponent();
+                return nav.generateNavComponent(false);
         }
 
         private Grid<User> generateGrid() {
                 Grid<User> grid1 = new Grid<>(User.class, false);
+        
+                grid1.setSizeFull();
                 grid1.setColumnRendering(ColumnRendering.LAZY);
                 Grid.Column<User> uidColumn = grid1.addColumn(User::getUid).setHeader("Uid").setSortable(true);
                 Grid.Column<User> displayNameColumn = grid1.addColumn(User::getDisplayName).setHeader("Display Name")

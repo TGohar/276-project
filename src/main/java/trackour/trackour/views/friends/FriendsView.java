@@ -9,6 +9,7 @@ import com.vaadin.flow.component.icon.Icon;
 
 import java.util.List;
 
+import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -68,6 +69,7 @@ public class FriendsView extends VerticalLayout{
             setSizeFull();
 
             HorizontalLayout layout = new HorizontalLayout();
+            
 
             VerticalLayout friendRequestLayout = new VerticalLayout();
             VerticalLayout currentFriendsLayout = new VerticalLayout();
@@ -88,7 +90,10 @@ public class FriendsView extends VerticalLayout{
             layout.setSizeFull();
             layout.add(friendRequestLayout, currentFriendsLayout);
 
-            add(navigation.generateComponent(), layout);
+            AppLayout navAppLayout = navigation.generateNavComponent(false);
+            navAppLayout.addToNavbar();
+            navAppLayout.setContent(layout);
+            add(navAppLayout);
             
 
             //User currentUser = customUserDetailsService.getByUsername(securityService.getAuthenticatedUser().getUsername()).get();

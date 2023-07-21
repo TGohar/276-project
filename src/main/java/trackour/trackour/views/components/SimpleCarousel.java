@@ -14,7 +14,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.DomEvent;
-import com.vaadin.flow.dom.Style.Overflow;
 
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 
@@ -46,6 +45,7 @@ public class SimpleCarousel extends HorizontalLayout {
         attachScrollValuesUpdate();
         // set the width of the scroller area to 100% to not overflow over the side of the page
         this.thisScroller.setWidthFull();
+        
         this.thisScroller.setScrollDirection(Scroller.ScrollDirection.HORIZONTAL);
         this.thisScroller.getElement().getStyle().set("scroll-behavior", "smooth");
         try {
@@ -82,8 +82,8 @@ public class SimpleCarousel extends HorizontalLayout {
     public HorizontalLayout generateComponent() {
         HorizontalLayout carouselContainer = new HorizontalLayout();
         carouselContainer.setWidthFull();
-        carouselContainer.getStyle().setOverflow(Overflow.HIDDEN);
-        // carouselContainer.getStyle().setBackground("red");
+        
+        // carouselContainer.getStyle().setOverflow(Overflow.HIDDEN);
         carouselContainer.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         // carouselContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
         carouselContainer.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
@@ -98,8 +98,6 @@ public class SimpleCarousel extends HorizontalLayout {
         leftCarouselButton.setHeightFull();
         Button rightCarouselButton = new Button(swipeRight, ev -> scrollRight(scroller));
         rightCarouselButton.setHeightFull();
-        leftCarouselButton.getStyle().setBackground("red");
-        rightCarouselButton.getStyle().setBackground("red");
 
         
         carouselContainer.add(
