@@ -14,6 +14,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.DomEvent;
+// import com.vaadin.flow.dom.Style.Overflow;
 
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 
@@ -31,10 +32,10 @@ public class SimpleCarousel extends HorizontalLayout {
         this.scrollLeftValue = 0.0;
         this.scrollTopValue = 0.0;
         this.scrollEvent = null;
-        this.maxScrollLeft = 250.0;
+        this.maxScrollLeft = 3120.0;
         this.maxVisibleScrollLeft = 0.0;
         this.itemsList = itemsList;
-        this.attachScrollValuesUpdate();
+        // this.attachScrollValuesUpdate();
     }
 
     private Scroller genCarouselInnerScroller() {
@@ -42,12 +43,12 @@ public class SimpleCarousel extends HorizontalLayout {
         tLayout.setWidthFull();
         tLayout.setHeightFull();
         // this.thisScroller.getStyle().setOverflow(Overflow.HIDDEN);
-        attachScrollValuesUpdate();
+        // attachScrollValuesUpdate();
         // set the width of the scroller area to 100% to not overflow over the side of the page
         this.thisScroller.setWidthFull();
         
         this.thisScroller.setScrollDirection(Scroller.ScrollDirection.HORIZONTAL);
-        this.thisScroller.getElement().getStyle().set("scroll-behavior", "smooth");
+        // this.thisScroller.getElement().getStyle().set("scroll-behavior", "smooth");
         try {
             for (AlbumSimplified album : this.itemsList) {
             Image coverImage = new Image(album.getImages()[0].getUrl(), "Album Cover");
@@ -88,81 +89,81 @@ public class SimpleCarousel extends HorizontalLayout {
         // carouselContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
         carouselContainer.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
 
-        Icon swipeLeft = new Icon("lumo", "angle-left");
-        // swipeLeft.setSize();
-        Icon swipeRight = new Icon("lumo", "angle-right");
-        // swipeRight.setSize("xl");
+        // Icon swipeLeft = new Icon("lumo", "angle-left");
+        // // swipeLeft.setSize();
+        // Icon swipeRight = new Icon("lumo", "angle-right");
+        // // swipeRight.setSize("xl");
         Scroller scroller = genCarouselInnerScroller();
         // attachScrollValuesUpdate(scroller);
-        Button leftCarouselButton = new Button(swipeLeft, ev -> scrollLeft(scroller));
-        leftCarouselButton.setHeightFull();
-        Button rightCarouselButton = new Button(swipeRight, ev -> scrollRight(scroller));
-        rightCarouselButton.setHeightFull();
+        // Button leftCarouselButton = new Button(swipeLeft, ev -> scrollLeft(scroller));
+        // leftCarouselButton.setHeightFull();
+        // Button rightCarouselButton = new Button(swipeRight, ev -> scrollRight(scroller));
+        // rightCarouselButton.setHeightFull();
 
         
         carouselContainer.add(
-            leftCarouselButton,
-            scroller,
-            rightCarouselButton
+            // leftCarouselButton,
+            scroller
+            // rightCarouselButton
             );
         return carouselContainer;
     }
 
-    private void attachScrollValuesUpdate() {
+    // private void attachScrollValuesUpdate() {
 
-        // updater
-        this.thisScroller.getElement().addEventListener("scroll", ev -> {
-            this.scrollEvent = ev;
-            // Get the current scrollLeft property value from the browser
-            Double scrollLeft = ev.getEventData().getNumber("element.scrollLeft");
-            Double maxScrollLeft = ev.getEventData().getNumber("element.scrollWidth");
-            Double maxVisibleScrollLeft = ev.getEventData().getNumber("element.clientWidth");
+    //     // updater
+    //     this.thisScroller.getElement().addEventListener("scroll", ev -> {
+    //         this.scrollEvent = ev;
+    //         // Get the current scrollLeft property value from the browser
+    //         Double scrollLeft = ev.getEventData().getNumber("element.scrollLeft");
+    //         Double maxScrollLeft = ev.getEventData().getNumber("element.scrollWidth");
+    //         Double maxVisibleScrollLeft = ev.getEventData().getNumber("element.clientWidth");
 
-            this.scrollLeftValue = scrollLeft;
-            this.maxScrollLeft = maxScrollLeft;
-            this.maxVisibleScrollLeft = maxVisibleScrollLeft;
+    //         this.scrollLeftValue = scrollLeft;
+    //         this.maxScrollLeft = maxScrollLeft;
+    //         this.maxVisibleScrollLeft = maxVisibleScrollLeft;
 
-            this.thisScroller.getElement().setProperty("scrollLeft", this.scrollLeftValue);
-            this.thisScroller.getElement().setProperty("scrollWidth", this.maxScrollLeft);
-            this.thisScroller.getElement().setProperty("clientWidth", this.maxVisibleScrollLeft);
+    //         this.thisScroller.getElement().setProperty("scrollLeft", this.scrollLeftValue);
+    //         this.thisScroller.getElement().setProperty("scrollWidth", this.maxScrollLeft);
+    //         this.thisScroller.getElement().setProperty("clientWidth", this.maxVisibleScrollLeft);
 
-            // System.out.println("[upd]scrollLeft: " + scrollLeftValue);
-        }).addEventData("element.scrollLeft")
-        .addEventData("element.scrollWidth")
-        .addEventData("element.clientWidth");
-    }
+    //         // System.out.println("[upd]scrollLeft: " + scrollLeftValue);
+    //     }).addEventData("element.scrollLeft")
+    //     .addEventData("element.scrollWidth")
+    //     .addEventData("element.clientWidth");
+    // }
 
-    // this.thisScroller.scrollIntoView(null);
-    private void scrollLeft(Scroller scroller) {
-        // Decrement the scrollLeft property value by 10
-        this.scrollLeftValue = this.scrollLeftValue - 250;
+    // // this.thisScroller.scrollIntoView(null);
+    // private void scrollLeft(Scroller scroller) {
+    //     // Decrement the scrollLeft property value by 10
+    //     this.scrollLeftValue = this.scrollLeftValue - 250;
 
-        // prevent scrolling from going below 0
-        if (this.scrollLeftValue < 0.0) {
-            this.scrollLeftValue = 0.0;
-        }
+    //     // prevent scrolling from going below 0
+    //     if (this.scrollLeftValue < 0.0) {
+    //         this.scrollLeftValue = 0.0;
+    //     }
 
-        // System.out.println("scrolled to: " + scrollLeftValue);
+    //     // System.out.println("scrolled to: " + scrollLeftValue);
         
-        // Set the new scrollLeft property value
-        scroller.getElement().setProperty("scrollLeft", this.scrollLeftValue);
-        attachScrollValuesUpdate();
-    }
-    private void scrollRight(Scroller scroller) {
-        // Calculate the maximum possible value for scrollLeft/ max scrollable value
-        Double maxScrollableLeft = this.maxScrollLeft - this.maxVisibleScrollLeft;
+    //     // Set the new scrollLeft property value
+    //     scroller.getElement().setProperty("scrollLeft", this.scrollLeftValue);
+    //     attachScrollValuesUpdate();
+    // }
+    // private void scrollRight(Scroller scroller) {
+    //     // Calculate the maximum possible value for scrollLeft/ max scrollable value
+    //     Double maxScrollableLeft = this.maxScrollLeft - this.maxVisibleScrollLeft;
 
-        // System.out.println("maxScrollableLeft:" + maxScrollableLeft);
+    //     // System.out.println("maxScrollableLeft:" + maxScrollableLeft);
         
-        // Increment the scrollLeft property value by 10
-        this.scrollLeftValue = this.scrollLeftValue + 250;
+    //     // Increment the scrollLeft property value by 10
+    //     this.scrollLeftValue = this.scrollLeftValue + 250;
 
-        if (this.scrollLeftValue > maxScrollableLeft  - 250) {
-            this.scrollLeftValue = maxScrollableLeft;
-        }
+    //     if (this.scrollLeftValue > maxScrollableLeft) {
+    //         this.scrollLeftValue = maxScrollableLeft;
+    //     }
         
-        // Set the new scrollLeft property value
-        scroller.getElement().setProperty("scrollLeft", this.scrollLeftValue);
-        attachScrollValuesUpdate();
-    }
+    //     // Set the new scrollLeft property value
+    //     scroller.getElement().setProperty("scrollLeft", this.scrollLeftValue);
+    //     attachScrollValuesUpdate();
+    // }
 }
