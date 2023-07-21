@@ -67,8 +67,8 @@ public class HomeView extends VerticalLayout {
 
         // set the contents
         content.add(
+            simpleSearch.generateComponent(),
             newRelease,
-            simpleSearch,
             trendingCarousel.generateComponent(),
             utiliy
         );
