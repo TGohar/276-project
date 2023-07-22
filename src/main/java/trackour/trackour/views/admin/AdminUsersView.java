@@ -57,7 +57,7 @@ public class AdminUsersView extends VerticalLayout {
 
         private AppLayout generateNavBar() {
                 NavBar nav = new NavBar(customUserDetailsService, securityViewHandler);
-                return nav.generateNavComponent(false);
+                return nav.generateNavComponent();
         }
 
         private Grid<User> generateGrid() {

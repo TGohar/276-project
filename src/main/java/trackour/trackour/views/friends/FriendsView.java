@@ -90,7 +90,7 @@ public class FriendsView extends VerticalLayout{
             layout.setSizeFull();
             layout.add(friendRequestLayout, currentFriendsLayout);
 
-            AppLayout navAppLayout = navigation.generateNavComponent(false);
+            AppLayout navAppLayout = navigation.generateNavComponent();
             navAppLayout.addToNavbar();
             navAppLayout.setContent(layout);
             add(navAppLayout);

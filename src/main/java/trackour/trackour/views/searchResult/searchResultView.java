@@ -38,7 +38,7 @@ public class SearchResultView extends VerticalLayout {
 
 
         NavBar navigation = new NavBar(customUserDetailsService, securityViewHandler);
-        add(navigation.generateNavComponent(false));
+        add(navigation.generateNavComponent());
 
         SimpleSearchField simpleSearch = new SimpleSearchField();
         add(simpleSearch.generateComponent());

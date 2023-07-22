@@ -35,8 +35,10 @@ public class NavBar {
     private CustomUserDetailsService customUserDetailsService;
     private static String searchValue;
     private UserDetails sessionObject;
-    private Tabs mobileViewTabs;
-    private AppLayout nav;
+    private Tabs viewTabs;
+    private AppLayout navM;
+    private AppLayout navW;
+    Component content;
     // private Boolean div300pxOrLess = false;
     // private Boolean window1024OrLess = false;
 
@@ -44,8 +46,33 @@ public class NavBar {
         this.customUserDetailsService = customUserDetailsService;
         this.securityViewHandler = securityViewHandler;
         this.sessionObject = securityViewHandler.getAuthenticatedRequestSession();
-        this.mobileViewTabs = new Tabs();
-        this.nav = new AppLayout();
+        this.viewTabs = new Tabs();
+        this.navM = new AppLayout();
+        this.navW = new AppLayout();
+        generateRouteTabs();
+        initWindowNav();
+        initMobileNav();
+    }
+
+    private void initMobileNav() {
+        DrawerToggle toggle = new DrawerToggle();
+        // generateMobileRouteTabs();
+        navM.setPrimarySection(Section.DRAWER);
+        navM.setDrawerOpened(false);
+        navM.getStyle().setWidth("100%");
+        navM.getStyle().setHeight("100%");
+        viewTabs.setOrientation(Tabs.Orientation.VERTICAL);
+        navM.addToDrawer(
+            viewTabs
+            );
+        navM.addToNavbar(toggle, generateLogo(), generateMenuBar());
+    }
+    
+    private void initWindowNav() {
+        navW.setPrimarySection(Section.NAVBAR);
+        navW.getStyle().setWidth("100%");
+        navW.getStyle().setHeight("100%");
+        navW.addToNavbar(this.generateWindowNavBarComponent());
     }
 
     private void onClickTabRouteTo(Tab clickedElement, Class<? extends Component> navigationTarget) {
@@ -54,7 +81,7 @@ public class NavBar {
         });
     }
 
-    private Tabs generateRouteTabs() {
+    private void generateRouteTabs() {
         // friendsTab.setEnabled(false);
         Tab home = new Tab("Home");
         home.addAttachListener(ev -> onClickTabRouteTo(home, HomeView.class));
@@ -77,34 +104,30 @@ public class NavBar {
         adminViewUsers.addAttachListener(ev -> onClickTabRouteTo(adminViewUsers, AdminUsersView.class));
         
         // set the mobile view drawer tabs
-        this.mobileViewTabs.add(
+        this.viewTabs.add(
             home,
             dashboard,
             friends,
             explore,
             advancedSearch
         );
-
         // if the session is an admin, reveal the link/tab to the secret page
         SimpleGrantedAuthority sessionAdminRoleObj = new SimpleGrantedAuthority(Role.ADMIN.roleToRoleString());
         if (sessionObject.getAuthorities().contains(sessionAdminRoleObj)) {
-            this.mobileViewTabs.add(adminViewUsers);
+            this.viewTabs.add(adminViewUsers);
         }
-        return this.mobileViewTabs;
     }
         
-    private HorizontalLayout generateRouteTabsLayout() {
+    private HorizontalLayout generateWindowRouteTabsLayout() {
         HorizontalLayout routeTabsArea = new HorizontalLayout();
         routeTabsArea.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         routeTabsArea.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
         routeTabsArea.setWidthFull();
-        // routeTabsArea.getStyle().set("background-color", "blue");
-
-        Tabs navTabs = generateRouteTabs();
+        
         // style navtabs
-        navTabs.setWidthFull();
-        navTabs.addThemeVariants(TabsVariant.MATERIAL_FIXED);
-        routeTabsArea.add(navTabs);
+        viewTabs.setWidthFull();
+        viewTabs.addThemeVariants(TabsVariant.MATERIAL_FIXED);
+        routeTabsArea.add(viewTabs);
         return routeTabsArea;
     }
 
@@ -153,7 +176,7 @@ public class NavBar {
     }
     
     public Component getContent() {
-        return nav.getContent();
+        return navW.getContent();
     }
 
     /**
@@ -162,13 +185,9 @@ public class NavBar {
      * @param content
      */
     public void setContent(Component content) {
-        nav.setContent(content);
-        nav.getStyle().setWidth("100%");
-        nav.getStyle().setHeight("100%");
-
-        nav.getStyle().setBackground("red");
-        
-        nav.getElement().getStyle().set("name", "nav-content");
+        this.content = content;
+        navW.setContent(content);
+        navM.setContent(content);
     }
 
     /**
@@ -177,27 +196,14 @@ public class NavBar {
      * @param isMobileView
      * @return
      */
-    public AppLayout generateNavComponent(Boolean isMobileView) {
-
-        DrawerToggle toggle = new DrawerToggle();
-
-        nav.setPrimarySection(Section.NAVBAR);
-
-        Tabs tabs = this.getMobileViewTabs();
-
-        if (isMobileView) {
-        nav.addToNavbar(this.generateNavBarComponent(), toggle);
-            tabs.setOrientation(Tabs.Orientation.VERTICAL);
-            nav.addToDrawer(tabs);
-        }
-        else {
-            nav.addToNavbar(this.generateNavBarComponent());
-        }
-        nav.setDrawerOpened(false);
-        nav.getStyle().setWidth("100%");
-        return nav;
+    public AppLayout generateNavComponent() {
+        
+        // if (!isMobileView) {
+        //     return navW;
+        // }
+        return navM;
     }
-    private HorizontalLayout generateNavBarComponent() {
+    private HorizontalLayout generateWindowNavBarComponent() {
 
         HorizontalLayout navHorizontalLayout = new HorizontalLayout();
         navHorizontalLayout.setPadding(true);
@@ -211,15 +217,11 @@ public class NavBar {
         // });
         navHorizontalLayout.add(
             generateLogo(),
-            generateRouteTabsLayout(),
+            generateWindowRouteTabsLayout(),
             generateMenuBar()
         );
 
         return navHorizontalLayout;
-    }
-
-    private Tabs getMobileViewTabs() {
-        return mobileViewTabs;
     }
 
     public static String getSearchValue() {

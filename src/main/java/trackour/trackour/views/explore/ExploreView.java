@@ -38,7 +38,7 @@ public class ExploreView extends VerticalLayout {
     CustomUserDetailsService customUserDetailsService) {
         
         NavBar nav = new NavBar(customUserDetailsService, securityViewHandler);
-        AppLayout navLayout = nav.generateNavComponent(false);
+        AppLayout navLayout = nav.generateNavComponent();
         
         Explore xplore = new Explore();
         

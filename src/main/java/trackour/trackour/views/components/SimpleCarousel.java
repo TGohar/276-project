@@ -24,16 +24,16 @@ public class SimpleCarousel extends HorizontalLayout {
     Double scrollLeftValue;
     Double scrollTopValue;
     DomEvent scrollEvent;
-    private Double maxScrollLeft;
-    private Double maxVisibleScrollLeft;
+    // private Double maxScrollLeft;
+    // private Double maxVisibleScrollLeft;
     List<AlbumSimplified> itemsList;
     public SimpleCarousel(List<AlbumSimplified> itemsList) {
         this.thisScroller = new Scroller();
         this.scrollLeftValue = 0.0;
         this.scrollTopValue = 0.0;
         this.scrollEvent = null;
-        this.maxScrollLeft = 3120.0;
-        this.maxVisibleScrollLeft = 0.0;
+        // this.maxScrollLeft = 3120.0;
+        // this.maxVisibleScrollLeft = 0.0;
         this.itemsList = itemsList;
         // this.attachScrollValuesUpdate();
     }
