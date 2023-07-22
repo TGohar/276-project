@@ -13,6 +13,7 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -69,29 +70,39 @@ public class FriendsView extends VerticalLayout{
             setSizeFull();
 
             HorizontalLayout layout = new HorizontalLayout();
+            layout.setSizeFull();
+            FlexLayout flexInner = new FlexLayout();
+            flexInner.setSizeFull();
+            flexInner.setFlexDirection(FlexLayout.FlexDirection.ROW); // Change this to ROW instead of COLUMN
+            flexInner.setFlexWrap(FlexLayout.FlexWrap.WRAP);
             
-
+            
             VerticalLayout friendRequestLayout = new VerticalLayout();
             VerticalLayout currentFriendsLayout = new VerticalLayout();
-
+            
+            // Add the layouts to the flexInner
+            flexInner.add(friendRequestLayout, currentFriendsLayout);
+            
             FormLayout friendRequestForm = new FormLayout();
 
             friendRequestForm.setSizeFull();
             friendRequestForm.add(friendRequestInput, friendRequestButton, confirmationText);
-
+            
             friendRequestLayout.setSizeFull();
             friendRequestLayout.add(friendRequestTitle, friendRequestForm,
-                                        pendingFriendRequest, friendRequestGrid);
-
+            pendingFriendRequest, friendRequestGrid);
+            
             currentFriendsLayout.setSizeFull();
             currentFriendsLayout.add(currentFriendsTitle, currentFriendsGrid);
 
-
-            layout.setSizeFull();
-            layout.add(friendRequestLayout, currentFriendsLayout);
-
+            flexInner.add(friendRequestLayout, currentFriendsLayout);
+            flexInner.setFlexGrow(1, friendRequestLayout); // Give friendRequestLayout twice as much space as currentFriendsLayout
+            flexInner.setFlexGrow(1, currentFriendsLayout); // Give currentFriendsLayout the default space
+            
             AppLayout navAppLayout = navigation.generateNavComponent();
-            navAppLayout.addToNavbar();
+            
+            // Add the flexInner to the layout
+            layout.add(flexInner);
             navAppLayout.setContent(layout);
             add(navAppLayout);
             
