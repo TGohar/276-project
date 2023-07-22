@@ -4,12 +4,23 @@ import trackour.trackour.spotify.SearchTrack;
 import trackour.trackour.views.components.NavBar;
 import trackour.trackour.views.components.SimpleSearchField;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.yaml.snakeyaml.util.UriEncoder;
 
-
+import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.HasValue.ValueChangeListener;
+import com.vaadin.flow.component.KeyUpEvent;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
@@ -20,8 +31,15 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 import trackour.trackour.model.CustomUserDetailsService;
@@ -32,18 +50,32 @@ import trackour.trackour.security.SecurityViewService;
 
 @AnonymousAllowed
 
-public class SearchResultView extends VerticalLayout {
+public class SearchResultView extends VerticalLayout implements HasUrlParameter<String>, BeforeEnterObserver {
+    
+    private String search;
+    // private String searchString;
+    @Autowired
+    SecurityViewService securityViewHandler;
+    @Autowired
+    CustomUserDetailsService customUserDetailsService;
+    SimpleSearchField simpleSearch;
+    NavBar navigation;
+    AppLayout nav;
     public SearchResultView(SecurityViewService securityViewHandler,
     CustomUserDetailsService customUserDetailsService) {
+        this.securityViewHandler = securityViewHandler;
+        this.customUserDetailsService = customUserDetailsService;
+        simpleSearch = new SimpleSearchField();
+        simpleSearch.onEnterKeyUp(event -> this.searchSubmit(event));
+        this.navigation = new NavBar(customUserDetailsService, securityViewHandler);
+    }
+
+    private void generateList() {
+        VerticalLayout container = new VerticalLayout();
+        container.setWidthFull();
 
 
-        NavBar navigation = new NavBar(customUserDetailsService, securityViewHandler);
-        add(navigation.generateNavComponent());
-
-        SimpleSearchField simpleSearch = new SimpleSearchField();
-        add(simpleSearch.generateComponent());
-
-        SearchTrack searchTracks = new SearchTrack();
+        container.add(simpleSearch);
         Optional<UserDetails> username = securityViewHandler.getSessionOptional();
         String sessionUsername = username.get().getUsername();
         String displayNameString = customUserDetailsService.getByUsername(sessionUsername).get().getDisplayName();
@@ -57,7 +89,7 @@ public class SearchResultView extends VerticalLayout {
         greetings.add(header);
         greetings.getStyle().set("align-items", "center");
         greetings.getStyle().set("margin-bottom", "100px");
-        add(greetings);
+        container.add(greetings);
         
         H2 trackHeading = new H2("Track");
         H2 albumHeading = new H2("Album");
@@ -72,9 +104,13 @@ public class SearchResultView extends VerticalLayout {
         headingLayout.getStyle().set("align-items", "center");
         headingLayout.getStyle().set("margin-bottom", "50px");
 
-        add(headingLayout);
-        
-        List<Track> tracks = searchTracks.getTrack();
+        System.out.println("searching:"+ search);
+        container.add(headingLayout);
+        SearchTrack searchTracks = new SearchTrack();
+        List<Track> tracks = searchTracks.getTrackList(search);
+        // searchTracks.getTrack();
+
+        System.out.println("SEARCH:" + search);
         
          for (Track track : tracks) {
             long durationMin = track.getDurationMs()/60000;
@@ -119,7 +155,44 @@ public class SearchResultView extends VerticalLayout {
             
             songDiv.addClassName("song-div");
 
-            add(songDiv);
+            container.add(songDiv);
         }
+
+        navigation.setContent(container);
+        nav = navigation.generateNavComponent();
+        add(nav);
+    
+    }
+
+    private KeyUpEvent searchSubmit(KeyUpEvent event) {
+        // clear view
+        this.navigation.clearContent();
+        this.remove(nav);
+        nav = null;
+        // redirect
+        getUI().ifPresent(ui -> ui.navigate(SearchResultView.class, UriEncoder.encode(simpleSearch.getSearchValue())));
+        return event;
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {}
+
+    @Override
+    public void setParameter(BeforeEvent event, String parametersString) {
+            Location location = event.getLocation();
+            // QueryParameters queryParameters = location.getQueryParameters();
+            // List<String> searchQList = queryParameters.getParameters().get("search");
+            // System.out.println("queryParameters.getParameters():" + queryParameters.getParameters());
+            
+            System.out.println("parametersString:" + parametersString);
+            if (parametersString == null || parametersString.isEmpty()){
+                generateList();
+                return;
+            }
+            String searchString = URLDecoder.decode(parametersString, StandardCharsets.UTF_8);
+            // System.out.println("split:" + searchString.split("?search="));
+            System.out.println("searchString:" + searchString);
+            this.search = searchString;
+            generateList();
     }
 }

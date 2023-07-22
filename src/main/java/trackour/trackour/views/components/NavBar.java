@@ -3,7 +3,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
+// import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.applayout.AppLayout.Section;
@@ -33,7 +33,6 @@ import trackour.trackour.views.home.HomeView;
 public class NavBar {
     private SecurityViewService securityViewHandler;
     private CustomUserDetailsService customUserDetailsService;
-    private static String searchValue;
     private UserDetails sessionObject;
     private Tabs viewTabs;
     private AppLayout navM;
@@ -135,8 +134,7 @@ public class NavBar {
         HorizontalLayout logoArea = new HorizontalLayout();
         logoArea.setWidthFull();
         logoArea.setAlignSelf(FlexComponent.Alignment.CENTER);
-        logoArea.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
-        // logoArea.getStyle().set("background-color", "red");
+        logoArea.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
 
         H1 logo = new H1("Trackour");
         // logo.getStyle().set("background-color", "blue");
@@ -151,7 +149,6 @@ public class NavBar {
         String displayNameString = customUserDetailsService.getByUsername(sessionUsername).get().getDisplayName();
 
         HorizontalLayout horizontalMenuArea = new HorizontalLayout();
-        horizontalMenuArea.setWidthFull();
         horizontalMenuArea.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         horizontalMenuArea.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
 
@@ -186,6 +183,12 @@ public class NavBar {
         navM.setContent(content);
     }
 
+    public void clearContent() {
+        this.content = null;
+        navM.setContent(this.content);
+        navM.setContent(this.content);
+    }
+
     /**
      * this returns the actaul whole nav component
      * The isMobileView boolean is set to true if your view is in a mobile/smaller screen mode
@@ -218,9 +221,5 @@ public class NavBar {
         );
 
         return navHorizontalLayout;
-    }
-
-    public static String getSearchValue() {
-        return searchValue;
     }
 }

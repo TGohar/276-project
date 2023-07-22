@@ -3,6 +3,9 @@
   "license": "UNLICENSED",
   "type": "module",
   "dependencies": {
+    "@polymer/iron-iconset-svg": "^3.0.1",
+    "@polymer/paper-button": "^3.0.1",
+    "@polymer/paper-icon-button": "^3.0.2",
     "@polymer/polymer": "3.5.1",
     "@vaadin/a11y-base": "24.1.1",
     "@vaadin/accordion": "24.1.1",
@@ -70,6 +73,8 @@
     "construct-style-sheets-polyfill": "3.1.0",
     "date-fns": "2.29.3",
     "lit": "2.7.4",
+    "lit-element": "^3.2.2",
+    "lit-html": "2.4.0",
     "mobile-drag-drop": "2.3.0-rc.2"
   },
   "devDependencies": {
@@ -92,6 +97,9 @@
   },
   "vaadin": {
     "dependencies": {
+      "@polymer/iron-iconset-svg": "^3.0.1",
+      "@polymer/paper-button": "^3.0.1",
+      "@polymer/paper-icon-button": "^3.0.2",
       "@polymer/polymer": "3.5.1",
       "@vaadin/a11y-base": "24.1.1",
       "@vaadin/accordion": "24.1.1",
@@ -159,6 +167,8 @@
       "construct-style-sheets-polyfill": "3.1.0",
       "date-fns": "2.29.3",
       "lit": "2.7.4",
+      "lit-element": "^3.2.2",
+      "lit-html": "2.4.0",
       "mobile-drag-drop": "2.3.0-rc.2"
     },
     "devDependencies": {
@@ -179,7 +189,7 @@
       "workbox-core": "7.0.0",
       "workbox-precaching": "7.0.0"
     },
-    "hash": "3dbed202818eaac9ed2eef80c86a7d28d54a9d037db94fb32e3ae3a3983a5e89"
+    "hash": "6152e091c37e8c014ff558cc366885e3f758e38311ab30a4104ddb0f904e9c84"
   },
   "overrides": {
     "@vaadin/bundles": "$@vaadin/bundles",
@@ -249,6 +259,11 @@
     "@polymer/polymer": "$@polymer/polymer",
     "@vaadin/vaadin-themable-mixin": "$@vaadin/vaadin-themable-mixin",
     "date-fns": "$date-fns",
-    "mobile-drag-drop": "$mobile-drag-drop"
+    "mobile-drag-drop": "$mobile-drag-drop",
+    "@polymer/iron-iconset-svg": "$@polymer/iron-iconset-svg",
+    "lit-html": "$lit-html",
+    "@polymer/paper-icon-button": "$@polymer/paper-icon-button",
+    "lit-element": "$lit-element",
+    "@polymer/paper-button": "$@polymer/paper-button"
   }
 }

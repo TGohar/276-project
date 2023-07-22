@@ -4,6 +4,7 @@ import java.util.List;
 // import java.util.Optional;
 // import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.yaml.snakeyaml.util.UriEncoder;
 
 // import org.json.JSONArray;
 // import org.json.JSONException;
@@ -12,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 // import com.vaadin.addon.responsive.Responsive;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.KeyUpEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 //import com.vaadin.flow.component.Text;
 //import com.vaadin.flow.component.UI;
@@ -35,6 +39,7 @@ import trackour.trackour.views.components.NavBar;
 // import trackour.trackour.views.components.ResponsiveNavBar;
 import trackour.trackour.views.components.SimpleCarousel;
 import trackour.trackour.views.components.SimpleSearchField;
+import trackour.trackour.views.searchResult.SearchResultView;
 
 @Route("")
 // Admins are users but also have the "admin" special role so pages that can be
@@ -54,6 +59,7 @@ public class HomeView extends VerticalLayout {
     NavBar navBar;
     AppLayout nav;
     VerticalLayout content;
+    SimpleSearchField simpleSearch;
     // Integer width;
     
     public HomeView(SecurityViewService securityViewHandler,
@@ -70,7 +76,7 @@ public class HomeView extends VerticalLayout {
     }
 
     private void initContent() {
-        SimpleSearchField simpleSearch = new SimpleSearchField();
+        simpleSearch = new SimpleSearchField();
 
         H2 newRelease = new H2("New Releases");
         newRelease.getStyle().set("margin-left", "25px");
@@ -84,11 +90,18 @@ public class HomeView extends VerticalLayout {
         utiliy.getStyle().set("margin-left", "25px");
         
         content.add(
-            simpleSearch.generateComponent(),
+            simpleSearch,
             newRelease,
             trendingCarousel.generateComponent(),
             utiliy
-            );
-        
+        );
+
+        simpleSearch.onEnterKeyUp(event -> this.searchSubmit(event));
+    
+    }
+
+    private KeyUpEvent searchSubmit(KeyUpEvent event) {
+        getUI().ifPresent(ui -> ui.navigate(SearchResultView.class, UriEncoder.encode(simpleSearch.getSearchValue())));
+        return event;
     }
 }

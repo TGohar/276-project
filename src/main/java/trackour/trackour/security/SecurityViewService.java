@@ -63,6 +63,9 @@ public class SecurityViewService {
     public static void routeTo(Class<? extends Component> navigationTarget) {
         UI.getCurrent().navigate(navigationTarget);
     }
+    public static void routeTo(String navigationTarget) {
+        UI.getCurrent().navigate(navigationTarget);
+    }
 
     public void logOut() {
         UI.getCurrent().getPage().setLocation("/login");

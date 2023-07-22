@@ -1,56 +1,68 @@
 package trackour.trackour.views.components;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
+import com.nimbusds.jose.util.StandardCharset;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.KeyUpEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.textfield.TextField;
+
+import trackour.trackour.security.SecurityViewService;
+import trackour.trackour.spotify.SearchTrack;
+import trackour.trackour.views.searchResult.SearchResultView;
 
 // import trackour.trackour.security.SecurityViewService;
 // import trackour.trackour.views.searchResult.SearchResultView;
 
+/**
+ * This Class requires you pass "this" (the view instantiating/calling it) into it
+ * @param sourceView
+ * @return
+ */
 public class SimpleSearchField extends HorizontalLayout {
 
-    public SimpleSearchField() {}
+    private TextField searchField;
 
-    public HorizontalLayout generateComponent() {
-        HorizontalLayout simpleSearchComponent = new HorizontalLayout();
-        simpleSearchComponent.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
-        simpleSearchComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-        simpleSearchComponent.setWidthFull();
+    public SimpleSearchField() {
+        this.searchField = new TextField();
+        this.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        this.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        this.setWidthFull();
         // simpleSearchComponent.getStyle().set("background-color", "red");
-        simpleSearchComponent.add(generateSearchField());
-        return simpleSearchComponent;
+        generateSearchField();
+        this.add(this.searchField);
     }
 
-    private TextField generateSearchField() {
-        TextField searchField = new TextField();
+    public void onEnterKeyUp(ComponentEventListener<KeyUpEvent> listener) {
+        searchField.addKeyUpListener(Key.ENTER, listener);
+    }
+
+    private void generateSearchField() {
         searchField.setPlaceholder("Search Songs, Albums, Artists");
         searchField.setPrefixComponent(new Icon("lumo", "search"));
         searchField.setMinWidth(60, Unit.PERCENTAGE);
         // searchField.setWidth("80%");
         searchField.setClearButtonVisible(true);
+    }
 
-        // enter key submit search
-        searchField.getElement().addEventListener("keyup", e -> {
-            String searchValue = e.getEventData().getString("element.value");
-            
-            if(searchValue!=null && searchValue.length()!=0){
-                // SecurityViewService.routeTo(SearchResultView.class);
-                searchField.getUI().ifPresent(ui -> ui.navigate("searchResult"));
-            }
-            else{
-                Notification.show("Please enter the name of the song, album or artist you want to search"); 
-            }
+    public Boolean isInSearchResultView(Component navigationTarget) {
+        return navigationTarget.getClass().isInstance(SearchResultView.class);
+    }
 
-        }).addEventData("element.value").setFilter("event.keyCode == 13");
+    public String getSearchValue() {
+        return this.searchField.getValue();
+    }
 
-        // searchField.addValueChangeListener(e -> {
-            
-        //     String searchValue = e.getValue();
-
-            
-        // });
-        return searchField;
+    public TextField getTextField() {
+        return this.searchField;
     }
 }
