@@ -1,18 +1,35 @@
 package trackour.trackour.views.searchResult;
+import se.michaelthelin.spotify.model_objects.specification.Track;
+import trackour.trackour.spotify.SearchTrack;
+import trackour.trackour.views.components.NavBar;
+import trackour.trackour.views.components.SimpleSearchField;
+
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.vaadin.klaudeta.PaginatedGrid;
 import org.yaml.snakeyaml.util.UriEncoder;
 
+import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.HasValue.ValueChangeListener;
 import com.vaadin.flow.component.KeyUpEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.grid.dataview.GridListDataView;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H5;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
@@ -26,16 +43,16 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
-import se.michaelthelin.spotify.model_objects.specification.Track;
 import trackour.trackour.model.CustomUserDetailsService;
+import trackour.trackour.model.User;
 import trackour.trackour.security.SecurityViewService;
-import trackour.trackour.spotify.SearchTrack;
-import trackour.trackour.views.components.NavBar;
-import trackour.trackour.views.components.SimpleSearchField;
 
 @Route("searchResult")
 @PageTitle("Search Result")
