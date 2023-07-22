@@ -17,6 +17,7 @@ import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 // import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
@@ -37,6 +38,7 @@ public class NavBar {
     private Tabs viewTabs;
     private AppLayout navM;
     private AppLayout navW;
+    VerticalLayout contentContainer;
     Component content;
     // private Boolean div300pxOrLess = false;
     // private Boolean window1024OrLess = false;
@@ -178,12 +180,22 @@ public class NavBar {
      * @param content
      */
     public void setContent(Component content) {
+        contentContainer = new VerticalLayout();
+        contentContainer.setSizeFull();
+        contentContainer.setAlignItems(FlexComponent.Alignment.CENTER);
+        contentContainer.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
         this.content = content;
-        navW.setContent(content);
-        navM.setContent(content);
+        this.content.getStyle().setHeight("100%");
+        this.content.getStyle().setWidth("100%");
+        
+        // this.content.getStyle().setBackground("red");
+        contentContainer.add(this.content);
+        navW.setContent(contentContainer);
+        navM.setContent(contentContainer);
     }
 
     public void clearContent() {
+        this.contentContainer = null;
         this.content = null;
         navM.setContent(this.content);
         navM.setContent(this.content);

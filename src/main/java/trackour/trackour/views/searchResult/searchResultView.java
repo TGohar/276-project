@@ -23,6 +23,8 @@ import com.vaadin.flow.component.HasValue.ValueChangeListener;
 import com.vaadin.flow.component.KeyUpEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Div;
@@ -87,11 +89,6 @@ public class SearchResultView extends VerticalLayout implements HasUrlParameter<
             
             grid.setSizeFull();
             grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-            
-            // TextField songField = new TextField("");
-            // songField.setValue(track.getName());
-            // songField.setReadOnly(true);
-
 
             HorizontalLayout trackHeader = new HorizontalLayout();
             H5 trackHeaderText = new H5("Track");
@@ -101,6 +98,7 @@ public class SearchResultView extends VerticalLayout implements HasUrlParameter<
             trackHeader.add(trackHeaderText);
             grid.addColumn(new ComponentRenderer<>(track -> {
                 HorizontalLayout trackCard = new HorizontalLayout();
+                // trackCard.getStyle().setBackground("red");
                 trackCard.setWidthFull();
                 Image albumCoverImage = new Image();
                 albumCoverImage.setSrc(track.getAlbum().getImages()[0].getUrl());
@@ -110,73 +108,64 @@ public class SearchResultView extends VerticalLayout implements HasUrlParameter<
                 albumCoverImage.getStyle().set("margin-left", "100px");
 
                 // container for artist + track label
-                VerticalLayout song_and_Artist = new VerticalLayout();
-                song_and_Artist.addClassName("song-and-artist");
-                song_and_Artist.getStyle().set("margin-left", "10px");
+                VerticalLayout artist_and_Album = new VerticalLayout();
+                artist_and_Album.addClassName("song-and-artist");
+                artist_and_Album.getStyle().set("margin-left", "10px");
                 
                 // artist label
+                H5 aristLabel = new H5("Artist: ");
                 TextField artistField = new TextField("");
                 artistField.setValue(track.getArtists()[0].getName());
                 artistField.setReadOnly(true);
+                aristLabel.add(artistField);
 
                 // song label
                 TextField songField = new TextField("");
                 songField.setValue(track.getName());
                 songField.setReadOnly(true);
 
-                song_and_Artist.add(artistField, songField);
+                // Album label
+                H5 albumLabel = new H5("Album: ");
+                TextField albumField = new TextField("");
+                albumField.setValue(track.getAlbum().getName());
+                albumField.setReadOnly(true);
+                albumLabel.add(albumField);
 
-                trackCard.add(albumCoverImage, song_and_Artist);
+                artist_and_Album.add(aristLabel, albumLabel);
+
+                trackCard.add(albumCoverImage, songField, artist_and_Album);
 
                 trackCard.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
                 trackCard.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
                 return trackCard;
             }))
             .setHeader(trackHeader)
-            .setFlexGrow(0)
+            .setFlexGrow(1)
             .setAutoWidth(true);
 
-
-            HorizontalLayout albumHeader = new HorizontalLayout();
-            H5 albumHeaderText = new H5("Album");
-            // Center the component vertically and horizontally
-            albumHeader.setAlignItems(FlexComponent.Alignment.CENTER);
-            albumHeader.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-            albumHeader.add(albumHeaderText);
             grid.addColumn(new ComponentRenderer<>(track -> {
-                HorizontalLayout albumCard = new HorizontalLayout();
-                albumCard.setWidthFull();
-                // Album label
-                TextField albumField = new TextField("");
-                albumField.setValue(track.getAlbum().getName());
-                albumField.setReadOnly(true);
-                albumField.getStyle().set("margin-left", "100px");
-                albumCard.add(albumField);
-                return albumCard;
+                // vaadin:arrow-forward
+                Button moreInfoButton = new Button(new Icon(VaadinIcon.INFO_CIRCLE_O));
+                moreInfoButton.addThemeVariants(ButtonVariant.LUMO_ICON);
+                moreInfoButton.setAriaLabel("More Info");
+                moreInfoButton.setTooltipText("View more info about this track in a new tab");
+                return moreInfoButton;
             }))
-            .setHeader(albumHeader)
             .setFlexGrow(0)
             .setAutoWidth(true);
-            // grid.addColumn(Track::getAr).setHeader("Email").setSortable(true);
-            // grid.addColumn(Track::getUsername).setHeader("Username").setSortable(true);
-            // grid.addColumn(Track::getRoles).setHeader("Roles").setSortable(true);
-            
-            /**
-             * 
-             */
-            grid.setItems(tracks);
-            
-            // UserGridFilter userFilter = new UserGridFilter(dataView);
-            
-            grid.getHeaderRows().clear(); 
-            // HeaderRow headerRow = grid.appendHeaderRow();
 
-            // headerRow.getCell(uid).setComponent(createFilterHeader("Uid", userFilter::setUid));
-            // headerRow.getCell(displayName).setComponent(createFilterHeader("Display Name", userFilter::setDisplayName));
-            // headerRow.getCell(email).setComponent(createFilterHeader("Email", userFilter::setEmail));
-            // headerRow.getCell(username).setComponent(createFilterHeader("Username", userFilter::setUsername));
-            // headerRow.getCell(roles).setComponent(createFilterHeader("Roles", userFilter::setRole));
+
+            // when user clicks on list item, the playback feature shows
+            grid.setItemDetailsRenderer(new ComponentRenderer<>(track -> {
+                Button playbackButton = new Button(new Icon(VaadinIcon.PLAY_CIRCLE_O));
+                playbackButton.addThemeVariants(ButtonVariant.LUMO_ICON);
+                playbackButton.setAriaLabel("Listen to song");
+                playbackButton.setTooltipText("Playback feature");
+                return playbackButton;
+            }));
             
+            grid.setItems(tracks);
+
             // Sets the max number of items to be rendered on the grid for each page
             grid.setPageSize(7);
             

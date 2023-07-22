@@ -49,7 +49,7 @@ public class SimpleSearchField extends HorizontalLayout {
     private void generateSearchField() {
         searchField.setPlaceholder("Search Songs, Albums, Artists");
         searchField.setPrefixComponent(new Icon("lumo", "search"));
-        searchField.setMinWidth(60, Unit.PERCENTAGE);
+        searchField.setMinWidth(80, Unit.PERCENTAGE);
         // searchField.setWidth("80%");
         searchField.setClearButtonVisible(true);
     }
