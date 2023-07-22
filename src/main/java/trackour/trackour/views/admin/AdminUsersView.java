@@ -1,43 +1,25 @@
 package trackour.trackour.views.admin;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.klaudeta.PaginatedGrid;
 
-// import org.springframework.security.core.userdetails.UserDetailsService;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.grid.ColumnRendering;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.grid.HeaderRow;
-import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.textfield.TextFieldVariant;
-import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 
 import jakarta.annotation.security.RolesAllowed;
 import trackour.trackour.model.CustomUserDetailsService;
-import trackour.trackour.security.SecurityViewService;
-import trackour.trackour.views.components.NavBar;
 import trackour.trackour.model.User;
 // import trackour.trackour.security.SecurityViewService;
+import trackour.trackour.security.SecurityViewService;
+import trackour.trackour.views.components.NavBar;
 
 @Route("admin/view-users")
 // Admins are users but also have the "admin" special role so pages that can be

@@ -1,23 +1,14 @@
 package trackour.trackour.views.components;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
-import com.nimbusds.jose.util.StandardCharset;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyUpEvent;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.textfield.TextField;
 
-import trackour.trackour.security.SecurityViewService;
-import trackour.trackour.spotify.SearchTrack;
 import trackour.trackour.views.searchResult.SearchResultView;
 
 // import trackour.trackour.security.SecurityViewService;

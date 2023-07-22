@@ -1,25 +1,23 @@
 package trackour.trackour.views.friends;
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
-
 import java.util.List;
 
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.*;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
 
 import jakarta.annotation.security.RolesAllowed;
-
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.model.User;
 import trackour.trackour.security.SecurityViewService;
@@ -68,7 +66,17 @@ public class FriendsView extends VerticalLayout{
             addClassName("friends-view");
             setSizeFull();
 
-            HorizontalLayout layout = new HorizontalLayout();
+            FlexLayout layout = new FlexLayout();
+
+            // Set the flex direction to row (horizontal)
+            layout.setFlexDirection(FlexLayout.FlexDirection.ROW);
+
+            // Set the flex wrap to wrap (vertical when needed)
+            layout.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+
+            // You can also set the alignment and justify content properties as you like
+            layout.setAlignItems(FlexLayout.Alignment.CENTER);
+            layout.setJustifyContentMode(FlexLayout.JustifyContentMode.BETWEEN);
             
 
             VerticalLayout friendRequestLayout = new VerticalLayout();
