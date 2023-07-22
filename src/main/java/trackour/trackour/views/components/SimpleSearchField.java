@@ -25,7 +25,6 @@ public class SimpleSearchField extends HorizontalLayout {
 
     public SimpleSearchField() {
         this.searchField = new TextField();
-        searchField.focus();
         this.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         this.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
         this.setWidthFull();

@@ -114,12 +114,12 @@ public class SearchResultView extends VerticalLayout implements HasUrlParameter<
                 albumField.setReadOnly(true);
                 albumLabel.add(albumField);
 
-                artist_and_Album.add(songField, aristLabel, albumLabel);
+                artist_and_Album.add(aristLabel, albumLabel);
 
-                trackCard.add(albumCoverImage, artist_and_Album);
+                trackCard.add(albumCoverImage, songField, artist_and_Album);
 
                 trackCard.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
-                trackCard.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+                trackCard.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
                 return trackCard;
             }))
             .setHeader(trackHeader)
