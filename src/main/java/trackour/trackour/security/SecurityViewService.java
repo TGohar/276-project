@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -53,6 +54,14 @@ public class SecurityViewService {
             beforEnterEvent.rerouteTo("error");
             return;
         }
+    }
+
+    /**
+     * Call to route to a specific view/navigation target
+     * @param navigationTarget
+     */
+    public static void routeTo(Class<? extends Component> navigationTarget) {
+        UI.getCurrent().navigate(navigationTarget);
     }
 
     public void logOut() {

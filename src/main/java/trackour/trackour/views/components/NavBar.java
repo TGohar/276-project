@@ -77,7 +77,7 @@ public class NavBar {
 
     private void onClickTabRouteTo(Tab clickedElement, Class<? extends Component> navigationTarget) {
         clickedElement.getElement().addEventListener("click", event -> {
-            routeTo(navigationTarget);
+            SecurityViewService.routeTo(navigationTarget);
         });
     }
 
@@ -140,7 +140,7 @@ public class NavBar {
 
         H1 logo = new H1("Trackour");
         // logo.getStyle().set("background-color", "blue");
-        logo.addClickListener(ev -> routeTo(HomeView.class));
+        logo.addClickListener(ev -> SecurityViewService.routeTo(HomeView.class));
         logo.getStyle().setCursor("pointer");
         logoArea.add(logo);
         return logoArea;
@@ -169,10 +169,6 @@ public class NavBar {
         });
         horizontalMenuArea.add(h5, menuBar);
         return horizontalMenuArea;
-    }
-
-    private void routeTo(Class<? extends Component> navigationTarget) {
-        UI.getCurrent().navigate(navigationTarget);
     }
     
     public Component getContent() {

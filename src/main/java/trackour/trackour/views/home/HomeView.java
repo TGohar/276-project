@@ -92,28 +92,3 @@ public class HomeView extends VerticalLayout {
         
     }
 }
-        /**
-         * 
-         thisPage.addBrowserWindowResizeListener(event -> {
-             // Handle window resize event here
-             Integer width = event.getWidth();
-             // Integer height = event.getHeight();
- 
-             toggleQuery = width < 600;
- 
-             // if (isQueryMax) {
-             //     this.isQueryTrue = this.queryWidthValue < width;
-             // }
-             // else {
-             //     this.isQueryTrue = this.queryWidthValue > width;
-             // }
- 
-             System.out.println("event.getWidth():" + event.getWidth());
-             System.out.println("event.getHeight():" + event.getHeight());
-             System.out.println("toggleQuery: " + toggleQuery);
-             
- 
-             navBar = nav.generateNavComponent(toggleQuery);
-             
-         });
-         */
