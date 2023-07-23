@@ -49,8 +49,6 @@ public class FriendsView extends VerticalLayout{
 
             this.currentUser = customUserDetailsService.getByUsername(securityService.getAuthenticatedRequestSession().getUsername()).get();
 
-            NavBar navigation = new NavBar(customUserDetailsService, securityViewHandler);
-
             H3 friendRequestTitle = new H3("Add a new friend");
             TextField friendRequestInput = new TextField("Enter Username");
 
