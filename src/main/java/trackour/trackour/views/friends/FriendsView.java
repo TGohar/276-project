@@ -11,6 +11,7 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
@@ -65,38 +66,48 @@ public class FriendsView extends VerticalLayout {
             configureFriendsGrid();
 
             addClassName("friends-view");
-            setSizeFull();
+            // setSizeFull();
 
+            // HorizontalLayout layout = new HorizontalLayout();
             FlexLayout layout = new FlexLayout();
+            // layout.getStyle().setBackground("red");
+            layout.setFlexGrow(1);
+            layout.setHeightFull();
+            // categoryLayout.setSizeFull();
+            layout.getStyle().set("display", "flex");
+            layout.getStyle().set("flex-wrap", "wrap");
 
             // Set the flex direction to row (horizontal)
-            layout.setFlexDirection(FlexLayout.FlexDirection.ROW);
+            layout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
 
-            // Set the flex wrap to wrap (vertical when needed)
+            // // Set the flex wrap to wrap (vertical when needed)
             layout.setFlexWrap(FlexLayout.FlexWrap.WRAP);
 
             // You can also set the alignment and justify content properties as you like
-            layout.setAlignItems(FlexLayout.Alignment.CENTER);
-            layout.setJustifyContentMode(FlexLayout.JustifyContentMode.BETWEEN);
+            // layout.setAlignItems(FlexLayout.Alignment.CENTER);
+            // layout.setJustifyContentMode(FlexLayout.JustifyContentMode.CENTER);
             
 
             VerticalLayout friendRequestLayout = new VerticalLayout();
             VerticalLayout currentFriendsLayout = new VerticalLayout();
+            // friendRequestLayout.setWidth("50%");
+            // friendRequestLayout.getStyle().setBackground("cyan");
+
+            // currentFriendsLayout.setWidth("50%");
+            // currentFriendsLayout.getStyle().setBackground("cyan");
 
             FormLayout friendRequestForm = new FormLayout();
 
-            friendRequestForm.setSizeFull();
+            // friendRequestForm.setSizeFull();
             friendRequestForm.add(friendRequestInput, friendRequestButton, confirmationText);
 
-            friendRequestLayout.setSizeFull();
+            // friendRequestLayout.setSizeFull();
             friendRequestLayout.add(friendRequestTitle, friendRequestForm,
                                         pendingFriendRequest, friendRequestGrid);
-
-            currentFriendsLayout.setSizeFull();
+// 
+            // currentFriendsLayout.setSizeFull();
             currentFriendsLayout.add(currentFriendsTitle, currentFriendsGrid);
 
-
-            layout.setSizeFull();
             layout.add(friendRequestLayout, currentFriendsLayout);
 
             // Create a responsive navbar component
@@ -132,7 +143,7 @@ public class FriendsView extends VerticalLayout {
     //friend request grid
     private void configureRequestGrid() {
         this.friendRequestGrid.addClassNames("friend-requests-grid");
-        this.friendRequestGrid.setSizeFull();
+        // this.friendRequestGrid.setSizeFull();
         this.friendRequestGrid.addColumn(User::getUsername).setHeader("Username");
         this.friendRequestGrid.addComponentColumn((ev) -> addFriendButton(ev));
         this.friendRequestGrid.addComponentColumn((ev) -> deleteFriendRequestButton(ev));
@@ -143,7 +154,7 @@ public class FriendsView extends VerticalLayout {
     //friends grid
     private void configureFriendsGrid() {
         this.currentFriendsGrid.addClassNames("friends-grid");
-        this.currentFriendsGrid.setSizeFull();
+        // this.currentFriendsGrid.setSizeFull();
         this.currentFriendsGrid.addColumn(User::getUsername).setHeader("Username");
         this.currentFriendsGrid.addComponentColumn((ev) -> deleteFriendButton(ev));
         this.currentFriendsGrid.getColumns().forEach(col -> col.setAutoWidth(true));

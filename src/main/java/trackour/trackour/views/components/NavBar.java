@@ -34,7 +34,7 @@ import trackour.trackour.views.home.HomeView;
 
 public class NavBar extends ResponsiveLayout {
     // constant for the browser width threshold. < 600 == smaller screens
-    private static final int BROWSER_WIDTH_THRESHOLD = 600;
+    private static final int BROWSER_WIDTH_THRESHOLD = 800;
 
     @Autowired
     private SecurityViewService securityViewHandler;
@@ -86,7 +86,7 @@ public class NavBar extends ResponsiveLayout {
         appLayout.addToDrawer(drawerTabs);
 
         // Set the initial layout mode and drawer visibility of the app layout
-        appLayout.setPrimarySection(AppLayout.Section.DRAWER);
+        appLayout.setPrimarySection(AppLayout.Section.NAVBAR);
         appLayout.setDrawerOpened(false);
 
         // Add the app layout element to the container element of the ResponsiveLayout component

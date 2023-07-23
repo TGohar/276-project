@@ -15,6 +15,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
@@ -28,6 +29,7 @@ import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.spotify.Explore;
 import trackour.trackour.views.components.NavBar;
+import trackour.trackour.views.components.responsive.ResponsiveLayout;
 
 @Route("Explore")
 @RouteAlias("explore")
@@ -35,7 +37,7 @@ import trackour.trackour.views.components.NavBar;
 @PreserveOnRefresh
 @RolesAllowed({"USER", "ADMIN"})
 
-public class ExploreView extends VerticalLayout {
+public class ExploreView extends ResponsiveLayout {
     public ExploreView(SecurityViewService securityViewHandler,
     CustomUserDetailsService customUserDetailsService) {
         
@@ -60,48 +62,57 @@ public class ExploreView extends VerticalLayout {
         // greetings
         List<Category> categories = xplore.getCategories();
         
-        int columns = 5;
-        VerticalLayout categoryLayout = new VerticalLayout();
-        categoryLayout.setWidth("100%");
+        // int columns = 5;
+        FlexLayout categoryLayout = new FlexLayout();
+        categoryLayout.setFlexGrow(1);
+        categoryLayout.setWidthFull();
+        // categoryLayout.setSizeFull();
+        categoryLayout.getStyle().set("display", "flex");
+        categoryLayout.getStyle().set("flex-wrap", "wrap");
+        categoryLayout.setAlignItems(FlexLayout.Alignment.CENTER);
+        categoryLayout.setJustifyContentMode(FlexLayout.JustifyContentMode.CENTER);
+        // categoryLayout.getStyle().setBackground("cyan");
 
-        HorizontalLayout rowLayout = new HorizontalLayout();
-        rowLayout.setWidth("100%");
-        
-        int counter = 0;
+        String categoryCardSize = "8.5rem";
         
         try {
             for (Category category : categories) {
                 Image coverImage = new Image(category.getIcons()[0].getUrl(), "Category Cover");
-                coverImage.setWidth("200px");
-                coverImage.setHeight("200px");
+                coverImage.setWidth(categoryCardSize);
+                coverImage.setHeight(categoryCardSize);
                 
                 Button catButton = new Button(coverImage);
-                catButton.getStyle().setWidth("200px");
-                catButton.getStyle().setHeight("200px");
+                catButton.getStyle().setWidth(categoryCardSize);
+                catButton.getStyle().setHeight(categoryCardSize);
                 catButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
                 
                 Div categoryInfo = new Div(new Text(category.getName()));
-                categoryInfo.setWidth("200px");
+                categoryInfo.setWidth(categoryCardSize);
                 
                 VerticalLayout catLayout = new VerticalLayout();
                 catLayout.add(catButton, categoryInfo);
+                catLayout.getStyle().setWidth("auto");
+                catLayout.getStyle().setHeight("auto");
                 
-                if (counter % columns == 0 && counter > 0) {
-                    categoryLayout.add(rowLayout);
-                    rowLayout = new HorizontalLayout(); // Create a new rowLayout
-                    rowLayout.setWidth("100%");
-                }
+                // if (counter % columns == 0 && counter > 0) {
+                //     categoryLayout.add(rowLayout);
+                //     rowLayout = new HorizontalLayout(); // Create a new rowLayout
+                //     rowLayout.setWidth("100%");
+                // }
                 
-                rowLayout.add(catLayout);
-                counter++;
+                // catLayout.getStyle().setBackground("cyan");
+                // catLayout.getStyle().setMargin("1rem");
+                // categoryLayout.getStyle().setBackground("red");
+                categoryLayout.add(catLayout);
+                // counter++;
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        if (rowLayout.getComponentCount() > 0) {
-            categoryLayout.add(rowLayout);
-        }
+        // if (rowLayout.getComponentCount() > 0) {
+        //     categoryLayout.add(rowLayout);
+        // }
 
         // container for the main contents of this page
         VerticalLayout contentContainer = new VerticalLayout();
