@@ -45,9 +45,6 @@ public class AdminUsersView extends VerticalLayout {
                 this.customUserDetailsService = customUserDetailsService;
 
                 this.setHeightFull();
-                this.navigationComponent = generateNavBar();
-                // this.navigationComponent.getNav().setContent(null);
-                add(navigationComponent);
 
                 // generate responsive navbar
                 this.navigationComponent = generateNavBar();
