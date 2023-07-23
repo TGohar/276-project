@@ -3,7 +3,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -15,7 +14,9 @@ import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 
 import jakarta.annotation.security.RolesAllowed;
 import trackour.trackour.model.CustomUserDetailsService;
@@ -24,7 +25,9 @@ import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.components.NavBar;
 
 @Route("friends")
-@PageTitle("Friends")
+@RouteAlias("friends")
+@PageTitle("Friends | Trackour")
+@PreserveOnRefresh
 @RolesAllowed({"ADMIN", "USER"})
 public class FriendsView extends VerticalLayout{
     SecurityViewService securityViewHandler;
@@ -98,10 +101,12 @@ public class FriendsView extends VerticalLayout{
             layout.setSizeFull();
             layout.add(friendRequestLayout, currentFriendsLayout);
 
-            AppLayout navAppLayout = navigation.generateNavComponent();
-            navAppLayout.addToNavbar();
-            navAppLayout.setContent(layout);
-            add(navAppLayout);
+            // Create a responsive navbar component
+            NavBar navbar = new NavBar(customUserDetailsService, securityViewHandler);
+            // Add some content below the navbar
+            navbar.setContent(layout);
+            // Add it to the view
+            add(navbar);
             
 
             //User currentUser = customUserDetailsService.getByUsername(securityService.getAuthenticatedUser().getUsername()).get();

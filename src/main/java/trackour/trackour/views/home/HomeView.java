@@ -15,7 +15,6 @@ import org.yaml.snakeyaml.util.UriEncoder;
 // import com.vaadin.addon.responsive.Responsive;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.KeyUpEvent;
-import com.vaadin.flow.component.applayout.AppLayout;
 //import com.vaadin.flow.component.Text;
 //import com.vaadin.flow.component.UI;
 //import com.vaadin.flow.component.button.Button;
@@ -27,7 +26,10 @@ import com.vaadin.flow.component.menubar.MenuBar;
 //import com.vaadin.flow.component.orderedlayout.FlexComponent;
 //import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 
 import jakarta.annotation.security.RolesAllowed;
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
@@ -35,12 +37,16 @@ import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.spotify.NewReleases;
 import trackour.trackour.views.components.NavBar;
+// import trackour.trackour.views.components.NavBar;
 // import trackour.trackour.views.components.ResponsiveNavBar;
 import trackour.trackour.views.components.SimpleCarousel;
 import trackour.trackour.views.components.SimpleSearchField;
 import trackour.trackour.views.searchResult.SearchResultView;
 
 @Route("")
+@RouteAlias("home")
+@PreserveOnRefresh
+@PageTitle("Home | Trackour")
 // Admins are users but also have the "admin" special role so pages that can be
 // viewed by
 // both users and admins should have the admin role specified as well
@@ -54,28 +60,20 @@ public class HomeView extends VerticalLayout {
     
     @Autowired
     CustomUserDetailsService customUserDetailsService;
-    // private Boolean toggleQuery;
-    NavBar navBar;
-    AppLayout nav;
-    VerticalLayout content;
-    SimpleSearchField simpleSearch;
-    // Integer width;
     
     public HomeView(SecurityViewService securityViewHandler,
     CustomUserDetailsService customUserDetailsService) {
-        this.content = new VerticalLayout();
-        navBar = new NavBar(customUserDetailsService, securityViewHandler);
-        
-        initContent();
-        // set the contents container
-        AppLayout navAppLayout = navBar.generateNavComponent();
-        navAppLayout.addToNavbar();
-        navAppLayout.setContent(content);
-        add(navAppLayout);
+        // Create a responsive navbar component
+        NavBar navbar = new NavBar(customUserDetailsService, securityViewHandler);
+        // Add some content below the navbar
+        navbar.setContent(initContent());
+        // Add it to the view
+        add(navbar);
     }
 
-    private void initContent() {
-        simpleSearch = new SimpleSearchField();
+    private VerticalLayout initContent() {
+        VerticalLayout content = new VerticalLayout();
+        SimpleSearchField simpleSearch = new SimpleSearchField();
 
         H2 newRelease = new H2("New Releases");
         newRelease.getStyle().set("margin-left", "25px");
@@ -87,20 +85,15 @@ public class HomeView extends VerticalLayout {
         
         H2 utiliy = new H2("Audio Utility");
         utiliy.getStyle().set("margin-left", "25px");
-        
-        content.add(
-            simpleSearch,
-            newRelease,
-            trendingCarousel.generateComponent(),
-            utiliy
-        );
+        content.add(simpleSearch, newRelease, trendingCarousel.generateComponent(), utiliy);
 
-        simpleSearch.onEnterKeyUp(event -> this.searchSubmit(event));
+        simpleSearch.onEnterKeyUp(event -> this.searchSubmit(event, simpleSearch.getSearchValue()));
+        return content;
     
     }
 
-    private KeyUpEvent searchSubmit(KeyUpEvent event) {
-        getUI().ifPresent(ui -> ui.navigate(SearchResultView.class, UriEncoder.encode(simpleSearch.getSearchValue())));
+    private KeyUpEvent searchSubmit(KeyUpEvent event, String searchValue) {
+        getUI().ifPresent(ui -> ui.navigate(SearchResultView.class, UriEncoder.encode(searchValue)));
         return event;
     }
 }

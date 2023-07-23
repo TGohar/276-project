@@ -9,7 +9,6 @@ import org.yaml.snakeyaml.util.UriEncoder;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.KeyUpEvent;
-import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -27,7 +26,9 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 import se.michaelthelin.spotify.model_objects.specification.Track;
@@ -38,10 +39,10 @@ import trackour.trackour.views.components.NavBar;
 import trackour.trackour.views.components.SimpleSearchField;
 
 @Route("searchResult")
+@RouteAlias("search")
 @PageTitle("Search Result")
-
+@PreserveOnRefresh
 @AnonymousAllowed
-
 public class SearchResultView extends VerticalLayout implements HasUrlParameter<String>, BeforeEnterObserver {
     
     private String search;
@@ -52,7 +53,6 @@ public class SearchResultView extends VerticalLayout implements HasUrlParameter<
     CustomUserDetailsService customUserDetailsService;
     SimpleSearchField simpleSearch;
     NavBar navigation;
-    AppLayout nav;
     PaginatedGrid<Track, Component> grid;
     VerticalLayout container;
     public SearchResultView(SecurityViewService securityViewHandler,
@@ -161,10 +161,11 @@ public class SearchResultView extends VerticalLayout implements HasUrlParameter<
             grid.setSizeFull();
             
             // gridLayout.add(grid);
-            nav = navigation.generateNavComponent();
+            // generate responsive navbar
+            navigation = new NavBar(customUserDetailsService, securityViewHandler);
             container.add(simpleSearch, grid);
             navigation.setContent(container);
-            add(nav);
+            add(navigation);
     }
 
     private KeyUpEvent searchSubmit(KeyUpEvent event) {
@@ -177,8 +178,8 @@ public class SearchResultView extends VerticalLayout implements HasUrlParameter<
 
     private void clearSearchResults() {
         this.navigation.clearContent();
-        this.remove(nav);
-        nav = null;
+        this.remove(navigation);
+        navigation = null;
         container = new VerticalLayout();
         this.grid =  new PaginatedGrid<>();
     }

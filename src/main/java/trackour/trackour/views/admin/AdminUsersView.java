@@ -5,14 +5,15 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.klaudeta.PaginatedGrid;
 
-import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 
 import jakarta.annotation.security.RolesAllowed;
 import trackour.trackour.model.CustomUserDetailsService;
@@ -22,6 +23,8 @@ import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.components.NavBar;
 
 @Route("admin/view-users")
+@RouteAlias("view-users")
+@PreserveOnRefresh
 // Admins are users but also have the "admin" special role so pages that can be
 // viewed by
 // both users and admins should have the admin role specified as well
@@ -34,21 +37,26 @@ public class AdminUsersView extends VerticalLayout {
         @Autowired
         CustomUserDetailsService customUserDetailsService;
 
+        private NavBar navigationComponent;
+
         public AdminUsersView(SecurityViewService securityViewHandler,
                         CustomUserDetailsService customUserDetailsService) {
                 this.securityViewHandler = securityViewHandler;
                 this.customUserDetailsService = customUserDetailsService;
 
                 this.setHeightFull();
-                AppLayout navigationComponent = generateNavBar();
+                this.navigationComponent = generateNavBar();
+                // this.navigationComponent.getNav().setContent(null);
+                add(navigationComponent);
+
+                // generate responsive navbar
+                this.navigationComponent = generateNavBar();
                 navigationComponent.setContent(generatePaginationGridLayout());
-                
                 add(navigationComponent);
         }
         
-        private AppLayout generateNavBar() {
-                NavBar nav = new NavBar(customUserDetailsService, securityViewHandler);
-                return nav.generateNavComponent();
+        private NavBar generateNavBar() {
+                return new NavBar(customUserDetailsService, securityViewHandler);
         }
 
         private VerticalLayout generatePaginationGridLayout() {
@@ -92,6 +100,8 @@ public class AdminUsersView extends VerticalLayout {
                 gridLayout.setSizeFull();
                 
                 gridLayout.add(grid);
+                gridLayout.getStyle().setPadding("0%");
+                gridLayout.getStyle().setMargin("0%");
                 return gridLayout;
         }
 

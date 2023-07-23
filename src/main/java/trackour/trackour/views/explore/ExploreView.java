@@ -6,7 +6,6 @@ import java.util.Optional;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Div;
@@ -19,26 +18,26 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 import se.michaelthelin.spotify.model_objects.specification.Category;
-
-import trackour.trackour.spotify.Explore;
-import trackour.trackour.views.components.NavBar;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
+import trackour.trackour.spotify.Explore;
+import trackour.trackour.views.components.NavBar;
 
 @Route("Explore")
-@PageTitle("Login")
+@RouteAlias("explore")
+@PageTitle("Login | Trackour")
+@PreserveOnRefresh
 @AnonymousAllowed
 
 public class ExploreView extends VerticalLayout {
     public ExploreView(SecurityViewService securityViewHandler,
     CustomUserDetailsService customUserDetailsService) {
-        
-        NavBar nav = new NavBar(customUserDetailsService, securityViewHandler);
-        AppLayout navLayout = nav.generateNavComponent();
         
         Explore xplore = new Explore();
         
@@ -111,7 +110,10 @@ public class ExploreView extends VerticalLayout {
             greetings,
             categoryLayout
         );
-        navLayout.setContent(contentContainer);
-        add(navLayout);
+
+        // generate responsive navbar
+        NavBar nav = new NavBar(customUserDetailsService, securityViewHandler);
+        nav.setContent(contentContainer);
+        add(nav);
     }
 }

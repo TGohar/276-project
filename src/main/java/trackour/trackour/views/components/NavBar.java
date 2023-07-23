@@ -1,12 +1,13 @@
 package trackour.trackour.views.components;
+// import java.util.ArrayList;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.vaadin.flow.component.Component;
-// import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
-import com.vaadin.flow.component.applayout.AppLayout.Section;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
@@ -18,7 +19,6 @@ import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-// import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.TabsVariant;
@@ -27,62 +27,82 @@ import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.model.Role;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.admin.AdminUsersView;
+import trackour.trackour.views.components.responsive.ResponsiveLayout;
 import trackour.trackour.views.explore.ExploreView;
 import trackour.trackour.views.friends.FriendsView;
 import trackour.trackour.views.home.HomeView;
 
-public class NavBar {
+public class NavBar extends ResponsiveLayout {
+    // constant for the browser width threshold. < 600 == smaller screens
+    private static final int BROWSER_WIDTH_THRESHOLD = 600;
+
+    @Autowired
     private SecurityViewService securityViewHandler;
+    @Autowired
     private CustomUserDetailsService customUserDetailsService;
+
+    // app layout is the base container for this responsive component
+    private AppLayout appLayout; // it's the navbar itself and this has a content object where the page contents are stored
+
+    // the layout that contains the navbar tabs and the toggle button respectively
+    private HorizontalLayout navbarTabsLayout;
+    private DrawerToggle drawerToggle;
+
+    // the current session object
     private UserDetails sessionObject;
-    private Tabs viewTabs;
-    private AppLayout navM;
-    private AppLayout navW;
+
+    // continer for the page's main content
     VerticalLayout contentContainer;
     Component content;
-    // private Boolean div300pxOrLess = false;
-    // private Boolean window1024OrLess = false;
 
     public NavBar(CustomUserDetailsService customUserDetailsService, SecurityViewService securityViewHandler) {
         this.customUserDetailsService = customUserDetailsService;
         this.securityViewHandler = securityViewHandler;
         this.sessionObject = securityViewHandler.getAuthenticatedRequestSession();
-        this.viewTabs = new Tabs();
-        this.navM = new AppLayout();
-        this.navW = new AppLayout();
-        generateRouteTabs();
-        initWindowNav();
-        initMobileNav();
-    }
+        
+        // Init the app layout element
+        appLayout = new AppLayout();
+        appLayout.getStyle().setWidth("100%");
+        appLayout.getStyle().setHeight("100%");
 
-    private void initMobileNav() {
-        DrawerToggle toggle = new DrawerToggle();
-        // generateMobileRouteTabs();
-        navM.setPrimarySection(Section.DRAWER);
-        navM.setDrawerOpened(false);
-        navM.getStyle().setWidth("100%");
-        navM.getStyle().setHeight("100%");
-        viewTabs.setOrientation(Tabs.Orientation.VERTICAL);
-        navM.addToDrawer(
-            viewTabs
-            );
-        navM.addToNavbar(toggle, generateLogo(), generateMenuBar());
-    }
-    
-    private void initWindowNav() {
-        navW.setPrimarySection(Section.NAVBAR);
-        navW.getStyle().setWidth("100%");
-        navW.getStyle().setHeight("100%");
-        navW.addToNavbar(this.generateWindowNavBarComponent());
+        // init the drawer toggle element
+        drawerToggle = new DrawerToggle();
+
+        // init the logo element
+        HorizontalLayout logoLayout = generateLogo();
+
+        // Init the horizontal layout for the navbar tabs element
+        navbarTabsLayout = generateNavbarLayout();
+
+        Tabs drawerTabs = generateDrawerTabs();
+
+        // menu buton with icon and lo==signout button
+        HorizontalLayout menuBarArea = generateMenuBar();
+
+        // Add the drawer toggle, logo layout and navbar tabs layout elements to the navbar section of the app layout
+        appLayout.addToNavbar(drawerToggle, logoLayout, navbarTabsLayout, menuBarArea);
+
+        // Add the drawer tabs element to the drawer section of the app layout
+        appLayout.addToDrawer(drawerTabs);
+
+        // Set the initial layout mode and drawer visibility of the app layout
+        appLayout.setPrimarySection(AppLayout.Section.DRAWER);
+        appLayout.setDrawerOpened(false);
+
+        // Add the app layout element to the container element of the ResponsiveLayout component
+        add(appLayout);
     }
 
     private void onClickTabRouteTo(Tab clickedElement, Class<? extends Component> navigationTarget) {
+        if (navigationTarget.getClass().equals(ExploreView.class)) {
+            System.out.println("Click Explore!");
+        }
         clickedElement.getElement().addEventListener("click", event -> {
             SecurityViewService.routeTo(navigationTarget);
         });
     }
 
-    private void generateRouteTabs() {
+    private Tab[] generateTabArray() {
         // friendsTab.setEnabled(false);
         Tab home = new Tab("Home");
         home.addAttachListener(ev -> onClickTabRouteTo(home, HomeView.class));
@@ -103,38 +123,85 @@ public class NavBar {
         
         Tab adminViewUsers = new Tab("Admin View Users");
         adminViewUsers.addAttachListener(ev -> onClickTabRouteTo(adminViewUsers, AdminUsersView.class));
+
+        // if the session is an admin, reveal the link/tab to the secret page
+        SimpleGrantedAuthority sessionAdminRoleObj = new SimpleGrantedAuthority(Role.ADMIN.roleToRoleString());
+        if (sessionObject.getAuthorities().contains(sessionAdminRoleObj)) {
+            return  new Tab[] {
+                home,
+                dashboard,
+                friends,
+                explore,
+                advancedSearch,
+                adminViewUsers
+            };
+        }
         
-        // set the mobile view drawer tabs
-        this.viewTabs.add(
+        return  new Tab[] {
             home,
             dashboard,
             friends,
             explore,
             advancedSearch
+        };
+    }
+
+    private Tabs generateDrawerTabs() {
+        // Use the same helper method to create another tabs component with vertical orientation and some theme variants
+        Tabs drawerTabs = createTabs(
+            Tabs.Orientation.VERTICAL,
+            new TabsVariant[] {TabsVariant.LUMO_SMALL, TabsVariant.LUMO_MINIMAL},
+            generateTabArray()
         );
-        // if the session is an admin, reveal the link/tab to the secret page
-        SimpleGrantedAuthority sessionAdminRoleObj = new SimpleGrantedAuthority(Role.ADMIN.roleToRoleString());
-        if (sessionObject.getAuthorities().contains(sessionAdminRoleObj)) {
-            this.viewTabs.add(adminViewUsers);
-        }
+        // Add custom theme variants to the tabs component
+        // drawerTabs.addThemeVariants(TabsVariant.LUMO_EQUAL_WIDTH_TABS, TabsVariant.LUMO_MINIMAL);
+        return drawerTabs;
     }
         
-    private HorizontalLayout generateWindowRouteTabsLayout() {
+    private HorizontalLayout generateNavbarLayout() {
         HorizontalLayout routeTabsArea = new HorizontalLayout();
         routeTabsArea.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         routeTabsArea.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-        routeTabsArea.setWidthFull();
+        // routeTabsArea.setWidthFull();
+        // routeTabsArea.getStyle().setBackground("red");
+
+        // generate tabs for navbar
+        Tabs navbarTabs = createTabs(
+            Tabs.Orientation.HORIZONTAL,
+            new TabsVariant[] {TabsVariant.LUMO_SMALL, TabsVariant.LUMO_MINIMAL}, 
+            generateTabArray()    
+        );
+        // Add custom theme variants to the tabs component
+        // navbarTabs.addThemeVariants(TabsVariant.LUMO_EQUAL_WIDTH_TABS, TabsVariant.LUMO_MINIMAL);
         
         // style navtabs
-        viewTabs.setWidthFull();
-        viewTabs.addThemeVariants(TabsVariant.MATERIAL_FIXED);
-        routeTabsArea.add(viewTabs);
+        navbarTabs.setWidthFull();
+
+        navbarTabs.addThemeVariants(TabsVariant.MATERIAL_FIXED);
+        routeTabsArea.add(navbarTabs);
         return routeTabsArea;
     }
 
+    // helper method to return a tabs component with a given orientation, theme variants an array of tab objects
+    private Tabs createTabs(
+        Tabs.Orientation orientation, 
+        TabsVariant[] variantsArray, 
+        Tab... tabsArray) {
+        // init tabs object
+        Tabs tabsComponent = new Tabs();
+        // set orientation
+        tabsComponent.setOrientation(orientation);
+        // add theme variants
+        tabsComponent.addThemeVariants(variantsArray);
+        // add all tab objects
+        tabsComponent.add(tabsArray);
+        // Return the tabs
+        return tabsComponent;
+    }
+
     private HorizontalLayout generateLogo() {
+        // Create a horizontal layout for the logo element
         HorizontalLayout logoArea = new HorizontalLayout();
-        logoArea.setWidthFull();
         logoArea.setAlignSelf(FlexComponent.Alignment.CENTER);
         logoArea.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
 
@@ -143,6 +210,8 @@ public class NavBar {
         logo.addClickListener(ev -> SecurityViewService.routeTo(HomeView.class));
         logo.getStyle().setCursor("pointer");
         logoArea.add(logo);
+        // logoArea.getStyle().setBackground("cyan");
+        logoArea.setWidthFull();
         return logoArea;
     }
 
@@ -153,6 +222,8 @@ public class NavBar {
         HorizontalLayout horizontalMenuArea = new HorizontalLayout();
         horizontalMenuArea.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         horizontalMenuArea.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+        horizontalMenuArea.setSizeFull();
+        
 
         H5 h5 = new H5(displayNameString);
         MenuBar menuBar = new MenuBar();
@@ -166,12 +237,13 @@ public class NavBar {
         .addClickListener(event -> {
             securityViewHandler.logOut();
         });
+        horizontalMenuArea.setWidthFull();
         horizontalMenuArea.add(h5, menuBar);
         return horizontalMenuArea;
     }
-    
-    public Component getContent() {
-        return navW.getContent();
+
+    public AppLayout getNav() {
+        return appLayout;
     }
 
     /**
@@ -190,48 +262,31 @@ public class NavBar {
         
         // this.content.getStyle().setBackground("red");
         contentContainer.add(this.content);
-        navW.setContent(contentContainer);
-        navM.setContent(contentContainer);
+        appLayout.setContent(contentContainer);
     }
 
     public void clearContent() {
         this.contentContainer = null;
         this.content = null;
-        navM.setContent(this.content);
-        navM.setContent(this.content);
+        appLayout.setContent(this.content);
     }
 
-    /**
-     * this returns the actaul whole nav component
-     * The isMobileView boolean is set to true if your view is in a mobile/smaller screen mode
-     * @param isMobileView
-     * @return
-     */
-    public AppLayout generateNavComponent() {
-        
-        // if (!isMobileView) {
-        //     return navW;
-        // }
-        return navM;
-    }
-    private HorizontalLayout generateWindowNavBarComponent() {
-
-        HorizontalLayout navHorizontalLayout = new HorizontalLayout();
-        navHorizontalLayout.setPadding(true);
-        navHorizontalLayout.setWidthFull();
-        navHorizontalLayout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
-        navHorizontalLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.AROUND);
-
-        // String x = "(max-width: 600px)";
-        // query.addAction(() -> {
-        //     // Do something when the media query matches
-        // });
-        navHorizontalLayout.add(
-            generateLogo(),
-            generateWindowRouteTabsLayout(),
-            generateMenuBar()
-        );
-
-        return navHorizontalLayout;
+    @Override
+    protected void update(int browserWidth) {
+        super.update(browserWidth);
+        System.out.println("nav browserWidth: " + browserWidth);
+        // Toggle the visibility of the drawer toggle and navbar tabs layout elements based on the browser width
+        if (browserWidth < BROWSER_WIDTH_THRESHOLD) { // Use the constant instead of the magic number
+            System.out.println("in mobile view");
+            drawerToggle.setVisible(true);
+            navbarTabsLayout.setVisible(false);
+        } else {
+            System.out.println("in win view");
+            drawerToggle.setVisible(false);
+            navbarTabsLayout.setVisible(true);
+            if (appLayout.isDrawerOpened()) {
+                appLayout.setDrawerOpened(false);
+            }
+        }
     }
 }
