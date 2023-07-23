@@ -117,7 +117,7 @@ public class enterEmailView extends VerticalLayout implements BeforeLeaveObserve
                 // mark token timestamp
                 user.setPasswordResetTokenCreatedAt(LocalDateTime.now());
                 customUserDetailsService.update(user);
-                sendResetLink(currentUrl, token, email);
+                sendResetLink(user.getUsername(), currentUrl, token, email);
             });
 
             // PasswordToken token = new PasswordToken();
@@ -129,7 +129,7 @@ public class enterEmailView extends VerticalLayout implements BeforeLeaveObserve
         }
     }
 
-    void sendResetLink(URL currentUrl, String token, String recipientEmail) {
+    void sendResetLink(String username, URL currentUrl, String token, String recipientEmail) {
         String resetLink = currentUrl.toString() + "/" + token;
         System.out.println("link: " + resetLink);
         ResetLinkService resetLinkHandler = new ResetLinkService(
@@ -140,7 +140,7 @@ public class enterEmailView extends VerticalLayout implements BeforeLeaveObserve
                 recipientEmail,
                 resetLink);
 
-        resetLinkHandler.sendEmail();
+        resetLinkHandler.sendEmail(username);
     }
 
     @Override

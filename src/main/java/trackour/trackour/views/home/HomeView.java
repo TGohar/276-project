@@ -26,8 +26,6 @@ import com.vaadin.flow.component.menubar.MenuBar;
 //import com.vaadin.flow.component.orderedlayout.FlexComponent;
 //import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
@@ -53,7 +51,7 @@ import trackour.trackour.views.searchResult.SearchResultView;
 // viewed by
 // both users and admins should have the admin role specified as well
 @RolesAllowed({ "ADMIN", "USER" })
-public class HomeView extends VerticalLayout implements BeforeEnterObserver {
+public class HomeView extends VerticalLayout {
     MenuBar mobileVMenuBar;
     Component mobileView;
 
@@ -91,18 +89,10 @@ public class HomeView extends VerticalLayout implements BeforeEnterObserver {
 
         simpleSearch.onEnterKeyUp(event -> this.searchSubmit(event, simpleSearch.getSearchValue()));
         return content;
-    
     }
 
     private KeyUpEvent searchSubmit(KeyUpEvent event, String searchValue) {
         getUI().ifPresent(ui -> ui.navigate(SearchResultView.class, UriEncoder.encode(searchValue)));
         return event;
-    }
-
-    @Override
-    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-        // this method call reroutes get requests to this view if the current session is already authenticated
-        // getUI().get().getPage().addJavaScript("window.location.href = 'myurl'");
-        this.securityViewHandler.handleAnonymousOnly(beforeEnterEvent, true);
     }
 }
