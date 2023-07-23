@@ -21,8 +21,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
@@ -42,7 +40,7 @@ import trackour.trackour.views.components.SimpleSearchField;
 @PageTitle("Search Result")
 // @PreserveOnRefresh
 @RolesAllowed({"USER", "ADMIN"})
-public class SearchResultView extends VerticalLayout implements HasUrlParameter<String>, BeforeEnterObserver {
+public class SearchResultView extends VerticalLayout implements HasUrlParameter<String> {
     
     private String search;
     // private String searchString;
@@ -210,10 +208,10 @@ public class SearchResultView extends VerticalLayout implements HasUrlParameter<
             // generateList();
     }
 
-    @Override
-    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-        // this method call reroutes get requests to this view if the current session is already authenticated
-        // getUI().get().getPage().addJavaScript("window.location.href = 'myurl'");
-        this.securityViewHandler.handleAnonymousOnly(beforeEnterEvent, true);
-    }
+    // @Override
+    // public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+    //     // this method call reroutes get requests to this view if the current session is already authenticated
+    //     // getUI().get().getPage().addJavaScript("window.location.href = 'myurl'");
+    //     this.securityViewHandler.handleAnonymousOnly(beforeEnterEvent, true);
+    // }
 }
