@@ -21,8 +21,8 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
 
+import jakarta.annotation.security.RolesAllowed;
 import se.michaelthelin.spotify.model_objects.specification.Category;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
@@ -33,7 +33,7 @@ import trackour.trackour.views.components.NavBar;
 @RouteAlias("explore")
 @PageTitle("Login | Trackour")
 @PreserveOnRefresh
-@AnonymousAllowed
+@RolesAllowed({"USER", "ADMIN"})
 
 public class ExploreView extends VerticalLayout {
     public ExploreView(SecurityViewService securityViewHandler,

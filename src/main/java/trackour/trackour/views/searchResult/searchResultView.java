@@ -26,11 +26,10 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
 
+import jakarta.annotation.security.RolesAllowed;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
@@ -41,8 +40,8 @@ import trackour.trackour.views.components.SimpleSearchField;
 @Route("searchResult")
 @RouteAlias("search")
 @PageTitle("Search Result")
-@PreserveOnRefresh
-@AnonymousAllowed
+// @PreserveOnRefresh
+@RolesAllowed({"USER", "ADMIN"})
 public class SearchResultView extends VerticalLayout implements HasUrlParameter<String>, BeforeEnterObserver {
     
     private String search;
@@ -67,110 +66,116 @@ public class SearchResultView extends VerticalLayout implements HasUrlParameter<
     }
 
     private void generatePaginationGridLayout() {
-            SearchTrack searchTracks = new SearchTrack();
-            List<Track> tracks = searchTracks.getTrackList(search);
+        if (search.isBlank() || search.isEmpty()) {
+            return;
+        }
+        SearchTrack searchTracks = new SearchTrack();
+        List<Track> tracks = searchTracks.getTrackList(search);
+        
+        grid.setSizeFull();
+        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+
+        HorizontalLayout trackHeader = new HorizontalLayout();
+        // H5 trackHeaderText = new H5("Track");
+        // Center the component vertically and horizontally
+        trackHeader.setAlignItems(FlexComponent.Alignment.CENTER);
+        trackHeader.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        // trackHeader.add(trackHeaderText);
+        grid.addColumn(new ComponentRenderer<>(track -> {
+            HorizontalLayout trackCard = new HorizontalLayout();
+            // trackCard.getStyle().setBackground("red");
+            trackCard.setWidthFull();
+            Image albumCoverImage = new Image();
+            albumCoverImage.setSrc(track.getAlbum().getImages()[0].getUrl());
+            albumCoverImage.setWidth("150px");
+            albumCoverImage.setHeight("150px");
+            albumCoverImage.addClassName("cover-image");
+            albumCoverImage.getStyle().set("margin-left", "100px");
+
+            // container for artist + track label
+            VerticalLayout artist_and_Album = new VerticalLayout();
+            artist_and_Album.addClassName("song-and-artist");
+            artist_and_Album.getStyle().set("margin-left", "10px");
             
-            grid.setSizeFull();
-            grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+            // artist label
+            H5 aristLabel = new H5("Artist: ");
+            TextField artistField = new TextField("");
+            artistField.setValue(track.getArtists()[0].getName());
+            artistField.setReadOnly(true);
+            aristLabel.add(artistField);
 
-            HorizontalLayout trackHeader = new HorizontalLayout();
-            H5 trackHeaderText = new H5("Track");
-            // Center the component vertically and horizontally
-            trackHeader.setAlignItems(FlexComponent.Alignment.CENTER);
-            trackHeader.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-            trackHeader.add(trackHeaderText);
-            grid.addColumn(new ComponentRenderer<>(track -> {
-                HorizontalLayout trackCard = new HorizontalLayout();
-                // trackCard.getStyle().setBackground("red");
-                trackCard.setWidthFull();
-                Image albumCoverImage = new Image();
-                albumCoverImage.setSrc(track.getAlbum().getImages()[0].getUrl());
-                albumCoverImage.setWidth("150px");
-                albumCoverImage.setHeight("150px");
-                albumCoverImage.addClassName("cover-image");
-                albumCoverImage.getStyle().set("margin-left", "100px");
+            // song label
+            TextField songField = new TextField("");
+            songField.setValue(track.getName());
+            songField.setReadOnly(true);
 
-                // container for artist + track label
-                VerticalLayout artist_and_Album = new VerticalLayout();
-                artist_and_Album.addClassName("song-and-artist");
-                artist_and_Album.getStyle().set("margin-left", "10px");
-                
-                // artist label
-                H5 aristLabel = new H5("Artist: ");
-                TextField artistField = new TextField("");
-                artistField.setValue(track.getArtists()[0].getName());
-                artistField.setReadOnly(true);
-                aristLabel.add(artistField);
+            // Album label
+            H5 albumLabel = new H5("Album: ");
+            TextField albumField = new TextField("");
+            albumField.setValue(track.getAlbum().getName());
+            albumField.setReadOnly(true);
+            albumLabel.add(albumField);
 
-                // song label
-                TextField songField = new TextField("");
-                songField.setValue(track.getName());
-                songField.setReadOnly(true);
+            artist_and_Album.add(aristLabel, albumLabel);
 
-                // Album label
-                H5 albumLabel = new H5("Album: ");
-                TextField albumField = new TextField("");
-                albumField.setValue(track.getAlbum().getName());
-                albumField.setReadOnly(true);
-                albumLabel.add(albumField);
+            trackCard.add(albumCoverImage, songField, artist_and_Album);
 
-                artist_and_Album.add(aristLabel, albumLabel);
+            trackCard.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+            trackCard.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
+            return trackCard;
+        }))
+        // .setHeader(trackHeader)
+        .setFlexGrow(1)
+        .setAutoWidth(true);
 
-                trackCard.add(albumCoverImage, songField, artist_and_Album);
-
-                trackCard.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
-                trackCard.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
-                return trackCard;
-            }))
-            .setHeader(trackHeader)
-            .setFlexGrow(1)
-            .setAutoWidth(true);
-
-            grid.addColumn(new ComponentRenderer<>(track -> {
-                // vaadin:arrow-forward
-                Button moreInfoButton = new Button(new Icon(VaadinIcon.INFO_CIRCLE_O));
-                moreInfoButton.addThemeVariants(ButtonVariant.LUMO_ICON);
-                moreInfoButton.setAriaLabel("More Info");
-                moreInfoButton.setTooltipText("View more info about this track in a new tab");
-                return moreInfoButton;
-            }))
-            .setFlexGrow(0)
-            .setAutoWidth(true);
+        grid.addColumn(new ComponentRenderer<>(track -> {
+            // vaadin:arrow-forward
+            Button moreInfoButton = new Button(new Icon(VaadinIcon.INFO_CIRCLE_O));
+            moreInfoButton.addThemeVariants(ButtonVariant.LUMO_ICON);
+            moreInfoButton.setAriaLabel("More Info");
+            moreInfoButton.setTooltipText("View more info about this track in a new tab");
+            return moreInfoButton;
+        }))
+        .setFlexGrow(0)
+        .setAutoWidth(true);
 
 
-            // when user clicks on list item, the playback feature shows
-            grid.setItemDetailsRenderer(new ComponentRenderer<>(track -> {
-                Button playbackButton = new Button(new Icon(VaadinIcon.PLAY_CIRCLE_O));
-                playbackButton.addThemeVariants(ButtonVariant.LUMO_ICON);
-                playbackButton.setAriaLabel("Listen to song");
-                playbackButton.setTooltipText("Playback feature");
-                return playbackButton;
-            }));
-            
-            grid.setItems(tracks);
+        // when user clicks on list item, the playback feature shows
+        grid.setItemDetailsRenderer(new ComponentRenderer<>(track -> {
+            Button playbackButton = new Button(new Icon(VaadinIcon.PLAY_CIRCLE_O));
+            playbackButton.addThemeVariants(ButtonVariant.LUMO_ICON);
+            playbackButton.setAriaLabel("Listen to song");
+            playbackButton.setTooltipText("Playback feature");
+            return playbackButton;
+        }));
+        
+        grid.setItems(tracks);
 
-            // Sets the max number of items to be rendered on the grid for each page
-            grid.setPageSize(7);
-            
-            // Sets how many pages should be visible on the pagination before and/or after the current selected page
-            grid.setPaginatorSize(3);
+        // Sets the max number of items to be rendered on the grid for each page
+        grid.setPageSize(7);
+        
+        // Sets how many pages should be visible on the pagination before and/or after the current selected page
+        grid.setPaginatorSize(3);
 
-            grid.setPaginationLocation(PaginatedGrid.PaginationLocation.BOTTOM);
-            grid.setPaginationVisibility(true);
-            // gridLayout.setSizeFull();
-            grid.setSizeFull();
-            
-            // gridLayout.add(grid);
-            // generate responsive navbar
-            navigation = new NavBar(customUserDetailsService, securityViewHandler);
-            container.add(simpleSearch, grid);
-            navigation.setContent(container);
-            add(navigation);
+        grid.setPaginationLocation(PaginatedGrid.PaginationLocation.BOTTOM);
+        grid.setPaginationVisibility(true);
+        // gridLayout.setSizeFull();
+        grid.setSizeFull();
+        
+        // gridLayout.add(grid);
+        // generate responsive navbar
+        navigation = new NavBar(customUserDetailsService, securityViewHandler);
+        container.add(simpleSearch, grid);
+        navigation.setContent(container);
+        add(navigation);
     }
 
     private KeyUpEvent searchSubmit(KeyUpEvent event) {
         // clear results from old search
         clearSearchResults();
+        if (simpleSearch.getSearchValue().isBlank() || simpleSearch.getSearchValue().isEmpty()) {
+            return event;
+        }
         // redirect
         getUI().ifPresent(ui -> ui.navigate(SearchResultView.class, UriEncoder.encode(simpleSearch.getSearchValue())));
         return event;
@@ -183,9 +188,6 @@ public class SearchResultView extends VerticalLayout implements HasUrlParameter<
         container = new VerticalLayout();
         this.grid =  new PaginatedGrid<>();
     }
-
-    @Override
-    public void beforeEnter(BeforeEnterEvent event) {}
 
     @Override
     public void setParameter(BeforeEvent event, String parametersString) {
@@ -206,5 +208,12 @@ public class SearchResultView extends VerticalLayout implements HasUrlParameter<
             this.search = searchString;
             generatePaginationGridLayout();
             // generateList();
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        // this method call reroutes get requests to this view if the current session is already authenticated
+        // getUI().get().getPage().addJavaScript("window.location.href = 'myurl'");
+        this.securityViewHandler.handleAnonymousOnly(beforeEnterEvent, true);
     }
 }

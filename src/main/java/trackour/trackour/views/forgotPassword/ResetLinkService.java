@@ -7,6 +7,7 @@ import jakarta.mail.Session;
 import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import trackour.trackour.model.User;
 
 public class ResetLinkService {
 
@@ -39,7 +40,7 @@ public class ResetLinkService {
             System.out.println(resetUrl);
     }
 
-    public void sendEmail() {
+    public void sendEmail(User userObj) {
         final String username = senderUsername;
         final String password = senderPassword;
 
@@ -65,7 +66,7 @@ public class ResetLinkService {
                     InternetAddress.parse(recipientEmail)
             );
             message.setSubject("Reset Trackour Email");
-            message.setContent("<p>Your 24hr one-time reset link is " + "<a href=\"" +resetUrl+ "\">here</a></p>", "text/html");
+            message.setContent("<p>Hi "+userObj.getUsername()+", your 24hr one-time reset link is " + "<a href=\"" +resetUrl+ "\">here</a></p>", "text/html");
 
             Transport.send(message);
 

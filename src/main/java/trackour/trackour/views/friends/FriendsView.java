@@ -13,6 +13,8 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
@@ -29,7 +31,7 @@ import trackour.trackour.views.components.NavBar;
 @PageTitle("Friends | Trackour")
 @PreserveOnRefresh
 @RolesAllowed({"ADMIN", "USER"})
-public class FriendsView extends VerticalLayout{
+public class FriendsView extends VerticalLayout implements BeforeEnterObserver{
     SecurityViewService securityViewHandler;
     SecurityViewService securityService;
     CustomUserDetailsService customUserDetailsService;
@@ -284,5 +286,12 @@ public class FriendsView extends VerticalLayout{
         });
 
         return button;
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        // this method call reroutes get requests to this view if the current session is already authenticated
+        // getUI().get().getPage().addJavaScript("window.location.href = 'myurl'");
+        this.securityViewHandler.handleAnonymousOnly(beforeEnterEvent, false);
     }
 }
