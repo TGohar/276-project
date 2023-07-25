@@ -128,7 +128,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // extra validation
         // if displayName was submitted as empty, use the username string in place of it
-        newUser.setDisplayName(newUser.getUsername());
+        if (newUser.getDisplayName().isEmpty()){
+            newUser.setDisplayName(newUser.getUsername());
+        }
         return this.submitUser(newUser);
     }
 

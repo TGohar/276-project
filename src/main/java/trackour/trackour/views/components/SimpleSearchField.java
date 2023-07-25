@@ -1,4 +1,6 @@
 package trackour.trackour.views.components;
+import java.util.Map;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
@@ -8,6 +10,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.QueryParameters;
 
 import trackour.trackour.views.searchResult.SearchResultView;
 
@@ -31,6 +34,16 @@ public class SimpleSearchField extends HorizontalLayout {
         this.setWidthFull();
         // simpleSearchComponent.getStyle().set("background-color", "red");
         generateSearchField();
+        // add a key up listener to the search field
+        searchField.addKeyUpListener(Key.ENTER, event -> {
+        // get the current value of the search field
+        String searchValue = searchField.getValue();
+        // navigate to the search view with the search query as a query parameter
+        getUI().ifPresent(ui -> {
+            QueryParameters queryParameters = QueryParameters.simple(Map.of("query", searchValue));
+            ui.navigate("search", queryParameters);
+        });
+        });
         this.add(this.searchField);
     }
 
@@ -57,4 +70,35 @@ public class SimpleSearchField extends HorizontalLayout {
     public TextField getTextField() {
         return this.searchField;
     }
+
+    /** 
+     * 
+     public SimpleSearchField() {
+     this.searchField = new TextField();
+     this.searchField.focus();
+     this.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+     this.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+     this.setWidthFull();
+     generateSearchField();
+     this.add(this.searchField);
+     
+     // add a key up listener to the search field
+     searchField.addKeyUpListener(Key.ENTER, event -> {
+       // get the current value of the search field
+       String searchValue = searchField.getValue();
+       // navigate to the search view with the search query as a query parameter
+       getUI().ifPresent(ui -> {
+         QueryParameters queryParameters = QueryParameters.simple(Map.of("query", searchValue));
+         ui.navigate("search");
+       });
+     });
+     }
+     
+     private void generateSearchField() {
+     searchField.setPlaceholder("Search Songs, Albums, Artists");
+     searchField.setPrefixComponent(new Icon("lumo", "search"));
+     searchField.setMinWidth(80, Unit.PERCENTAGE);
+     searchField.setClearButtonVisible(true);
+     }
+    */
 }

@@ -29,7 +29,7 @@ import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.spotify.Explore;
 import trackour.trackour.views.components.NavBar;
-import trackour.trackour.views.components.responsive.ResponsiveLayout;
+import trackour.trackour.views.components.responsive.MyBlockResponsiveLayout;
 
 @Route("Explore")
 @RouteAlias("explore")
@@ -37,7 +37,7 @@ import trackour.trackour.views.components.responsive.ResponsiveLayout;
 @PreserveOnRefresh
 @RolesAllowed({"USER", "ADMIN"})
 
-public class ExploreView extends ResponsiveLayout {
+public class ExploreView extends MyBlockResponsiveLayout {
     public ExploreView(SecurityViewService securityViewHandler,
     CustomUserDetailsService customUserDetailsService) {
         

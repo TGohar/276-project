@@ -19,6 +19,7 @@ import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
@@ -28,7 +29,8 @@ import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.login.LoginPage;
 
 @Route("resetPassword")
-@PageTitle("Reset Password")
+@RouteAlias("reset")
+@PageTitle("Reset Password | Trackour")
 @AnonymousAllowed
 public class enterEmailView extends VerticalLayout implements BeforeLeaveObserver, BeforeEnterObserver {
 

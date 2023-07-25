@@ -16,6 +16,7 @@ import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 import trackour.trackour.model.CustomUserDetailsService;
@@ -23,7 +24,8 @@ import trackour.trackour.model.User;
 import trackour.trackour.security.SecurityViewService;
 
 @Route(value = "resetPassword")
-@PageTitle("Set New Password")
+@RouteAlias("new-password")
+@PageTitle("Set New Password | Trackour")
 @AnonymousAllowed
 public class ResetPasswordView extends VerticalLayout implements BeforeLeaveObserver, BeforeEnterObserver, HasUrlParameter<String> {
 

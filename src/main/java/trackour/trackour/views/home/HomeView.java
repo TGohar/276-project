@@ -5,7 +5,6 @@ import java.util.List;
 // import java.util.Optional;
 // import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.yaml.snakeyaml.util.UriEncoder;
 
 // import org.json.JSONArray;
 // import org.json.JSONException;
@@ -14,7 +13,6 @@ import org.yaml.snakeyaml.util.UriEncoder;
 
 // import com.vaadin.addon.responsive.Responsive;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.KeyUpEvent;
 //import com.vaadin.flow.component.Text;
 //import com.vaadin.flow.component.UI;
 //import com.vaadin.flow.component.button.Button;
@@ -41,7 +39,6 @@ import trackour.trackour.views.components.NavBar;
 // import trackour.trackour.views.components.ResponsiveNavBar;
 import trackour.trackour.views.components.SimpleCarousel;
 import trackour.trackour.views.components.SimpleSearchField;
-import trackour.trackour.views.searchResult.SearchResultView;
 
 @Route("")
 @RouteAlias("home")
@@ -87,12 +84,8 @@ public class HomeView extends VerticalLayout {
         utiliy.getStyle().set("margin-left", "25px");
         content.add(simpleSearch, newRelease, trendingCarousel.generateComponent(), utiliy);
 
-        simpleSearch.onEnterKeyUp(event -> this.searchSubmit(event, simpleSearch.getSearchValue()));
+        // simpleSearch.onEnterKeyUp(event -> this.searchSubmit(event, simpleSearch.getSearchValue()));
         return content;
     }
 
-    private KeyUpEvent searchSubmit(KeyUpEvent event, String searchValue) {
-        getUI().ifPresent(ui -> ui.navigate(SearchResultView.class, UriEncoder.encode(searchValue)));
-        return event;
-    }
 }
