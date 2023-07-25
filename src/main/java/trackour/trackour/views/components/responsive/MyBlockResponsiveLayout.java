@@ -7,6 +7,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.shared.Registration;
 
+
 @CssImport("./styles/my-block__responsive-layout.css")
 public class MyBlockResponsiveLayout extends VerticalLayout  {
 

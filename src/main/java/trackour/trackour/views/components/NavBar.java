@@ -24,6 +24,8 @@ import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.TabsVariant;
 import com.vaadin.flow.dom.Style.TextAlign;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.model.Role;
@@ -37,7 +39,7 @@ import trackour.trackour.views.friends.FriendsView;
 import trackour.trackour.views.home.HomeView;
 import trackour.trackour.views.profilepage.ProfilePageView;
 
-public class NavBar extends MyBlockResponsiveLayout {
+public class NavBar extends MyBlockResponsiveLayout implements BeforeEnterObserver {
     // constant for the browser width threshold. < 600 == smaller screens
     private static final int BROWSER_WIDTH_THRESHOLD = 800;
 
@@ -61,6 +63,7 @@ public class NavBar extends MyBlockResponsiveLayout {
 
     Tabs drawerTabs;
     Tabs navbarTabs;
+    Tab selectedTab;
 
     Component content;
 
@@ -113,8 +116,7 @@ public class NavBar extends MyBlockResponsiveLayout {
     private void onClickTabRouteTo(Tab clickedElement, Class<? extends Component> navigationTarget) {
         clickedElement.getElement().addEventListener("click", event -> {
             SecurityViewService.routeTo(navigationTarget);
-            this.navbarTabs.setSelectedTab(clickedElement);
-            this.drawerTabs.setSelectedTab(clickedElement);
+            this.selectedTab = clickedElement;
             // this.navbarTabs.addSelectedChangeListener(ev -> {
             //     this.navbarTabs.setSelectedTab(clickedElement);
             // });
@@ -122,30 +124,41 @@ public class NavBar extends MyBlockResponsiveLayout {
     }
 
     private Tab[] generateTabArray() {
+
+        Tab placeholder = new Tab("");
+        placeholder.setVisible(false);
+
         // friendsTab.setEnabled(false);
         Tab home = new Tab("Home");
         home.addAttachListener(ev -> onClickTabRouteTo(home, HomeView.class));
+        home.setClassName("home-tab-classname");
         
         Tab dashboard = new Tab("Dashboard");
         dashboard.addAttachListener(ev -> onClickTabRouteTo(dashboard, Dashboard.class));
+        dashboard.setClassName("dashboard-tab-classname");
         // dashboard.setEnabled(false);
         
         Tab friends = new Tab("Friends");
         friends.addAttachListener(ev -> onClickTabRouteTo(friends, FriendsView.class));
+        friends.setClassName("Friends-tab-classname");
         
         Tab explore = new Tab("Explore");
         explore.addAttachListener(ev -> onClickTabRouteTo(explore, ExploreView.class));
+        explore.setClassName("explore-tab-classname");
         
         Tab advancedSearch = new Tab("Advanced Search");
         advancedSearch.addAttachListener(ev -> onClickTabRouteTo(advancedSearch, AdvancedSearch.class));
+        advancedSearch.setClassName("advancedSearch-tab-classname");
         
         Tab adminViewUsers = new Tab("Admin View Users");
         adminViewUsers.addAttachListener(ev -> onClickTabRouteTo(adminViewUsers, AdminUsersView.class));
+        adminViewUsers.setClassName("adminViewUsers-tab-classname");
 
         // if the session is an admin, reveal the link/tab to the secret page
         SimpleGrantedAuthority sessionAdminRoleObj = new SimpleGrantedAuthority(Role.ADMIN.roleToRoleString());
         if (sessionObject.getAuthorities().contains(sessionAdminRoleObj)) {
             return  new Tab[] {
+                placeholder,
                 home,
                 dashboard,
                 friends,
@@ -156,6 +169,7 @@ public class NavBar extends MyBlockResponsiveLayout {
         }
         
         return  new Tab[] {
+            placeholder,
             home,
             dashboard,
             friends,
@@ -168,7 +182,7 @@ public class NavBar extends MyBlockResponsiveLayout {
         // Use the same helper method to create another tabs component with vertical orientation and some theme variants
         drawerTabs = createTabs(
             Tabs.Orientation.VERTICAL,
-            new TabsVariant[] {TabsVariant.LUMO_SMALL, TabsVariant.LUMO_EQUAL_WIDTH_TABS},
+            new TabsVariant[] {TabsVariant.LUMO_SMALL, TabsVariant.LUMO_EQUAL_WIDTH_TABS, TabsVariant.LUMO_MINIMAL},
             generateTabArray()
         );
         // Add custom theme variants to the tabs component
@@ -186,7 +200,7 @@ public class NavBar extends MyBlockResponsiveLayout {
         // generate tabs for navbar
         this.navbarTabs = createTabs(
             Tabs.Orientation.HORIZONTAL,
-            new TabsVariant[] {TabsVariant.LUMO_SMALL, TabsVariant.LUMO_EQUAL_WIDTH_TABS},
+            new TabsVariant[] {TabsVariant.LUMO_SMALL, TabsVariant.LUMO_EQUAL_WIDTH_TABS, TabsVariant.LUMO_MINIMAL},
             generateTabArray()    
         );
         // Add custom theme variants to the tabs component
@@ -234,13 +248,6 @@ public class NavBar extends MyBlockResponsiveLayout {
         logoArea.setWidthFull();
         return logoArea;
     }
-
-    /**
-     *         if (navigationTarget.getClass().equals(ExploreView.class)) {
-            System.out.println("Click Explore!");
-        }
-     * @return
-     */
 
     private HorizontalLayout generateMenuBar() {
         String sessionUsername = sessionObject.getUsername();
@@ -313,24 +320,20 @@ public class NavBar extends MyBlockResponsiveLayout {
     @Override
     protected void update(int browserWidth) {
         super.update(browserWidth);
+        if (browserWidth < BROWSER_WIDTH_THRESHOLD) {
+            // Set the primary section to navbar
+            appLayout.setPrimarySection(AppLayout.Section.DRAWER);
+        }
+        else {
+            // Set the primary section to navbar
+            appLayout.setPrimarySection(AppLayout.Section.NAVBAR);
+            appLayout.setDrawerOpened(false);
+        }
         this.hideComponent(navbarTabsLayout, BROWSER_WIDTH_THRESHOLD);
         this.hideComponent(drawerToggle, BROWSER_WIDTH_THRESHOLD, true);
-        System.out.println("nav browserWidth: " + browserWidth);
-        // Toggle the visibility of the drawer toggle and navbar tabs layout elements based on the browser width
-        // if (browserWidth < BROWSER_WIDTH_THRESHOLD) { // Use the constant instead of the magic number
-        //     System.out.println("in mobile view");
-        //     drawerToggle.setVisible(true);
-        //     navbarTabsLayout.setVisible(false);
-        //     // hideComponent(navbarTabsLayout, BROWSER_WIDTH_THRESHOLD);
-        //     // hideComponent(drawerToggle, BROWSER_WIDTH_THRESHOLD);
-            
-        // } else {
-        //     System.out.println("in win view");
-        //     drawerToggle.setVisible(false);
-        //     navbarTabsLayout.setVisible(true);
-        //     if (appLayout.isDrawerOpened()) {
-        //         appLayout.setDrawerOpened(false);
-        //     }
-        // }
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
     }
 }

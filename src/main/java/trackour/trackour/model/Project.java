@@ -41,7 +41,7 @@ public class Project {
     @Column(name = "title")
     private String title;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "text")
     private String description;
 
     @CreationTimestamp
@@ -64,6 +64,17 @@ public class Project {
     public Project() {
         initStatus();
     }
+
+    // Add the non default constructor with the parameters
+    public Project(String title, String description, String createdAt, ProjectStatus status) {
+        this.title = title;
+        this.description = description;
+        // Parse the createdAt string to a LocalDateTime object
+        this.createdAt = LocalDateTime.parse(createdAt);
+        this.status = status;
+        // You may also want to initialize the owner and participants fields here
+    }
+
 
     private void initStatus() {
         this.status = ProjectStatus.IN_PROGRESS;

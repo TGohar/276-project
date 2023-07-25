@@ -44,6 +44,12 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+
 
         <!-- https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java -->
 <dependency>
@@ -157,18 +163,6 @@
             <groupId>org.vaadin.klaudeta</groupId>
             <artifactId>grid-pagination</artifactId>
             <version>4.0.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.github.appreciated</groupId>
-            <artifactId>card</artifactId>
-            <version>2.0.0</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-html-components</artifactId>
-            <version>${vaadin.version}</version>
         </dependency>
 
 

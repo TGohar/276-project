@@ -83,7 +83,10 @@ public class Dashboard extends MyBlockResponsiveLayout{
                 // set title
                 newProject.setTitle("New Card Title");
                 // set description
-                newProject.setDescription("Card Description");
+                String desc = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vel semper libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.\r\n" + //
+                        "\r\n" + //
+                        "Proin volutpat, sapien ut facilisis ultricies, eros purus blandit velit, at ultrices mi libero quis ante. Curabitur scelerisque metus et libero convallis consequat. Pellentesque feugiat pulvinar nisl sed pellentesque.";
+                newProject.setDescription(desc);
                 projectsService.createNewProject(newProject);
                 ProjectCard cardLayout = new ProjectCard(newProject);
                 cardsFlexLayout.add(cardLayout);
