@@ -11,7 +11,7 @@ import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
-import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H5;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.menubar.MenuBar;
@@ -19,27 +19,30 @@ import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.shared.Tooltip;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.TabsVariant;
+<<<<<<< HEAD
 import com.vaadin.flow.dom.Style.TextAlign;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+=======
+>>>>>>> parent of 3cf77f6 (Added some small rough features)
 
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.model.Role;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.admin.AdminUsersView;
-import trackour.trackour.views.advancedsearch.AdvancedSearch;
-import trackour.trackour.views.components.responsive.MyBlockResponsiveLayout;
-import trackour.trackour.views.dashboard.Dashboard;
+import trackour.trackour.views.components.responsive.ResponsiveLayout;
 import trackour.trackour.views.explore.ExploreView;
 import trackour.trackour.views.friends.FriendsView;
 import trackour.trackour.views.home.HomeView;
-import trackour.trackour.views.profilepage.ProfilePageView;
 
+<<<<<<< HEAD
 public class NavBar extends MyBlockResponsiveLayout implements BeforeEnterObserver {
+=======
+public class NavBar extends ResponsiveLayout {
+>>>>>>> parent of 3cf77f6 (Added some small rough features)
     // constant for the browser width threshold. < 600 == smaller screens
     private static final int BROWSER_WIDTH_THRESHOLD = 800;
 
@@ -60,19 +63,20 @@ public class NavBar extends MyBlockResponsiveLayout implements BeforeEnterObserv
 
     // continer for the page's main content
     VerticalLayout contentContainer;
+<<<<<<< HEAD
 
     Tabs drawerTabs;
     Tabs navbarTabs;
     Tab selectedTab;
 
+=======
+>>>>>>> parent of 3cf77f6 (Added some small rough features)
     Component content;
 
     public NavBar(CustomUserDetailsService customUserDetailsService, SecurityViewService securityViewHandler) {
         this.customUserDetailsService = customUserDetailsService;
         this.securityViewHandler = securityViewHandler;
         this.sessionObject = securityViewHandler.getAuthenticatedRequestSession();
-        this.drawerTabs = new Tabs();
-        this.navbarTabs = new Tabs();
         
         // Init the app layout element
         appLayout = new AppLayout();
@@ -88,7 +92,7 @@ public class NavBar extends MyBlockResponsiveLayout implements BeforeEnterObserv
         // Init the horizontal layout for the navbar tabs element
         navbarTabsLayout = generateNavbarLayout();
 
-        drawerTabs = generateDrawerTabs();
+        Tabs drawerTabs = generateDrawerTabs();
 
         // menu buton with icon and lo==signout button
         HorizontalLayout menuBarArea = generateMenuBar();
@@ -103,23 +107,23 @@ public class NavBar extends MyBlockResponsiveLayout implements BeforeEnterObserv
         appLayout.setPrimarySection(AppLayout.Section.NAVBAR);
         appLayout.setDrawerOpened(false);
 
-        this.addUpdateListener(bWidth -> {
-            super.update(bWidth);
-            this.hideComponent(navbarTabsLayout, BROWSER_WIDTH_THRESHOLD);
-            this.hideComponent(drawerToggle, BROWSER_WIDTH_THRESHOLD, true);
-        });
-
         // Add the app layout element to the container element of the ResponsiveLayout component
         add(appLayout);
     }
 
     private void onClickTabRouteTo(Tab clickedElement, Class<? extends Component> navigationTarget) {
+        if (navigationTarget.getClass().equals(ExploreView.class)) {
+            System.out.println("Click Explore!");
+        }
         clickedElement.getElement().addEventListener("click", event -> {
             SecurityViewService.routeTo(navigationTarget);
+<<<<<<< HEAD
             this.selectedTab = clickedElement;
             // this.navbarTabs.addSelectedChangeListener(ev -> {
             //     this.navbarTabs.setSelectedTab(clickedElement);
             // });
+=======
+>>>>>>> parent of 3cf77f6 (Added some small rough features)
         });
     }
 
@@ -134,9 +138,14 @@ public class NavBar extends MyBlockResponsiveLayout implements BeforeEnterObserv
         home.setClassName("home-tab-classname");
         
         Tab dashboard = new Tab("Dashboard");
+<<<<<<< HEAD
         dashboard.addAttachListener(ev -> onClickTabRouteTo(dashboard, Dashboard.class));
         dashboard.setClassName("dashboard-tab-classname");
         // dashboard.setEnabled(false);
+=======
+        dashboard.addAttachListener(ev -> onClickTabRouteTo(dashboard, HomeView.class));
+        dashboard.setEnabled(false);
+>>>>>>> parent of 3cf77f6 (Added some small rough features)
         
         Tab friends = new Tab("Friends");
         friends.addAttachListener(ev -> onClickTabRouteTo(friends, FriendsView.class));
@@ -147,8 +156,13 @@ public class NavBar extends MyBlockResponsiveLayout implements BeforeEnterObserv
         explore.setClassName("explore-tab-classname");
         
         Tab advancedSearch = new Tab("Advanced Search");
+<<<<<<< HEAD
         advancedSearch.addAttachListener(ev -> onClickTabRouteTo(advancedSearch, AdvancedSearch.class));
         advancedSearch.setClassName("advancedSearch-tab-classname");
+=======
+        advancedSearch.addAttachListener(ev -> onClickTabRouteTo(advancedSearch, HomeView.class));
+        advancedSearch.setEnabled(false);
+>>>>>>> parent of 3cf77f6 (Added some small rough features)
         
         Tab adminViewUsers = new Tab("Admin View Users");
         adminViewUsers.addAttachListener(ev -> onClickTabRouteTo(adminViewUsers, AdminUsersView.class));
@@ -180,9 +194,13 @@ public class NavBar extends MyBlockResponsiveLayout implements BeforeEnterObserv
 
     private Tabs generateDrawerTabs() {
         // Use the same helper method to create another tabs component with vertical orientation and some theme variants
-        drawerTabs = createTabs(
+        Tabs drawerTabs = createTabs(
             Tabs.Orientation.VERTICAL,
+<<<<<<< HEAD
             new TabsVariant[] {TabsVariant.LUMO_SMALL, TabsVariant.LUMO_EQUAL_WIDTH_TABS, TabsVariant.LUMO_MINIMAL},
+=======
+            new TabsVariant[] {TabsVariant.LUMO_SMALL, TabsVariant.LUMO_MINIMAL},
+>>>>>>> parent of 3cf77f6 (Added some small rough features)
             generateTabArray()
         );
         // Add custom theme variants to the tabs component
@@ -198,9 +216,13 @@ public class NavBar extends MyBlockResponsiveLayout implements BeforeEnterObserv
         // routeTabsArea.getStyle().setBackground("red");
 
         // generate tabs for navbar
-        this.navbarTabs = createTabs(
+        Tabs navbarTabs = createTabs(
             Tabs.Orientation.HORIZONTAL,
+<<<<<<< HEAD
             new TabsVariant[] {TabsVariant.LUMO_SMALL, TabsVariant.LUMO_EQUAL_WIDTH_TABS, TabsVariant.LUMO_MINIMAL},
+=======
+            new TabsVariant[] {TabsVariant.LUMO_SMALL, TabsVariant.LUMO_MINIMAL}, 
+>>>>>>> parent of 3cf77f6 (Added some small rough features)
             generateTabArray()    
         );
         // Add custom theme variants to the tabs component
@@ -208,7 +230,6 @@ public class NavBar extends MyBlockResponsiveLayout implements BeforeEnterObserv
         
         // style navtabs
         navbarTabs.setWidthFull();
-        routeTabsArea.setWidthFull();
 
         navbarTabs.addThemeVariants(TabsVariant.MATERIAL_FIXED);
         routeTabsArea.add(navbarTabs);
@@ -238,13 +259,12 @@ public class NavBar extends MyBlockResponsiveLayout implements BeforeEnterObserv
         logoArea.setAlignSelf(FlexComponent.Alignment.CENTER);
         logoArea.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
 
-        H3 logo = new H3("Trackour");
+        H1 logo = new H1("Trackour");
         // logo.getStyle().set("background-color", "blue");
         logo.addClickListener(ev -> SecurityViewService.routeTo(HomeView.class));
         logo.getStyle().setCursor("pointer");
         logoArea.add(logo);
         // logoArea.getStyle().setBackground("cyan");
-        logoArea.getStyle().setTextAlign(TextAlign.CENTER);
         logoArea.setWidthFull();
         return logoArea;
     }
@@ -254,37 +274,25 @@ public class NavBar extends MyBlockResponsiveLayout implements BeforeEnterObserv
         String displayNameString = customUserDetailsService.getByUsername(sessionUsername).get().getDisplayName();
 
         HorizontalLayout horizontalMenuArea = new HorizontalLayout();
-        horizontalMenuArea.getStyle().setMargin("0 1rem");
         horizontalMenuArea.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         horizontalMenuArea.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
         horizontalMenuArea.setSizeFull();
         
+
+        H5 h5 = new H5(displayNameString);
         MenuBar menuBar = new MenuBar();
         Avatar avatarName = new Avatar(displayNameString);
-
-        
         MenuItem item = menuBar.addItem(avatarName);
         menuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY);
         SubMenu subMenu = item.getSubMenu();
-        
-        H5 profileButton = new H5("Profile");
-        subMenu.addItem(profileButton).addClickListener(
-            ev -> SecurityViewService.routeTo(ProfilePageView.class)
-        );
+        subMenu.addItem("Profile").setEnabled(false);
         subMenu.add(new Hr());
         subMenu.addItem("Sign out")
         .addClickListener(event -> {
             securityViewHandler.logOut();
         });
         horizontalMenuArea.setWidthFull();
-
-        // tootltip for menuBar component
-        Tooltip.forComponent(menuBar)
-        .withText(displayNameString)
-        .withPosition(Tooltip.TooltipPosition.TOP_START);
-
-        // finally add the menu bar component to it's container
-        horizontalMenuArea.add(menuBar);
+        horizontalMenuArea.add(h5, menuBar);
         return horizontalMenuArea;
     }
 
@@ -320,6 +328,7 @@ public class NavBar extends MyBlockResponsiveLayout implements BeforeEnterObserv
     @Override
     protected void update(int browserWidth) {
         super.update(browserWidth);
+<<<<<<< HEAD
         if (browserWidth < BROWSER_WIDTH_THRESHOLD) {
             // Set the primary section to navbar
             appLayout.setPrimarySection(AppLayout.Section.DRAWER);
@@ -335,5 +344,21 @@ public class NavBar extends MyBlockResponsiveLayout implements BeforeEnterObserv
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
+=======
+        System.out.println("nav browserWidth: " + browserWidth);
+        // Toggle the visibility of the drawer toggle and navbar tabs layout elements based on the browser width
+        if (browserWidth < BROWSER_WIDTH_THRESHOLD) { // Use the constant instead of the magic number
+            System.out.println("in mobile view");
+            drawerToggle.setVisible(true);
+            navbarTabsLayout.setVisible(false);
+        } else {
+            System.out.println("in win view");
+            drawerToggle.setVisible(false);
+            navbarTabsLayout.setVisible(true);
+            if (appLayout.isDrawerOpened()) {
+                appLayout.setDrawerOpened(false);
+            }
+        }
+>>>>>>> parent of 3cf77f6 (Added some small rough features)
     }
 }

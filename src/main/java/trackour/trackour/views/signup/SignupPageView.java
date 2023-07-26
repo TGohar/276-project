@@ -7,15 +7,13 @@ import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
 
 @Route("signup")
-@RouteAlias("register")
-@PageTitle("SignUp | Trackour")
+@PageTitle("SignUp")
 @AnonymousAllowed
 public class SignupPageView extends VerticalLayout implements BeforeLeaveObserver, BeforeEnterObserver  {
 

@@ -1,15 +1,17 @@
 package trackour.trackour.views.components.responsive;
 
 import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.shared.Registration;
 
+<<<<<<< HEAD:src/main/java/trackour/trackour/views/components/responsive/MyBlockResponsiveLayout.java
 
 @CssImport("./styles/my-block__responsive-layout.css")
 public class MyBlockResponsiveLayout extends VerticalLayout  {
+=======
+public class ResponsiveLayout extends Div {
+>>>>>>> parent of 3cf77f6 (Added some small rough features):src/main/java/trackour/trackour/views/components/responsive/ResponsiveLayout.java
 
     // Define an interface for the callback
     public interface UpdateCallback {
@@ -22,7 +24,7 @@ public class MyBlockResponsiveLayout extends VerticalLayout  {
     // Make the listener field private to hide it from other classes
     private Registration listener;
 
-    public MyBlockResponsiveLayout() {
+    public ResponsiveLayout() {
         setWidthFull();
         setHeightFull();
     }
@@ -74,24 +76,4 @@ public class MyBlockResponsiveLayout extends VerticalLayout  {
             }
         });
     }
-
-    // helper method to make a given component hidden or not(animated)
-    // overload to set default boolean to false
-    public void hideComponent(Component component, int hideBelowWidth) {
-        hideComponent(component, hideBelowWidth, false);
-      }
-    // reverse reverses the if condition
-    public void hideComponent(Component component, int hideBelowWidth, boolean reverse) {
-    boolean doHide = reverse ? 
-    browserWidth >= hideBelowWidth : 
-    browserWidth < hideBelowWidth;
-    if (doHide) {
-        // hide the component visually using CSS
-        component.addClassName("responsive-layout-hidden");
-    } else {
-        // show the component visually using CSS
-        component.removeClassName("responsive-layout-hidden");
-    }
-    }
-      
 }
