@@ -1,7 +1,6 @@
 package trackour.trackour.views.searchResult;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import trackour.trackour.spotify.SearchTrack;
-import trackour.trackour.views.songDescription.songDescription;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,8 +20,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteParameters;
-import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 import trackour.trackour.model.CustomUserDetailsService;
@@ -44,7 +41,7 @@ public class searchResultView extends VerticalLayout {
 
         Icon smile = new Icon(VaadinIcon.SMILEY_O);
         smile.setColor("Pink");
-        H1 header = new H1("Hi "+displayNameString + ", here is the joy your ears have been waiting for!");
+        H1 header = new H1("Hi " + displayNameString + ", here is the joy your ears have been waiting for!");
         HorizontalLayout greetings = new HorizontalLayout();
 
         greetings.setAlignItems(FlexComponent.Alignment.START);
@@ -98,15 +95,13 @@ public class searchResultView extends VerticalLayout {
             albumCoverImage.addClassName("cover-image");
             albumCoverImage.getStyle().set("margin-left", "100px");
 
-            RouterLink songPageLink = new RouterLink("Song Details", songDescription.class, new RouteParameters("trackID", track.getId()));
-
             VerticalLayout song_and_Artist = new VerticalLayout();
             song_and_Artist.add(artistField, songField);
             song_and_Artist.addClassName("song-and-artist");
             song_and_Artist.getStyle().set("margin-left", "10px");
 
             HorizontalLayout trackInfo = new HorizontalLayout();
-            trackInfo.add(albumCoverImage, song_and_Artist, albumField, trackTime, songPageLink);
+            trackInfo.add(albumCoverImage, song_and_Artist, albumField, trackTime);
             trackInfo.getStyle().set("align-items", "center");
 
             Div songDiv = new Div(trackInfo);

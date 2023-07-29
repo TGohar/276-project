@@ -479,4 +479,23 @@ public class APIController {
             return null;
         }
     }
+
+    // Get the Spotify URL using the Track ID
+    public static String spotifyURL(String id) {
+        try {
+            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+
+            spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
+
+            final GetTrackRequest getTrackRequest = spotifyAPI.getTrack(id)
+                .build();
+            
+            final Track track = getTrackRequest.execute();
+
+            return track.getExternalUrls().get("spotify");
+            
+        } catch (IOException | SpotifyWebApiException | ParseException e) {
+            return e.getMessage();
+        }
+    }
 }
