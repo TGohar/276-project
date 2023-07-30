@@ -4,8 +4,8 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-import trackour.trackour.model.Project;
-import trackour.trackour.model.ProjectStatus;
+import trackour.trackour.model.project.Project;
+import trackour.trackour.model.project.ProjectStatus;
 
 public class ProjectCard extends VerticalLayout {
     H3 title;
@@ -33,7 +33,7 @@ public class ProjectCard extends VerticalLayout {
 
     public ProjectCard(Project project) {
         this.title = new H3(project.getTitle());
-        this.description = new Span(project.getDescription());
+        this.description = new Span(project.getTitle());
         this.createdAt = new Span(project.getCreatedAt().toString());
         this.status = new Span(project.getStatus().name());
         styleCard();

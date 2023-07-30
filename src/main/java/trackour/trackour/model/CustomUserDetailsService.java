@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import jakarta.transaction.Transactional;
+import trackour.trackour.model.user.User;
+import trackour.trackour.model.user.UserRepository;
 
 @Service
 @Transactional

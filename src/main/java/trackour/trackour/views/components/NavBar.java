@@ -33,7 +33,7 @@ import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
 
 import trackour.trackour.model.CustomUserDetailsService;
-import trackour.trackour.model.Role;
+import trackour.trackour.model.user.Role;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.admin.AdminUsersView;
 import trackour.trackour.views.advancedsearch.AdvancedSearch;

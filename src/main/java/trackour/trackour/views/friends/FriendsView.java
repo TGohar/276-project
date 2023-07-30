@@ -20,7 +20,7 @@ import com.vaadin.flow.router.RouteAlias;
 
 import jakarta.annotation.security.RolesAllowed;
 import trackour.trackour.model.CustomUserDetailsService;
-import trackour.trackour.model.User;
+import trackour.trackour.model.user.User;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.components.NavBar;
 
@@ -185,6 +185,10 @@ public class FriendsView extends VerticalLayout {
             text.setText("Request already sent to " + username + "!");
             return;
         }
+
+        if(friends == null) {
+            friends = new ArrayList<Long>();
+        }
         if (friends.contains(this.friend.getUid())) {
             text.setText("You are already friends with " + username + "!");
             return;
@@ -245,6 +249,9 @@ public class FriendsView extends VerticalLayout {
 
             // remove the requst from this user's requests list as well as from the added user's request list
             requests.remove(newFriend.getUid());
+            if (otherUserRequests == null) {
+                otherUserRequests = new ArrayList<>();
+            }
             otherUserRequests.remove(currentUser.getUid());
 
             newFriendFriends.add(this.currentUser.getUid());

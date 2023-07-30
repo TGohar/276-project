@@ -6,7 +6,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-import trackour.trackour.model.User;
+import trackour.trackour.model.user.User;
 
 public class AdminUsersGrid extends VerticalLayout {
 

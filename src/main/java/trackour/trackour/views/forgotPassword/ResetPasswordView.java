@@ -20,7 +20,7 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 import trackour.trackour.model.CustomUserDetailsService;
-import trackour.trackour.model.User;
+import trackour.trackour.model.user.User;
 import trackour.trackour.security.SecurityViewService;
 
 @Route(value = "resetPassword")

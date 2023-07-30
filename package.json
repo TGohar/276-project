@@ -7,6 +7,7 @@
     "@polymer/paper-button": "^3.0.1",
     "@polymer/paper-icon-button": "^3.0.2",
     "@polymer/polymer": "3.5.1",
+    "@vaadin-component-factory/vcf-enhanced-rich-text-editor": "3.0.2",
     "@vaadin/a11y-base": "24.1.1",
     "@vaadin/accordion": "24.1.1",
     "@vaadin/app-layout": "24.1.1",
@@ -101,6 +102,7 @@
       "@polymer/paper-button": "^3.0.1",
       "@polymer/paper-icon-button": "^3.0.2",
       "@polymer/polymer": "3.5.1",
+      "@vaadin-component-factory/vcf-enhanced-rich-text-editor": "3.0.2",
       "@vaadin/a11y-base": "24.1.1",
       "@vaadin/accordion": "24.1.1",
       "@vaadin/app-layout": "24.1.1",
@@ -189,7 +191,7 @@
       "workbox-core": "7.0.0",
       "workbox-precaching": "7.0.0"
     },
-    "hash": "6152e091c37e8c014ff558cc366885e3f758e38311ab30a4104ddb0f904e9c84"
+    "hash": "ccefcea59b2113dbca88c573d1498b44e7b14bd01a6debe7656e9e459e63697a"
   },
   "overrides": {
     "@vaadin/bundles": "$@vaadin/bundles",
@@ -264,6 +266,7 @@
     "lit-html": "$lit-html",
     "@polymer/paper-icon-button": "$@polymer/paper-icon-button",
     "lit-element": "$lit-element",
-    "@polymer/paper-button": "$@polymer/paper-button"
+    "@polymer/paper-button": "$@polymer/paper-button",
+    "@vaadin-component-factory/vcf-enhanced-rich-text-editor": "$@vaadin-component-factory/vcf-enhanced-rich-text-editor"
   }
 }
