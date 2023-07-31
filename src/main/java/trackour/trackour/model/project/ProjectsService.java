@@ -22,7 +22,7 @@ public class ProjectsService {
     private ProjectRepository repository;
 
     public void createNewProject(Project project) {
-        printProjectObj(project);
+        // printProjectObj(project);
         repository.saveAndFlush(project);
     }
 
@@ -34,15 +34,15 @@ public class ProjectsService {
         return repository.findById(id);
     }
       
-    // public List<Project> getAllByOwner(Long uid) {
-    //     List<Project> userProjects = new ArrayList<>();
-    //     for (Project project : this.getAllProjects()) {
-    //         if (project.getOwner().equals(uid)){
-    //             userProjects.add(project);
-    //         }
-    //     }
-    //     return userProjects;
-    // }
+    public List<Project> getAllByOwner(Long uid) {
+        List<Project> userProjects = new ArrayList<>();
+        for (Project project : this.getAllProjects()) {
+            if (project.getOwner() == (uid)){
+                userProjects.add(project);
+            }
+        }
+        return userProjects;
+    }
       
     public List<Project> findAllCompletedProjects() {
         List<Project> allCompleted = new ArrayList<>();
@@ -85,6 +85,12 @@ public class ProjectsService {
             System.out.println(objStr);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void deleteProject(Project project) {
+        if (project != null) {
+            repository.delete(project);
         }
     }
 }

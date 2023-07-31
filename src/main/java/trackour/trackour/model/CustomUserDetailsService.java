@@ -86,17 +86,17 @@ public class CustomUserDetailsService implements UserDetailsService {
      * Prettyy print {@link User} object
      * @param user
      */
-    public void printUserObj(User user) {
-        ObjectMapper objMapper = new ObjectMapper();
-        objMapper.enable(SerializationFeature.INDENT_OUTPUT); //pretty print
-        String objStr;
-        try {
-            objStr = objMapper.writeValueAsString(user);
-            System.out.println(objStr);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-    }
+    // public void printUserObj(User user) {
+    //     ObjectMapper objMapper = new ObjectMapper();
+    //     objMapper.enable(SerializationFeature.INDENT_OUTPUT); //pretty print
+    //     String objStr;
+    //     try {
+    //         objStr = objMapper.writeValueAsString(user);
+    //         System.out.println(objStr);
+    //     } catch (JsonProcessingException e) {
+    //         e.printStackTrace();
+    //     }
+    // }
 
     /**
      * eg. Call {@code passwordEncoder().encode("rawPasscode");} to encrypt "rawPasscode".
@@ -118,7 +118,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         // unable to properly implement hashing technique atm so will either drop that or tryb again later
         String encodedPassword = passwordEncoder().encode(password);
         newUser.setPassword(encodedPassword);
-        printUserObj(newUser);
+        // printUserObj(newUser);
         return this.submitUser(newUser);
     }
 
@@ -126,7 +126,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         // unable to properly implement hashing technique atm so will either drop that or tryb again later
         String encodedPassword = passwordEncoder().encode(newUser.getPassword());
         newUser.setPassword(encodedPassword);
-        printUserObj(newUser);
+        // printUserObj(newUser);
 
         // extra validation
         // if displayName was submitted as empty, use the username string in place of it
@@ -154,7 +154,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         String encodedPassword = passwordEncoder().encode(oldUser.getPassword());
         oldUser.setPassword(encodedPassword);
-        printUserObj(oldUser);
+        // printUserObj(oldUser);
 
         // invalidate the used token with an empty string
         oldUser.setPasswordResetToken("");

@@ -76,7 +76,8 @@
     "lit": "2.7.4",
     "lit-element": "^3.2.2",
     "lit-html": "2.4.0",
-    "mobile-drag-drop": "2.3.0-rc.2"
+    "mobile-drag-drop": "2.3.0-rc.2",
+    "trix": "2.0.4"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "5.0.2",
@@ -171,7 +172,8 @@
       "lit": "2.7.4",
       "lit-element": "^3.2.2",
       "lit-html": "2.4.0",
-      "mobile-drag-drop": "2.3.0-rc.2"
+      "mobile-drag-drop": "2.3.0-rc.2",
+      "trix": "2.0.4"
     },
     "devDependencies": {
       "@rollup/plugin-replace": "5.0.2",
@@ -191,7 +193,7 @@
       "workbox-core": "7.0.0",
       "workbox-precaching": "7.0.0"
     },
-    "hash": "ccefcea59b2113dbca88c573d1498b44e7b14bd01a6debe7656e9e459e63697a"
+    "hash": "009df42d7a836115dfacc5444cd988a80450cb93f8313004b996b7c72a0039f9"
   },
   "overrides": {
     "@vaadin/bundles": "$@vaadin/bundles",
@@ -267,6 +269,7 @@
     "@polymer/paper-icon-button": "$@polymer/paper-icon-button",
     "lit-element": "$lit-element",
     "@polymer/paper-button": "$@polymer/paper-button",
-    "@vaadin-component-factory/vcf-enhanced-rich-text-editor": "$@vaadin-component-factory/vcf-enhanced-rich-text-editor"
+    "@vaadin-component-factory/vcf-enhanced-rich-text-editor": "$@vaadin-component-factory/vcf-enhanced-rich-text-editor",
+    "trix": "$trix"
   }
 }

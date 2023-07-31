@@ -5,30 +5,19 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 // import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import trackour.trackour.model.project.Project;
 
 @Entity
-@Table(
-    name="tasks", 
-    uniqueConstraints= @UniqueConstraint(columnNames={"task_id"})
-    )
+@Table( name="tasks",   uniqueConstraints= @UniqueConstraint(columnNames={"task_id"}) )
 public class Task {
 
     @Id
-    @JsonProperty(access = Access.READ_ONLY)
     @Column(name = "task_id", length = 36, nullable = false, updatable = false)
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
@@ -47,19 +36,21 @@ public class Task {
     @Column(name = "createdAt")
     private LocalDateTime createdAt;
 
-    // a task can belong to many projects
-    @ManyToOne
-    @JoinTable(
-        name = "project_tasks",
-        joinColumns = @JoinColumn(name = "task_id"),
-        inverseJoinColumns = @JoinColumn(name = "project_id"))
-    private Project project;
+    // the project id this task belongs to
+    private String project;
 
-    public Project getProject() {
+    // ----------methods------------------------------------------
+    public Task() {
+        this.title = "New Task";
+        this.description = "Placeholder description.";
+        this.status = TaskStatus.NOT_STARTED;
+    }
+
+    public String getProject() {
         return this.project;
     }
     
-    public void setProject(Project project) {
+    public void setProject(String project) {
         this.project = project;
     }    
 

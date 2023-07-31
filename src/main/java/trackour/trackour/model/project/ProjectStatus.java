@@ -1,16 +1,16 @@
 package trackour.trackour.model.project;
 
 public enum ProjectStatus {
-    IN_PROGRESS(0),
-    COMPLETED(1);
+    IN_PROGRESS("IN_PROGRESS"),
+    COMPLETED("COMPLETED");
 
-    private final int value;
+    private final String value;
 
-    private ProjectStatus(int value) {
+    private ProjectStatus(String value) {
         this.value = value;
     }
 
-    public int getValue() {
+    public String getValue() {
         return value;
     }
 }

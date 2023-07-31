@@ -21,7 +21,7 @@ public class TaskService {
     private TaskRepository repository;
 
     public void createNewTask(Task task) {
-        printTaskObj(task);
+        // printTaskObj(task);
         repository.saveAndFlush(task);
     }
 

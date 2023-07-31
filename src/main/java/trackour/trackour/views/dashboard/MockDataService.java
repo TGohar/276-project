@@ -19,28 +19,28 @@ public class MockDataService {
     // Add some sample projects to the list
     projects.add(new Project(0, "Project A", "Solo", "Song: Hello, Key: C, BPM: 120", "In Progress", 0.50, tasks));
     projects.add(new Project(1, "Project B", "Team", "Song: Bye, Key: G, BPM: 100", "In Progress", 0.75, tasks));
-    projects.add(new Project(2, "Project C", "Duet", "Song: Hi, Key: D, BPM: 90", "Completed", 1.0, tasks));
-    projects.add(new Project(3, "Project A", "Solo", "Song: Hello, Key: C, BPM: 120", "In Progress", 0.5, tasks));
-    projects.add(new Project(4, "Project B", "Team", "Song: Bye, Key: G, BPM: 100", "Completed", 1.0, tasks));
-    projects.add(new Project(5, "Project C", "Duet", "Song: Hi, Key: D, BPM: 90", "In Progress", 0.25, tasks));
-    projects.add(new Project(0, "Project A", "Solo", "Song: Hello, Key: C, BPM: 120", "In Progress", 0.50, tasks));
-    projects.add(new Project(1, "Project B", "Team", "Song: Bye, Key: G, BPM: 100", "In Progress", 0.75, tasks));
-    projects.add(new Project(2, "Project C", "Duet", "Song: Hi, Key: D, BPM: 90", "Completed", 1.0, tasks));
-    projects.add(new Project(3, "Project A", "Solo", "Song: Hello, Key: C, BPM: 120", "In Progress", 0.5, tasks));
-    projects.add(new Project(4, "Project B", "Team", "Song: Bye, Key: G, BPM: 100", "Completed", 1.0, tasks));
-    projects.add(new Project(5, "Project C", "Duet", "Song: Hi, Key: D, BPM: 90", "In Progress", 0.25, tasks));
-    projects.add(new Project(0, "Project A", "Solo", "Song: Hello, Key: C, BPM: 120", "In Progress", 0.50, tasks));
-    projects.add(new Project(1, "Project B", "Team", "Song: Bye, Key: G, BPM: 100", "In Progress", 0.75, tasks));
-    projects.add(new Project(2, "Project C", "Duet", "Song: Hi, Key: D, BPM: 90", "Completed", 1.0, tasks));
-    projects.add(new Project(3, "Project A", "Solo", "Song: Hello, Key: C, BPM: 120", "In Progress", 0.5, tasks));
-    projects.add(new Project(4, "Project B", "Team", "Song: Bye, Key: G, BPM: 100", "Completed", 1.0, tasks));
-    projects.add(new Project(5, "Project C", "Duet", "Song: Hi, Key: D, BPM: 90", "In Progress", 0.25, tasks));
-    projects.add(new Project(0, "Project A", "Solo", "Song: Hello, Key: C, BPM: 120", "In Progress", 0.50, tasks));
-    projects.add(new Project(1, "Project B", "Team", "Song: Bye, Key: G, BPM: 100", "In Progress", 0.75, tasks));
-    projects.add(new Project(2, "Project C", "Duet", "Song: Hi, Key: D, BPM: 90", "Completed", 1.0, tasks));
-    projects.add(new Project(3, "Project A", "Solo", "Song: Hello, Key: C, BPM: 120", "In Progress", 0.5, tasks));
-    projects.add(new Project(4, "Project B", "Team", "Song: Bye, Key: G, BPM: 100", "Completed", 1.0, tasks));
-    projects.add(new Project(5, "Project C", "Duet", "Song: Hi, Key: D, BPM: 90", "In Progress", 0.25, tasks));
+    // projects.add(new Project(2, "Project C", "Duet", "Song: Hi, Key: D, BPM: 90", "Completed", 1.0, tasks));
+    // projects.add(new Project(3, "Project A", "Solo", "Song: Hello, Key: C, BPM: 120", "In Progress", 0.5, tasks));
+    // projects.add(new Project(4, "Project B", "Team", "Song: Bye, Key: G, BPM: 100", "Completed", 1.0, tasks));
+    // projects.add(new Project(5, "Project C", "Duet", "Song: Hi, Key: D, BPM: 90", "In Progress", 0.25, tasks));
+    // projects.add(new Project(0, "Project A", "Solo", "Song: Hello, Key: C, BPM: 120", "In Progress", 0.50, tasks));
+    // projects.add(new Project(1, "Project B", "Team", "Song: Bye, Key: G, BPM: 100", "In Progress", 0.75, tasks));
+    // projects.add(new Project(2, "Project C", "Duet", "Song: Hi, Key: D, BPM: 90", "Completed", 1.0, tasks));
+    // projects.add(new Project(3, "Project A", "Solo", "Song: Hello, Key: C, BPM: 120", "In Progress", 0.5, tasks));
+    // projects.add(new Project(4, "Project B", "Team", "Song: Bye, Key: G, BPM: 100", "Completed", 1.0, tasks));
+    // projects.add(new Project(5, "Project C", "Duet", "Song: Hi, Key: D, BPM: 90", "In Progress", 0.25, tasks));
+    // projects.add(new Project(0, "Project A", "Solo", "Song: Hello, Key: C, BPM: 120", "In Progress", 0.50, tasks));
+    // projects.add(new Project(1, "Project B", "Team", "Song: Bye, Key: G, BPM: 100", "In Progress", 0.75, tasks));
+    // projects.add(new Project(2, "Project C", "Duet", "Song: Hi, Key: D, BPM: 90", "Completed", 1.0, tasks));
+    // projects.add(new Project(3, "Project A", "Solo", "Song: Hello, Key: C, BPM: 120", "In Progress", 0.5, tasks));
+    // projects.add(new Project(4, "Project B", "Team", "Song: Bye, Key: G, BPM: 100", "Completed", 1.0, tasks));
+    // projects.add(new Project(5, "Project C", "Duet", "Song: Hi, Key: D, BPM: 90", "In Progress", 0.25, tasks));
+    // projects.add(new Project(0, "Project A", "Solo", "Song: Hello, Key: C, BPM: 120", "In Progress", 0.50, tasks));
+    // projects.add(new Project(1, "Project B", "Team", "Song: Bye, Key: G, BPM: 100", "In Progress", 0.75, tasks));
+    // projects.add(new Project(2, "Project C", "Duet", "Song: Hi, Key: D, BPM: 90", "Completed", 1.0, tasks));
+    // projects.add(new Project(3, "Project A", "Solo", "Song: Hello, Key: C, BPM: 120", "In Progress", 0.5, tasks));
+    // projects.add(new Project(4, "Project B", "Team", "Song: Bye, Key: G, BPM: 100", "Completed", 1.0, tasks));
+    // projects.add(new Project(5, "Project C", "Duet", "Song: Hi, Key: D, BPM: 90", "In Progress", 0.25, tasks));
   }
 
   // Define a method to get a list of projects

@@ -1,17 +1,17 @@
 package trackour.trackour.model.task;
 
 public enum TaskStatus {
-    NOT_STARTED(0),
-    IN_PROGRESS(1),
-    COMPLETED(2);
+    NOT_STARTED("NOT_STARTED"),
+    IN_PROGRESS("IN_PROGRESS"),
+    COMPLETED("COMPLETED");
 
-    private final int value;
+    private final String value;
 
-    private TaskStatus(int value) {
+    private TaskStatus(String value) {
         this.value = value;
     }
 
-    public int getValue() {
+    public String getValue() {
         return value;
     }
 }

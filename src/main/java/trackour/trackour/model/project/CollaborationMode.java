@@ -1,16 +1,16 @@
 package trackour.trackour.model.project;
 
 public enum CollaborationMode {
-    SOLO(0),
-    TEAM(1);
+    SOLO("SOLO"),
+    TEAM("TEAM");
 
-    private final int value;
+    private final String value;
 
-    private CollaborationMode(int value) {
+    private CollaborationMode(String value) {
         this.value = value;
     }
 
-    public int getValue() {
+    public String getValue() {
         return value;
     }
 }

@@ -290,11 +290,14 @@ public class FriendsView extends VerticalLayout {
             friends.remove(friend.getUid());
 
             List<Long> friendFriends = friend.getFriends();
+            if (friendFriends == null) {
+                friendFriends = new ArrayList<>();
+            }
             friendFriends.remove(this.currentUser.getUid());
 
             this.currentUser.setFriends(friends);
             this.customUserDetailsService.updateUser(currentUser);
-
+            
             friend.setFriends(friendFriends);
             this.customUserDetailsService.updateUser(friend);
             this.getUI().get().getPage().reload();

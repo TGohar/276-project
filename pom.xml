@@ -189,6 +189,19 @@
             <version>4.0.2</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.vaadin.addons</groupId>
+            <artifactId>vaadin-sliderpanel</artifactId>
+            <version>2.2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.vaadin.addons.jhoffmann99</groupId>
+            <artifactId>trix-editor</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+
+
 
     </dependencies>
 

@@ -73,7 +73,8 @@
   "lit": "2.7.4",
   "lit-element": "^3.2.2",
   "lit-html": "2.4.0",
-  "mobile-drag-drop": "2.3.0-rc.2"
+  "mobile-drag-drop": "2.3.0-rc.2",
+  "trix": "2.0.4"
  },
  "npmModules": {
   "@lit/reactive-element": "1.6.2",
@@ -160,6 +161,7 @@
   "lit-html": "2.4.0",
   "mobile-drag-drop": "2.3.0-rc.2",
   "strip-css-comments": "5.0.0",
+  "trix": "2.0.4",
   "tslib": "2.5.3"
  },
  "bundleImports": [
@@ -237,6 +239,7 @@
   "Frontend/generated/jar-resources/comboBoxConnector.js",
   "Frontend/generated/jar-resources/contextMenuConnector.js",
   "Frontend/generated/jar-resources/contextMenuTargetConnector.js",
+  "Frontend/generated/jar-resources/custom.css",
   "Frontend/generated/jar-resources/datepickerConnector.js",
   "Frontend/generated/jar-resources/dndConnector.js",
   "Frontend/generated/jar-resources/flow-component-renderer.js",
@@ -254,7 +257,9 @@
   "Frontend/generated/jar-resources/vaadin-grid-flow-selection-column.js",
   "Frontend/generated/jar-resources/vaadin-time-picker/timepickerConnector.js",
   "Frontend/generated/jar-resources/virtualListConnector.js",
-  "Frontend/styles/my-block__responsive-layout.css"
+  "Frontend/styles/my-block__responsive-layout.css",
+  "trix/dist/trix.css",
+  "trix/dist/trix.esm.min.js"
  ],
  "frontendHashes": {
   "styles/my-block__responsive-layout.css": "c6530703fb5e9a5e11065ea7b46e1237da44a8078cba1062e871e2558666055d",
@@ -263,6 +268,7 @@
   "comboBoxConnector.js": "1d004c3dae9c76f8bcc68678abe1b8f7bdc8b456f5c9c4c7f190df8ed25d66cd",
   "contextMenuConnector.js": "25a200f8086461635ddd92316ebeb5a868294c8650a190efbae120edb1088f4f",
   "contextMenuTargetConnector.js": "870f67643988dd5618c247bd3c28d843f70aa026ee89f44c3c7556b5e70856af",
+  "custom.css": "c2fdbea150b401de9a010532d739da0381792478539ffc1b0bf2b91b61e2b340",
   "datepickerConnector.js": "84d25236e1e478c2e181a7881464ad75228a30ccd99d60f78186f0804b6a4a37",
   "dndConnector.js": "9805235aec2ff3302fcd6e65151fcab1c2fb6944d57281b48d4f5e3b3d06ff4e",
   "flow-component-renderer.js": "f45de3d78e4719c2eb7aa09b48ec758e1e44e171cd4ad545ac9e33c3623dcfb1",
@@ -285,12 +291,12 @@
   "trackour": "{\n  \"lumoImports\" : [ \"typography\", \"color\", \"spacing\", \"badge\", \"utility\" ]\n}"
  },
  "entryScripts": [
-  "VAADIN/build/indexhtml-d408878b.js"
+  "VAADIN/build/indexhtml-34a6f6fb.js"
  ],
  "webComponents": [],
  "cvdlModules": {},
- "packageJsonHash": "ccefcea59b2113dbca88c573d1498b44e7b14bd01a6debe7656e9e459e63697a",
+ "packageJsonHash": "009df42d7a836115dfacc5444cd988a80450cb93f8313004b996b7c72a0039f9",
  "indexHtmlGenerated": [
-  "  <script type=\"module\" crossorigin src=\"./VAADIN/build/indexhtml-d408878b.js\"></script>"
+  "  <script type=\"module\" crossorigin src=\"./VAADIN/build/indexhtml-34a6f6fb.js\"></script>"
  ]
 }

@@ -1,40 +1,30 @@
 package trackour.trackour.model.project;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 // import java.util.Set;
 import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
-
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import trackour.trackour.model.task.Task;
-import trackour.trackour.model.user.User;
 
 @Entity
-@Table(
-    name="projects", 
-    uniqueConstraints= @UniqueConstraint(columnNames={"project_id", "owner_id"})
-    )
+@Table( name="projects", uniqueConstraints= @UniqueConstraint(columnNames={"project_id"}))
 public class Project {
     
     @Id
-    @JsonProperty(access = Access.READ_ONLY)
     @Column(name = "project_id", length = 36, nullable = false, updatable = false)
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
@@ -53,38 +43,72 @@ public class Project {
     @Column(name = "status", nullable = false)
     private ProjectStatus status;
     
-    // a project can have many tasks
-    @OneToMany(mappedBy = "project")
-    private Set<Task> tasks;
+    private Set<String> tasks;
     
     // is this project collaborative
     @Column(name = "collaboration_mode")
     private CollaborationMode collaborationMode;
     
     // a project can have one owner
-    @ManyToOne
-    @JoinColumn(name = "owner_id")
-    private User owner;
+    @Column(name = "owner", nullable = false)
+    private Long owner;
 
     // a project can have many participants
-    @ManyToMany
-    @JoinTable(name = "project_participants",
-        joinColumns = @JoinColumn(name = "project_id"),
-        inverseJoinColumns = @JoinColumn(name = "uid"))
-    private Set<User> participants;
+    private Set<Long> participants;
 
     // progress double. can be used by progress bar or charts
     @Column(name = "progress")
     private Double progress;
 
-    public Project() {
+    @Column(name = "keys")
+    private Set<String> keys;
+
+    @Column(name = "bpm")
+    private Set<String> bpm;
+
+    
+    // ----------methods------------------------------------------
+    private Project() {
+        initCollections();
+        this.owner = -1l;
+    }
+    public Project(Long owner) {
+        initCollections();
+        this.owner = owner;
+    }
+    public void initCollections() {
         initStatus();
+
+        this.progress = 0.0;
+        this.title = "New Project";
+        this.collaborationMode = CollaborationMode.SOLO;
+        // Initialize the collections as empty sets
+        this.tasks = new HashSet<>();
+        this.participants = new HashSet<>();
+        this.keys = new HashSet<>();
+        this.bpm = new HashSet<>();
     }
 
     private void initStatus() {
         this.status = ProjectStatus.IN_PROGRESS;
     }
 
+    public Set<String> getKeys() {
+        return keys;
+    }
+    
+    public void setKeys(Set<String> keys) {
+        this.keys = keys;
+    }
+    
+    public Set<String> getBpm() {
+        return bpm;
+    }
+    
+    public void setBpm(Set<String> bpm) {
+        this.bpm = bpm;
+    }
+  
     public String getId() {
         return id;
     }
@@ -109,11 +133,11 @@ public class Project {
         this.createdAt = createdAt;
     }
 
-    public User getOwner() {
+    public Long getOwner() {
         return owner;
     }
 
-    public void setOwner(User owner) {
+    public void setOwner(Long owner) {
         this.owner = owner;
     }
     
@@ -125,19 +149,19 @@ public class Project {
         this.status = status;
     }
     
-    public Set<Task> getTasks() {
+    public Set<String> getTasks() {
         return tasks;
     }
     
-    public void setTasks(Set<Task> tasks) {
+    public void setTasks(Set<String> tasks) {
         this.tasks = tasks;
     }
 
-    public Set<User> getParticipants() {
+    public Set<Long> getParticipants() {
         return participants;
     }
 
-    public void setParticipants(Set<User> participants) {
+    public void setParticipants(Set<Long> participants) {
         this.participants = participants;
     }
 

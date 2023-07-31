@@ -96,7 +96,6 @@ public class CustomSignupForm extends FormLayout {
                         System.out.println("Signup validations all passed!");
                         // if no errors occured during validation, register/call userservice registration method
                         System.out.println("Registering user is:");
-                        userService.printUserObj(newUser);
 
                         userService.registerUser(newUser);
                         UI.getCurrent().navigate("redirect:/login");
