@@ -1,8 +1,11 @@
 package trackour.trackour.model.project;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.vaadin.flow.component.Component;
 
 import jakarta.transaction.Transactional;
 import trackour.trackour.model.task.Task;
@@ -40,6 +44,57 @@ public class ProjectsService {
         }
         return new ArrayList<>();
     }
+
+    // public Set<User> getAllParticipantsForProject(Long projectId) {
+    //     Optional<Project> projectOptional = projectRepository.findById(projectId);
+    //     if (projectOptional.isPresent()) {
+    //         return projectRepository.findById(projectId).get().getParticipants();
+    //     }
+    //     return new HashSet<>();
+    // }
+    
+    // /**
+    //  * pass the project id and the list of friends usernames
+    //  * @param projectId
+    //  * @param usernames
+    //  */
+    // public void setParticipants(Long projectId, List<String> usernames) {
+    //     if (projectRepository.findById(projectId).isPresent()) {
+    //         boolean allPresent = usernames.stream()
+    //         .allMatch(username -> userRepository.findByUsername(username).isPresent());
+    //         if (allPresent) {
+    //             // the project and user exist
+    //             Set<User> selectedParticipants = usernames.stream()
+    //                 .filter(username -> userRepository.findByUsername(username).isPresent()) // filter only the usernames that are present in the userRepository
+    //                 .map(username -> userRepository.findByUsername(username).get()) // map each username to the corresponding User object
+    //                 .collect(Collectors.toSet()); // collect the User objects into a Set
+    //             Project chosenProject = projectRepository.findById(projectId).get();
+    //             chosenProject.setParticipants(selectedParticipants);
+    //             updateProject(chosenProject);
+
+    //         }
+    //     }
+    // }
+
+    // public void unsetParticipants(Long projectId, List<Long> userIds) {
+    //     if (projectRepository.findById(projectId).isPresent()) {
+    //         // make sure the ids are for valid users
+    //         boolean allPresent = userIds.stream()
+    //             .allMatch(userId -> userRepository.findByUid(userId).isPresent());
+    //         if (allPresent) {
+    //             // the project and user exist
+    //             Set<User> selectedParticipants = userIds.stream()
+    //                 .filter(id1 -> userRepository.findByUid(id1).isPresent()) // filter only the id that are present in the userRepository
+    //                 .map(id2 -> userRepository.findByUid(id2).get()) // map each username to the corresponding User object
+    //                 .collect(Collectors.toSet()); // collect the User objects into a Set
+    //             Project chosenProject = projectRepository.findById(projectId).get();
+    //             chosenProject.getParticipants().removeIf(user -> selectedParticipants.stream()
+    //                 .map(User::getUsername) // map each user in selectedParticipants to their username
+    //                 .anyMatch(username -> username.equals(user))); // remove all the selected participants from the project
+    //             updateProject(chosenProject);
+    //         }
+    //     }
+    // }
     
     
     public void createNewProject(Project project) {
@@ -126,5 +181,12 @@ public class ProjectsService {
         if (project != null) {
             projectRepository.delete(project);
         }
+    }
+
+    public Project getById(Long id) {
+        if (projectRepository.findById(id).isPresent()) {
+            return projectRepository.findById(id).get();
+        }
+        return null;
     }
 }

@@ -282,7 +282,9 @@ private void updateGrid() {
     List<Project> projects = new ArrayList<>();
     
     if (userOptional.isPresent()){
+        // get the projects you own
         projects = projectsService.getAllByOwner(user);
+        // as well as the ones you don't own but  participated in
     
         System.out.println("projects size: " + projects.size());
     

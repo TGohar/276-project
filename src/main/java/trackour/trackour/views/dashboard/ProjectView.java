@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import org.vaadin.addons.tatu.CircularProgressBar;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
@@ -84,7 +84,7 @@ public class ProjectView extends VerticalLayout implements HasUrlParameter<Long>
         VerticalLayout dataSection = new VerticalLayout();
         dataSection.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
         dataSection.setSizeFull();
-        H1 title = new H1();
+        H1 title = new H1(projectsService.getById(id) == null ? "No title" : projectsService.getById(id).getTitle());
         Span collaborationMode = new Span();
         Div audioDetails = new Div();
         Span status = new Span();
@@ -113,15 +113,6 @@ public class ProjectView extends VerticalLayout implements HasUrlParameter<Long>
         TextArea selectedKeys = new TextArea("Selected Keys");
         List<String> tempKeys = Arrays.asList("C", "C#", "Bb");
         selectedKeys.setReadOnly(true);
-
-        MultiSelectComboBox<String> keysComboBox = new MultiSelectComboBox<>();
-        keysComboBox.setLabel("Select keys:");
-        keysComboBox.setItems(tempKeys);
-        keysComboBox.addValueChangeListener(e -> {
-          String selectedKeysText = e.getValue().stream().collect(Collectors.joining(", "));
-          selectedKeys.setValue(selectedKeysText);
-        });
-        keysArea.add(keysComboBox);
         keysArea.add(selectedKeys);
         songs_audioDetails.add(keysArea);
         dataSection.add(title, progressBarContainer, status_collab, songs_audioDetails);
@@ -133,15 +124,13 @@ public class ProjectView extends VerticalLayout implements HasUrlParameter<Long>
         List<String> userFriendsUsernames = user.getFriendsWith().stream()
                   .map(User::getUsername)
                   .collect(Collectors.toList());
-
-        List<String> friendsList = userFriendsUsernames; //customUserDetailsService.getAll().stream().map(usr -> user.getFriendRequests().contains(usr.getUid())).collect(Collectors.toList())
-        participantsListBox.setItems(friendsList);
-
-        VerticalLayout participantsSection = new VerticalLayout();
-        participantsSection.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-        participantsSection.setSizeFull();
-        participantsSection.add(title, participantsLabel, participantsListBox);
-
+        // get the Set<User> of participants
+        // Set<User> participants = projectsService.getAllParticipantsForProject(id);
+        // // convert the Set<User> to a List<String> of usernames
+        // List<String> participantUsernames = participants.stream()
+        //     .map(User::getUsername) // map each User to their username
+        //     .collect(Collectors.toList()); // collect the usernames into a List
+        // // set default selected participants
 
         // right section customization
         // create another split layout for the right section
@@ -174,9 +163,9 @@ public class ProjectView extends VerticalLayout implements HasUrlParameter<Long>
 
         
         // main content customization
-        rightSection.add(dataSection, participantsSection);
+        rightSection.add(dataSection);
 
-        leftSection.add(dataSection, participantsSection);
+        leftSection.add(dataSection);
 
         // set left and right sections
         splitLayout.addToPrimary(leftSection);
@@ -188,6 +177,7 @@ public class ProjectView extends VerticalLayout implements HasUrlParameter<Long>
         navbar.setContent(splitLayout);
 
         // add the navbar as the only child of the vertical layout
+        removeAll();
         this.add(navbar);
     }
 }

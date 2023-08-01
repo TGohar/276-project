@@ -40,14 +40,8 @@ public class Project {
     @JoinColumn(name = "user_id", referencedColumnName = "uid")
     private User owner;
 
-    // a project can have many assignees
-    @ManyToMany
-    @JoinTable(
-        name = "project_participants", // name of the join table
-        joinColumns = @JoinColumn(name = "project_id"), // foreign key column for Task
-        inverseJoinColumns = @JoinColumn(name = "user_id") // foreign key column for User
-    )
-    private Set<User> participants;
+    // set of user ids allowed on this project
+    private Set<Long> participants;
 
     @Column(name = "title")
     private String title;
@@ -167,11 +161,11 @@ public class Project {
         this.status = status;
     }
 
-    public Set<User> getParticipants() {
+    public Set<Long> getParticipants() {
         return participants;
     }
 
-    public void setParticipants(Set<User> participants) {
+    public void setParticipants(Set<Long> participants) {
         this.participants = participants;
     }
 

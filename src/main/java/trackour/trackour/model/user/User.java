@@ -57,9 +57,6 @@ public class User {
     
     @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private List<Project> ownedProjects;
-    
-    @OneToMany(mappedBy = "participants", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    private Set<Project> participatedProjects;
 
     @Column(name = "username")
     private String username;
@@ -122,7 +119,6 @@ public class User {
         this.friendsWith = new ArrayList<>();
         this.pendingFriendRequests = new ArrayList<>();
 
-        this.participatedProjects = new HashSet<>();
         this.ownedProjects = new ArrayList<>();
         
         // initialize default role as ["USER"]
@@ -130,14 +126,6 @@ public class User {
         // defaultRole.add(Role.USER);
         defaultRole.add(Role.ADMIN);
         setRoles(defaultRole);
-    }
-
-    public Set<Project> getParticipatedProjects() {
-        return participatedProjects;
-    }
-
-    public void setParticipatedProjects(Set<Project> participatedProjects) {
-        this.participatedProjects = participatedProjects;
     }
 
     public List<User> getFriendsWith() {

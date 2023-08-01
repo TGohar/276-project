@@ -3,9 +3,11 @@ package trackour.trackour.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 // import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 // import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -20,6 +22,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
+import trackour.trackour.model.project.Project;
+import trackour.trackour.model.project.ProjectRepository;
 import trackour.trackour.model.user.User;
 import trackour.trackour.model.user.UserRepository;
 import trackour.trackour.views.friends.FriendRequestEnum;
@@ -28,15 +32,18 @@ import trackour.trackour.views.friends.FriendRequestEnum;
 @Transactional
 public class CustomUserDetailsService implements UserDetailsService {
     @Autowired
-    private UserRepository repository;
+    private UserRepository userRepository;
+
+    @Autowired
+    private ProjectRepository projecRepository;
 
     public List<User> getAllFriends(User user) {
         if (user == null){
             return Arrays.asList();
         }
-        Optional<User> currentUserOptional = repository.findByUid(user.getUid());
+        Optional<User> currentUserOptional = userRepository.findByUid(user.getUid());
         if (currentUserOptional.isPresent()) {
-            return repository.findByUid(user.getUid()).get().getFriendsWith();
+            return userRepository.findByUid(user.getUid()).get().getFriendsWith();
         }
         return Arrays.asList();
     }
@@ -45,9 +52,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (user == null){
             return Arrays.asList();
         }
-        Optional<User> currentUserOptional = repository.findByUid(user.getUid());
+        Optional<User> currentUserOptional = userRepository.findByUid(user.getUid());
         if (currentUserOptional.isPresent()) {
-            return repository.findByUid(user.getUid()).get().getPendingFriendRequests();
+            return userRepository.findByUid(user.getUid()).get().getPendingFriendRequests();
         }
         return Arrays.asList();
     }
@@ -148,40 +155,40 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     public Optional<User> getByUid(Long uid) {
-        return repository.findByUid(uid);
+        return userRepository.findByUid(uid);
     }
 
     public Optional<User> getByUsername(String username) {
-        return repository.findByUsername(username);
+        return userRepository.findByUsername(username);
     }
 
     public Optional<User> getByEmail(String email) {
-        return repository.findByEmail(email);
+        return userRepository.findByEmail(email);
     }
 
     public Optional<User> getByPasswordResetToken(String passwordResetToken) {
-        return repository.findByPasswordResetToken(passwordResetToken);
+        return userRepository.findByPasswordResetToken(passwordResetToken);
     }
 
     public User update(User entity) {
-        return repository.saveAndFlush(entity);
+        return userRepository.saveAndFlush(entity);
     }
 
     public void delete(Long uid) {
-        repository.deleteByUid(uid);
+        userRepository.deleteByUid(uid);
     }
 
     public List<User> getAll() {
-        return repository.findAll();
+        return userRepository.findAll();
     }
 
     public int count() {
-        return (int) repository.count();
+        return (int) userRepository.count();
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> user = repository.findByUsername(username);
+        Optional<User> user = userRepository.findByUsername(username);
         if (!user.isPresent()) {
             throw new UsernameNotFoundException("No user present with username: " + username);
         } else {
