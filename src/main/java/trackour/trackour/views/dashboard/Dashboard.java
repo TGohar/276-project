@@ -32,6 +32,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LocalDateTimeRenderer;
@@ -112,6 +113,7 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
     grid.addColumn(new ComponentRenderer<>(project -> {
         // Create a new Span object and set its text to the project's status value
         Span statusSpan = new Span(project.getStatus().getValue());
+        statusSpan.setWidthFull();
         // Use a switch statement to add the badge theme variants to the span according to the status value
         switch (project.getStatus()) {
             case COMPLETED:
@@ -129,6 +131,7 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
     grid.addColumn(new ComponentRenderer<>(project -> {
 
         Select<CollaborationMode> collabModeSelect = new Select<>();
+        collabModeSelect.setWidthFull();
 
         // set the items from the enum values
         collabModeSelect.setItems(EnumSet.allOf(CollaborationMode.class));
@@ -151,128 +154,39 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
         return collabModeSelect;
     })).setHeader("Collaboration mode").setKey("collaborationMode").setSortable(true);
 
-
     // Modify the progress column to make it resizable
     grid.getColumnByKey("progress").setResizable(true);
 
-//     Set<User> partUsers = project.getParticipants().stream()
-//   .map(partId -> customUserDetailsService.getByUid(partId)).collect(Collectors.toSet());
+    // grid.addColumn(new ComponentRenderer<>(proj -> generateParticipantsOption(proj))).setHeader("Participants").setKey("participants");
+    // grid.getColumnByKey("participants").setResizable(true);
 
-    grid.addColumn(new ComponentRenderer<>(proj -> {
+    // grid.addColumn(new ComponentRenderer<>(proj -> generateKeysOption(proj))).setHeader("Keys:");
 
-        Set<Long> parts = proj.getParticipants();
-        Set<User> partsUsers = parts.stream()
-        .map(p -> customUserDetailsService.getByUid(p))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .collect(Collectors.toSet());
-
-        Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
-        User user = userOptional.get();
-
-        MultiSelectComboBox<User> collabModeSelect = new MultiSelectComboBox<>();
-
-        // set the items from the enum values
-        collabModeSelect.setItems(customUserDetailsService.getAllFriends(user));
-
-        // collabModeSelect.select(proj.getParticipants());
-        // .map(id -> customUserDetailsService.getByUid(id)) // convert each id to a User
-        // .collect(Collectors.toSet()); // collect the Users into a new set
-
-        // set the label generator to use the getValue() method
-        collabModeSelect.setItemLabelGenerator(User::getUsername);
-        collabModeSelect.setValue(partsUsers);
-        
-        // Get the selected users from the multiselectcombobox
-        Set<User> selectedUsers = collabModeSelect.getValue();
-
-        // Do something with the selected users
-        // For example, print their usernames
-        for (User usr : selectedUsers) {
-            System.out.println(usr.getUsername());
-        }
-        // Add a value change listener to the multiselectcombobox
-        collabModeSelect.addValueChangeListener(event -> {
-            // Get the old and new values of the multiselectcombobox
-            // Set<User> oldValue = event.getOldValue();
-            Set<User> newValue = event.getValue();
-
-            // add some users to the set
-            String users = newValue.stream()
-            .map(User::getUsername) // convert each user to a string
-            .collect(Collectors.joining(", ")); // join them with commas
-            Notification.show("Selected users: " + users);
-
-            // Do something when the value changes
-            // For example, show a notification with the new value
-            Notification.show("Selected users: " + users);
-            projectsService.setParticipants(newValue, proj);
-        });
-
-        // Return the Span object
-        return collabModeSelect;
-    })).setHeader("Participants");
-
-
-    grid.addColumn(new ComponentRenderer<>(proj -> {
-
-        Set<Key> parts = proj.getKeys();
-        // Set<User> partsUsers = parts.stream()
-        // .map(p -> customUserDetailsService.getByUid(p))
-        // .filter(Optional::isPresent)
-        // .map(Optional::get)
-        // .collect(Collectors.toSet());
-
-        MultiSelectComboBox<Key> collabModeSelect = new MultiSelectComboBox<>();
-
-        // set the items from the enum values
-        collabModeSelect.setItems(Camelot.getAllKeys());
-
-        // set the label generator to use the getValue() method
-        collabModeSelect.setItemLabelGenerator(k -> k.name);
-        collabModeSelect.setValue(parts);
-        
-        // Get the selected users from the multiselectcombobox
-        Set<Key> selectedUsers = collabModeSelect.getValue();
-
-        // Do something with the selected users
-        // For example, print their usernames
-        for (Key key : selectedUsers) {
-            System.out.println(key.name);
-        }
-
-        // Add a value change listener to the multiselectcombobox
-        collabModeSelect.addValueChangeListener(event -> {
-            // Get the old and new values of the multiselectcombobox
-            // Set<User> oldValue = event.getOldValue();
-            Set<Key> newValue = event.getValue();
-
-            // add some users to the set
-            String keys = newValue.stream()
-            .map(key -> key.name) // convert each user to a string
-            .collect(Collectors.joining(", ")); // join them with commas
-            Notification.show("Selected keys: " + keys);
-            projectsService.setKeys(newValue, proj);
-        });
-
-        // Return the Span object
-        return collabModeSelect;
-    })).setHeader("Keys:");
+    // grid.addColumn(new ComponentRenderer<>(proj -> generateBpmField(proj))).setHeader("Tempo:");
     
     // Use a ComponentRenderer to create the button component for each project 
-    grid.addColumn(new ComponentRenderer<>(project -> { 
-        // Create a new Button object and set its text, icon, theme and click listener 
-        Button button = new Button("Open", VaadinIcon.EXTERNAL_LINK.create()); 
-        button.addThemeVariants(ButtonVariant.LUMO_PRIMARY); 
-        button.addClickListener(e -> { 
-            // Open the project view in a new tab with the project id as a parameter 
-            // QueryParameters queryParameters = QueryParameters.simple(Map.of("query", searchValue));
-            //         ui.navigate("search", queryParameters);
-            UI.getCurrent().getPage().open("project/" + project.getId(), "_blank"); }); 
-            // Wrap the button object in a Div component and return it 
-            Div div = new Div(button); 
-            return div; 
-    })).setHeader("Open").setKey("open");
+    grid.addColumn(new ComponentRenderer<>(proj -> generateOpenButton(proj))).setHeader("Open").setKey("open");
+
+    // Set a custom renderer for the item details row
+    grid.setItemDetailsRenderer(
+        new ComponentRenderer<>(proj -> {
+            // Create a layout to display the person's address and year of birth
+            HorizontalLayout layout = new HorizontalLayout();
+            layout.setSizeFull();
+            IntegerField bpm = generateBpmField(proj);
+            bpm.setLabel("BPM:");
+            MultiSelectComboBox<Key> keys = generateKeysOption(proj);
+            keys.setLabel("Keys:");
+            MultiSelectComboBox<String> participants = generateParticipantsOption(proj);
+            participants.setLabel("Participants:");
+            layout.add(
+                bpm,
+                keys,
+                participants
+            );
+            return layout;
+        })
+    );
 
     // Remove the selectedProjects variable from the class
 
@@ -411,6 +325,144 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
     updateGrid();
 }
 
+Div generateOpenButton(Project proj) {
+    // Create a new Button object and set its text, icon, theme and click listener 
+    Button button = new Button("Open", VaadinIcon.EXTERNAL_LINK.create()); 
+    button.addThemeVariants(ButtonVariant.LUMO_PRIMARY); 
+    button.addClickListener(e -> { 
+        // Open the project view in a new tab with the project id as a parameter 
+        // QueryParameters queryParameters = QueryParameters.simple(Map.of("query", searchValue));
+        //         ui.navigate("search", queryParameters);
+        UI.getCurrent().getPage().open("project/" + proj.getId(), "_blank"); }); 
+        // Wrap the button object in a Div component and return it 
+        Div div = new Div(button); 
+        return div; 
+}
+
+MultiSelectComboBox<Key> generateKeysOption(Project proj) {
+    Set<Key> parts = proj.getKeys();
+    // Set<User> partsUsers = parts.stream()
+    // .map(p -> customUserDetailsService.getByUid(p))
+    // .filter(Optional::isPresent)
+    // .map(Optional::get)
+    // .collect(Collectors.toSet());
+
+    MultiSelectComboBox<Key> collabModeSelect = new MultiSelectComboBox<>();
+    collabModeSelect.setWidthFull();
+
+    // set the items from the enum values
+    collabModeSelect.setItems(Camelot.getAllKeys());
+
+    // set the label generator to use the getValue() method
+    collabModeSelect.setItemLabelGenerator(k -> k.name);
+    collabModeSelect.setValue(parts);
+    
+    // Get the selected users from the multiselectcombobox
+    Set<Key> selectedUsers = collabModeSelect.getValue();
+
+    // Do something with the selected users
+    // For example, print their usernames
+    for (Key key : selectedUsers) {
+        System.out.println(key.name);
+    }
+
+    // Add a value change listener to the multiselectcombobox
+    collabModeSelect.addValueChangeListener(event -> {
+        // Get the old and new values of the multiselectcombobox
+        // Set<User> oldValue = event.getOldValue();
+        Set<Key> newValue = event.getValue();
+
+        // add some users to the set
+        String keys = newValue.stream()
+        .map(key -> key.name) // convert each user to a string
+        .collect(Collectors.joining(", ")); // join them with commas
+        Notification.show("Selected keys: " + keys);
+        projectsService.setKeys(newValue, proj);
+    });
+
+    // Return the Span object
+    return collabModeSelect;
+}
+
+IntegerField generateBpmField(Project proj) {
+    IntegerField bpmField = new IntegerField();
+    // initial value
+    bpmField.setValue(projectsService.getBpm(proj));
+    bpmField.setStepButtonsVisible(true);
+    bpmField.setMin(0);
+    bpmField.setWidthFull();
+
+    // Add a value change listener to the multiselectcombobox
+    bpmField.addValueChangeListener(event -> {
+        // Get the old and new values of the multiselectcombobox
+        // Set<User> oldValue = event.getOldValue();
+        Integer newValue = event.getValue();
+        Notification.show("Selected bpm: " + newValue);
+        // update
+        projectsService.setBpm(newValue, proj);
+    });
+
+    // Return the Span object
+    return bpmField;
+}
+
+MultiSelectComboBox<String> generateParticipantsOption(Project proj) {
+    Set<Long> parts = proj.getParticipants();
+        Set<String> partsUsers = parts.stream()
+        .map(p -> customUserDetailsService.getByUid(p))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .map(usr->usr.getUsername())
+        .collect(Collectors.toSet());
+    Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
+    User user = userOptional.get();
+
+    MultiSelectComboBox<String> collabModeSelect = new MultiSelectComboBox<>();
+    collabModeSelect.setWidthFull();
+
+    // set the items from the enum values
+    collabModeSelect.setItems(customUserDetailsService.getAllFriends(user)
+    .stream()
+    .map(User::getUsername)
+    .collect(Collectors.toSet()));
+
+    // collabModeSelect.select(proj.getParticipants());
+    // .map(id -> customUserDetailsService.getByUid(id)) // convert each id to a User
+    // .collect(Collectors.toSet()); // collect the Users into a new set
+
+    // set the label generator to use the getValue() method
+    collabModeSelect.setItemLabelGenerator(it -> it);
+    collabModeSelect.setValue(partsUsers);
+    
+    // Get the selected users from the multiselectcombobox
+    Set<String> selectedUsers = collabModeSelect.getValue();
+
+    // Do something with the selected users
+    // For example, print their usernames
+    for (String usr : selectedUsers) {
+        System.out.println(usr);
+    }
+    // Add a value change listener to the multiselectcombobox
+    collabModeSelect.addValueChangeListener(event -> {
+        // Get the old and new values of the multiselectcombobox
+        // Set<User> oldValue = event.getOldValue();
+        Set<String> newValue = event.getValue();
+
+        // add some users to the set
+        String users = newValue.stream()
+        .map(x->x) // convert each user to a string
+        .collect(Collectors.joining(", ")); // join them with commas
+        Notification.show("Selected users: " + users);
+
+        // Do something when the value changes
+        // For example, show a notification with the new value
+        Notification.show("Selected users: " + users);
+        projectsService.setParticipants(collabModeSelect.getSelectedItems(), proj);
+    });
+
+    // Return the Span object
+    return collabModeSelect;
+}
 // A method to update the grid with the latest projects from the database
 private void updateGrid() {
     // Get the user object from the service

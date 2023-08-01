@@ -19,12 +19,12 @@ public class Project {
   private String audioDetails;
   private String status;
   private double progress;
-  private List<Task> tasks; // The list of tasks for this project
+  private List<TaskMock> tasks; // The list of tasks for this project
   private Set<User> participants; // The list of tasks for this project
   private User firstParticipant;
 
   // Constructor for each project
-  public Project(int id, String name, String collaborationMode, String audioDetails, String status, double progress, List<Task> tasks) {
+  public Project(int id, String name, String collaborationMode, String audioDetails, String status, double progress, List<TaskMock> tasks) {
     this.id = id;
     this.name = name;
     this.collaborationMode = collaborationMode;
@@ -94,11 +94,11 @@ public class Project {
     this.progress = progress;
   }
 
-  public List<Task> getTasks() {
+  public List<TaskMock> getTasks() {
     return tasks;
   }
 
-  public void setTasks(List<Task> tasks) {
+  public void setTasks(List<TaskMock> tasks) {
     this.tasks = tasks;
   }
 

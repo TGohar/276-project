@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.addons.jhoffmann99.TrixEditor;
 import org.vaadin.addons.tatu.CircularProgressBar;
 
+import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Span;
@@ -18,6 +21,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeEvent;
@@ -29,13 +33,16 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.ui.Component;
 
 import jakarta.annotation.security.PermitAll;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.model.project.ProjectsService;
+import trackour.trackour.model.task.Task;
 import trackour.trackour.model.user.User;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.components.NavBar;
+import trackour.trackour.model.project.Project;
 
 // View for the project workspace
 @Route("project/")
@@ -57,6 +64,76 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver, 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
 
+    }
+
+    private HorizontalLayout generateTasksGrid(Long projectId) {
+
+      HorizontalLayout hLayout = new HorizontalLayout();
+      hLayout.setSizeFull();
+
+      Project project = projectsService.getById(projectId);
+
+      if (project != null) {
+        // Create a grid with the columns for title, status, and createdAt
+        Grid<Task> grid = new Grid<>();
+        grid.setSizeFull();
+        grid.addColumn(trackour.trackour.model.task.Task::getTitle).setHeader("Title");
+        grid.addColumn(Task::getStatus).setHeader("Status");
+        grid.addColumn(Task::getCreatedAt).setHeader("Created At");
+  
+        // Set some items for the grid
+        List<Task> tasks = Arrays.asList(
+          new Task(project),
+          new Task(project),
+          new Task(project),
+          new Task(project),
+          new Task(project));
+        grid.setItems(tasks);
+  
+        // Make the tasks selectable
+        grid.setSelectionMode(Grid.SelectionMode.MULTI);
+  
+        // Add a delete button and edit button to each row
+        grid.addComponentColumn(task -> {
+          HorizontalLayout layout = new HorizontalLayout();
+          // Create a delete button and add a click listener
+          Button deleteButton = new Button("Delete");
+          deleteButton.addClickListener(event -> {
+            // Delete the task from the backend
+            // deleteTask(task);
+            // Remove the task from the grid
+            grid.setItems(projectsService.getAllTasksForProject(projectId));
+          });
+          // Create an edit button and add a click listener
+          Button editButton = new Button("Edit");
+          editButton.addClickListener(event -> {
+            // Open a dialog to edit the task
+            // openEditDialog(task);
+          });
+          // Add the buttons to the layout
+          layout.add(deleteButton, editButton);
+          return layout;
+        }).setHeader("Actions");
+  
+        // Add any other features you think it needs
+        // For example, you can add a filter field to search by title
+        TextField filterField = new TextField();
+        filterField.setPlaceholder("Filter by title");
+        filterField.addValueChangeListener(event -> {
+          // Get the filter value
+          String filter = event.getValue();
+          // Filter the tasks by title
+          List<Task> filteredTasks = tasks.stream()
+            .filter(task -> task.getTitle().toLowerCase().contains(filter.toLowerCase()))
+            .collect(Collectors.toList());
+          // Set the filtered tasks to the grid
+          grid.setItems(filteredTasks);
+        });
+        
+        // Add the filter field above the grid
+        hLayout.add(filterField, grid);
+      }
+      return hLayout;
     }
   
     @Override
@@ -106,8 +183,8 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver, 
 
         CircularProgressBar progressBar = new CircularProgressBar();
         progressBar.setCaption("Complete");
-        progressBar.setWidthFull();
-        progressBar.setHeightFull();
+        progressBar.getStyle().setWidth("12rem");
+        progressBar.getStyle().setHeight("12rem");
         progressBar.setPercent(0);
 
         VerticalLayout progressBarContainer = new VerticalLayout();
@@ -156,6 +233,7 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver, 
         // create a vertical layout for the top component
         VerticalLayout topComponent = new VerticalLayout();
         topComponent.setSizeFull();
+        topComponent.add(generateTasksGrid(id));
         
         VerticalLayout editingSection = new VerticalLayout();
         editingSection.setSizeFull();
@@ -176,9 +254,13 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver, 
         // add the right split layout to the right section
         rightSection.add(rightSplitLayout);
 
+        VerticalLayout socialSection = new VerticalLayout();
+        socialSection.setSizeFull();
+        socialSection.getStyle().setBackground("green");
+        socialSection.add(new Span("Right section"));
         
         // main content customization
-        rightSection.add(dataSection);
+        rightSection.add(socialSection);
 
         leftSection.add(dataSection);
 

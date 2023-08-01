@@ -1,6 +1,7 @@
 package trackour.trackour.model.project;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 // import java.util.Set;
@@ -8,6 +9,7 @@ import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -33,6 +35,9 @@ public class Project {
     @Column(name = "project_id", nullable = false, updatable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @OneToMany(mappedBy = "project", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    private List<Task> tasks;
     
     // a project can have one owner
     @ManyToOne(fetch = FetchType.LAZY)
@@ -66,10 +71,8 @@ public class Project {
     private Set<Key> keys;
 
     @Column(name = "bpm")
-    private Set<String> bpm;
+    private int bpm;
 
-    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
-    private List<Task> tasks;
 
     
     // ----------methods------------------------------------------
@@ -89,7 +92,7 @@ public class Project {
         // Initialize the collections as empty sets
         this.participants = new HashSet<>();
         this.keys = new HashSet<>();
-        this.bpm = new HashSet<>();
+        this.tasks = new ArrayList<>();
     }
 
     public List<Task> getTasks() {
@@ -112,11 +115,11 @@ public class Project {
         this.keys = keys;
     }
     
-    public Set<String> getBpm() {
+    public int getBpm() {
         return bpm;
     }
     
-    public void setBpm(Set<String> bpm) {
+    public void setBpm(int bpm) {
         this.bpm = bpm;
     }
   

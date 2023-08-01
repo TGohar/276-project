@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 // import jakarta.persistence.GenerationType;
@@ -15,6 +16,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import trackour.trackour.model.project.Project;
+import trackour.trackour.model.user.User;
 
 @Entity
 @Table( name="tasks",   uniqueConstraints= @UniqueConstraint(columnNames={"task_id"}) )
@@ -24,6 +26,11 @@ public class Task {
     @Column(name = "task_id", nullable = false, updatable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project", referencedColumnName = "project_id")
+    // a task is from one project
+    private Project project;
 
     @Column(name = "task_title")
     private String title;
@@ -38,9 +45,6 @@ public class Task {
     @Column(name = "createdAt")
     private LocalDateTime createdAt;
 
-    @ManyToOne
-    @JoinColumn(name = "project_id")
-    private Project project;
 
     // ----------methods------------------------------------------
     public Task(Project project) {

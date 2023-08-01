@@ -1,6 +1,7 @@
 package trackour.trackour.model.project;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -46,10 +47,31 @@ public class ProjectsService {
         return new ArrayList<>();
     }
 
-    public void setParticipants(Set<User> users, Project project) {
+    public List<Task> getAllTasksForProject(Long projectId) {
+        if (projectRepository.findById(projectId).isPresent()){ 
+            return projectRepository.findById(projectId).get().getTasks();
+        }
+        return Arrays.asList();
+    }
+
+    public int getBpm(Project project) {
+        if (projectRepository.findById(project.getId()).isPresent()) {
+            return projectRepository.findById(project.getId()).get().getBpm();
+        }
+        return 0;
+    }
+
+    public void setBpm(int newBpm, Project project) {
+        project.setBpm(newBpm);
+        updateProject(project);
+    }
+
+    public void setParticipants(Set<String> users, Project project) {
         Set<Long> participants = new HashSet<>();
-        for (User usr : users) {
-            participants.add(usr.getUid());
+        for (String usrname : users) {
+            if (userRepository.findByUsername(usrname).isPresent()){
+                participants.add(userRepository.findByUsername(usrname).get().getUid());
+            }
         }
         project.setParticipants(participants);
         updateProject(project);

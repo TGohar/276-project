@@ -15,7 +15,7 @@ public class MockDataService {
   private MockDataService() {
     // Initialize the list of sample projects
     projects = new ArrayList<>();
-    List<Task> tasks = new ArrayList<>();
+    List<TaskMock> tasks = new ArrayList<>();
     // Add some sample projects to the list
     projects.add(new Project(0, "Project A", "Solo", "Song: Hello, Key: C, BPM: 120", "In Progress", 0.50, tasks));
     projects.add(new Project(1, "Project B", "Team", "Song: Bye, Key: G, BPM: 100", "In Progress", 0.75, tasks));

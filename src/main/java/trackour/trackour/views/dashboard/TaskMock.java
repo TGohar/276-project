@@ -1,6 +1,6 @@
 package trackour.trackour.views.dashboard;
 
-public class Task {
+public class TaskMock {
 
   // Fields for each task
   private int id;
@@ -11,7 +11,7 @@ public class Task {
   private boolean completed; // The status of this task
 
   // Constructor for each task
-  public Task(int id, String name, String description, Project project, String assignee, boolean completed) {
+  public TaskMock(int id, String name, String description, Project project, String assignee, boolean completed) {
     this.id = id;
     this.name = name;
     this.description = description;
