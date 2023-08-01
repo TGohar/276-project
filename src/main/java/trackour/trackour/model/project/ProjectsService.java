@@ -20,6 +20,7 @@ import trackour.trackour.model.task.Task;
 import trackour.trackour.model.task.TaskRepository;
 import trackour.trackour.model.user.User;
 import trackour.trackour.model.user.UserRepository;
+import trackour.trackour.views.components.camelotwheel.Key;
 
 @Service
 @Transactional
@@ -43,6 +44,24 @@ public class ProjectsService {
             }
         }
         return new ArrayList<>();
+    }
+
+    public void setParticipants(Set<User> users, Project project) {
+        Set<Long> participants = new HashSet<>();
+        for (User usr : users) {
+            participants.add(usr.getUid());
+        }
+        project.setParticipants(participants);
+        updateProject(project);
+    }
+
+    public void setKeys(Set<Key> keys, Project project) {
+        Set<Key> keysSet = new HashSet<>();
+        for (Key key : keys) {
+            keysSet.add(key);
+        }
+        project.setKeys(keysSet);
+        updateProject(project);
     }
 
     public Set<Long> getAllParticipantIdsForProject(Long projectId) {

@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.annotations.PreserveOnRefresh;
-import com.vaadin.flow.component.Key;
+import trackour.trackour.views.components.camelotwheel.*;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -155,7 +155,17 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
     // Modify the progress column to make it resizable
     grid.getColumnByKey("progress").setResizable(true);
 
+//     Set<User> partUsers = project.getParticipants().stream()
+//   .map(partId -> customUserDetailsService.getByUid(partId)).collect(Collectors.toSet());
+
     grid.addColumn(new ComponentRenderer<>(proj -> {
+
+        Set<Long> parts = proj.getParticipants();
+        Set<User> partsUsers = parts.stream()
+        .map(p -> customUserDetailsService.getByUid(p))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .collect(Collectors.toSet());
 
         Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
         User user = userOptional.get();
@@ -165,9 +175,13 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
         // set the items from the enum values
         collabModeSelect.setItems(customUserDetailsService.getAllFriends(user));
 
+        // collabModeSelect.select(proj.getParticipants());
+        // .map(id -> customUserDetailsService.getByUid(id)) // convert each id to a User
+        // .collect(Collectors.toSet()); // collect the Users into a new set
+
         // set the label generator to use the getValue() method
         collabModeSelect.setItemLabelGenerator(User::getUsername);
-        // collabModeSelect.setValue(project.getCollaborationMode());
+        collabModeSelect.setValue(partsUsers);
         
         // Get the selected users from the multiselectcombobox
         Set<User> selectedUsers = collabModeSelect.getValue();
@@ -177,27 +191,73 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
         for (User usr : selectedUsers) {
             System.out.println(usr.getUsername());
         }
-
         // Add a value change listener to the multiselectcombobox
         collabModeSelect.addValueChangeListener(event -> {
-        // Get the old and new values of the multiselectcombobox
-        // Set<User> oldValue = event.getOldValue();
-        Set<User> newValue = event.getValue();
+            // Get the old and new values of the multiselectcombobox
+            // Set<User> oldValue = event.getOldValue();
+            Set<User> newValue = event.getValue();
 
-        // add some users to the set
-        String users = newValue.stream()
-        .map(User::getUsername) // convert each user to a string
-        .collect(Collectors.joining(", ")); // join them with commas
-        Notification.show("Selected users: " + users);
+            // add some users to the set
+            String users = newValue.stream()
+            .map(User::getUsername) // convert each user to a string
+            .collect(Collectors.joining(", ")); // join them with commas
+            Notification.show("Selected users: " + users);
 
-        // Do something when the value changes
-        // For example, show a notification with the new value
-        Notification.show("Selected users: " + users);
+            // Do something when the value changes
+            // For example, show a notification with the new value
+            Notification.show("Selected users: " + users);
+            projectsService.setParticipants(newValue, proj);
         });
 
         // Return the Span object
         return collabModeSelect;
     })).setHeader("Participants");
+
+
+    grid.addColumn(new ComponentRenderer<>(proj -> {
+
+        Set<Key> parts = proj.getKeys();
+        // Set<User> partsUsers = parts.stream()
+        // .map(p -> customUserDetailsService.getByUid(p))
+        // .filter(Optional::isPresent)
+        // .map(Optional::get)
+        // .collect(Collectors.toSet());
+
+        MultiSelectComboBox<Key> collabModeSelect = new MultiSelectComboBox<>();
+
+        // set the items from the enum values
+        collabModeSelect.setItems(Camelot.getAllKeys());
+
+        // set the label generator to use the getValue() method
+        collabModeSelect.setItemLabelGenerator(k -> k.name);
+        collabModeSelect.setValue(parts);
+        
+        // Get the selected users from the multiselectcombobox
+        Set<Key> selectedUsers = collabModeSelect.getValue();
+
+        // Do something with the selected users
+        // For example, print their usernames
+        for (Key key : selectedUsers) {
+            System.out.println(key.name);
+        }
+
+        // Add a value change listener to the multiselectcombobox
+        collabModeSelect.addValueChangeListener(event -> {
+            // Get the old and new values of the multiselectcombobox
+            // Set<User> oldValue = event.getOldValue();
+            Set<Key> newValue = event.getValue();
+
+            // add some users to the set
+            String keys = newValue.stream()
+            .map(key -> key.name) // convert each user to a string
+            .collect(Collectors.joining(", ")); // join them with commas
+            Notification.show("Selected keys: " + keys);
+            projectsService.setKeys(newValue, proj);
+        });
+
+        // Return the Span object
+        return collabModeSelect;
+    })).setHeader("Keys:");
     
     // Use a ComponentRenderer to create the button component for each project 
     grid.addColumn(new ComponentRenderer<>(project -> { 
@@ -268,7 +328,7 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
     
     Button createButton = new Button("Create project");
     // Use the addKeyPressListener method to listen for the enter key on the titleField
-    titleField.addKeyPressListener(Key.ENTER, e -> {
+    titleField.addKeyPressListener(com.vaadin.flow.component.Key.ENTER, e -> {
         // Call the createButton's click listener
         createButton.click();
     });

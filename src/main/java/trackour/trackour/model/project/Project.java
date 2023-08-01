@@ -17,14 +17,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import trackour.trackour.model.task.Task;
 import trackour.trackour.model.user.User;
+import trackour.trackour.views.components.camelotwheel.Key;
 
 @Entity
 @Table( name="projects", uniqueConstraints= @UniqueConstraint(columnNames={"project_id"}))
@@ -64,7 +63,7 @@ public class Project {
     private Double progress;
 
     @Column(name = "keys")
-    private Set<String> keys;
+    private Set<Key> keys;
 
     @Column(name = "bpm")
     private Set<String> bpm;
@@ -105,11 +104,11 @@ public class Project {
         this.status = ProjectStatus.IN_PROGRESS;
     }
 
-    public Set<String> getKeys() {
+    public Set<Key> getKeys() {
         return keys;
     }
     
-    public void setKeys(Set<String> keys) {
+    public void setKeys(Set<Key> keys) {
         this.keys = keys;
     }
     
