@@ -5,10 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
@@ -17,8 +18,10 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 
 import jakarta.annotation.security.PermitAll;
+import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
+import trackour.trackour.views.api.APIController;
 import trackour.trackour.views.components.NavBar;
 import trackour.trackour.views.components.responsive.MyBlockResponsiveLayout;
 
@@ -41,47 +44,42 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
     public AdvancedSearch(SecurityViewService securityViewHandler,
     CustomUserDetailsService customUserDetailsService) {
 
-        String pattern = "^((0\\\\.[0-9]{1})|(1\\\\.0))$";
-
         NavBar navbar = new NavBar(customUserDetailsService, securityViewHandler);
-        
-        // main container contining cards area and button
-        VerticalLayout verticalLayout = new VerticalLayout();
-        Div placeHolderTextContainer = new Div();
-        placeHolderTextContainer.add("Advanced Search");
-        verticalLayout.add(placeHolderTextContainer);
-        // Create a responsive navbar component
-        // Add some content below the navbar
-        navbar.setContent(verticalLayout);
+
+        TextField genre = new TextField();
+        genre.setLabel("Genre");
+        genre.setHelperText("The genre you want to search in.");
+        genre.setRequired(true);
+        genre.setAllowedCharPattern("[a-z,]");
 
         TextField acousticness = new TextField();
         acousticness.setLabel("Acousticness");
         acousticness.setHelperText("The acousticness of the track as a value between 0.0 and 1.0." +
                                     " The higher the value, the higher the chance the track is acoustic.");
-        acousticness.setPattern(pattern);
         acousticness.setRequired(true);
+        acousticness.setAllowedCharPattern("[0-9.]");
         
         TextField danceability = new TextField();
         danceability.setLabel("Danceability");
         danceability.setHelperText("The danceability of the track as a value between 0.0 and 1.0." +
                                     " The danceability depends on factors like tempo and rhythm stability. Higher is better.");
-        danceability.setPattern(pattern);
         danceability.setRequired(true);
+        danceability.setAllowedCharPattern("[0-9.]");
 
         TextField energy = new TextField();
         energy.setLabel("Energy");
         energy.setHelperText("The energy of the track as a value between 0.0 and 1.0. " +
                             " The energetic value of the track depends on factors like speed and loudness." +
                             " Fast and loud tracks feel more energetic than slow and quiet tracks.");
-        energy.setPattern(pattern);
         energy.setRequired(true);
+        energy.setAllowedCharPattern("[0-9.]");
 
         TextField instrumentalness = new TextField();
         instrumentalness.setLabel("Instrumentalness");
         instrumentalness.setHelperText("Get the instrumentalness of the track as a value between 0.0 and 1.0" +
                                         " The higher the value, the higher the chance the track contains vocals.");
-        instrumentalness.setPattern(pattern);
         instrumentalness.setRequired(true);
+        instrumentalness.setAllowedCharPattern("[0-9.]");
 
         ComboBox<String> key = new ComboBox<>();
         key.setLabel("Key");
@@ -95,6 +93,7 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
         loudness.setHelperText("The average loudness of the track." + 
                                 " These values have mostly a range between -60 and 0 decibels.");
         loudness.setRequired(true);
+        loudness.setAllowedCharPattern("[0-9.]");
 
         ComboBox<String> mode = new ComboBox<>();
         mode.setLabel("Mode");
@@ -109,13 +108,14 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
         tempo.setHelperText("The estimated tempo of the track in beats per minute." +
                             " Tempo is the speed or pace of a given piece, derived from the average beats duration.");
         tempo.setRequired(true);
+        tempo.setAllowedCharPattern("[0-9.]");
 
         TextField timeSignature = new TextField();
         timeSignature.setLabel("Time Signature");
         timeSignature.setHelperText("The estimated overall time signature of the track." +
                                     " The time signature is the number of beats in a bar." +
                                     " A three quarters beat would be given as the value 3.");
-        timeSignature.setPattern("[2-8]");
+        timeSignature.setPattern("[1-9]");
         timeSignature.setRequired(true);
 
         TextField valence = new TextField();
@@ -123,29 +123,89 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
         valence.setHelperText("The valence of the track as a value between 0.0 and 1.0." +
                                 " A track with high valence sounds more positive (happy, cheerful, euphoric)" +
                                 " than a track with a low valence value (sad, depressed, angry).");
-        valence.setPattern(pattern);
         valence.setRequired(true);
+        valence.setAllowedCharPattern("[0-9.]");
 
-        VerticalLayout test = new VerticalLayout();
-        Dialog warning = new Dialog();
-        warning.setHeaderTitle("Warning!");
-
-        warning.add(test);
-        
         Button searchButton = new Button("Search");
         searchButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        searchButton.addClickListener(event -> {
+
+            String genreValue = genre.getValue().toLowerCase();
+            float acousticnessValue = Float.parseFloat(acousticness.getValue());
+            float danceabilityValue = Float.parseFloat(danceability.getValue());
+            float energyValue = Float.parseFloat(energy.getValue());
+            float instrumentalnessValue = Float.parseFloat(instrumentalness.getValue());
+            int keyValue;
+            String keyLetter = key.getValue();
+            switch (keyLetter) {
+                case "C": keyValue = 0;
+                    break;
+                case "C♯/D♭": keyValue = 1;
+                    break;
+                case "D": keyValue = 2;
+                    break;
+                case "D♯/E♭": keyValue = 3;
+                    break;
+                case "E": keyValue = 4;
+                    break;
+                case "F": keyValue = 5;
+                    break;
+                case "F♯/G♭": keyValue = 6;
+                    break;
+                case "G": keyValue = 7;
+                    break;
+                case "G♯/A♭": keyValue = 8;
+                    break;
+                case "A": keyValue = 9;
+                    break;
+                case "A♯/B♭": keyValue = 10;
+                    break;
+                case "B": keyValue = 11;
+                    break;
+                default: keyValue = -1;
+                    break;
+            }
+
+            float loudnessValue = -Float.parseFloat(loudness.getValue());
+            int modeValue;
+            if (mode.getValue() == "Major") {
+                modeValue = 1;
+            } else {
+                modeValue = 0;
+            }
+            float tempoValue = Float.parseFloat(tempo.getValue());
+            int timeSignatureValue = Integer.parseInt(timeSignature.getValue());
+            float valenceValue = Float.parseFloat(valence.getValue());
+
+            TrackSimplified[] tracks = APIController.getRecommendations(genreValue, acousticnessValue, danceabilityValue, energyValue, instrumentalnessValue, keyValue, loudnessValue, modeValue, tempoValue, timeSignatureValue, valenceValue);
+        });
         
         FormLayout formLayout = new FormLayout();
-        formLayout.add(acousticness, danceability, energy, instrumentalness, key, 
+        formLayout.add(genre, acousticness, danceability, energy, instrumentalness, key, 
                         loudness, mode, tempo, timeSignature, valence, searchButton);
         formLayout.setResponsiveSteps(
             new ResponsiveStep("0", 1),
             new ResponsiveStep("300px", 3)
         );
         formLayout.setHeight("400px");
-        formLayout.setWidth("600px");;
-        
+        formLayout.setWidth("900px");
+
+        // main container contining cards area and button
+        VerticalLayout verticalLayout = new VerticalLayout();
+        Div placeHolderTextContainer = new Div();
+        placeHolderTextContainer.add(new H3("Advanced Search"));
+
+        HorizontalLayout main = new HorizontalLayout();
+        main.add(formLayout);
+
+        verticalLayout.add(placeHolderTextContainer, main);
+        verticalLayout.setAlignItems(Alignment.CENTER);
+        // Create a responsive navbar component
+        // Add some content below the navbar
+        navbar.setContent(verticalLayout);
+
+        setAlignItems(Alignment.CENTER);
         // Add it to the view
-        add(navbar, formLayout, warning);
+        add(navbar);
     }
 }

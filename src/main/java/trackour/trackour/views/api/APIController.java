@@ -428,8 +428,9 @@ public class APIController {
     }
 
     // Get tracks based on specifc audio features
-    public static TrackSimplified[] getRecommendations(float acousticness, float danceability, float energy, float instrumentalness,
+    public static TrackSimplified[] getRecommendations(String genre, float acousticness, float danceability, float energy, float instrumentalness,
                                                         int key, float loudness, int mode, float tempo, int timeSignature, float valence) {
+
         try {
             final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
 
@@ -437,6 +438,7 @@ public class APIController {
 
             final GetRecommendationsRequest getRecommendationsRequest = spotifyAPI.getRecommendations()
                 .limit(10)
+                .seed_genres(genre)
                 .target_acousticness(acousticness)
                 .target_danceability(danceability)
                 .target_energy(energy)
