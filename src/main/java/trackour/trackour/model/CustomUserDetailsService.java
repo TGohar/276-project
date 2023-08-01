@@ -48,6 +48,16 @@ public class CustomUserDetailsService implements UserDetailsService {
         return Arrays.asList();
     }
 
+    public List<User> getByIds(List<Long> ids) {
+        List<User> res = new ArrayList<>();
+        for (Long id  : ids) {
+            if (getByUid(id).isPresent()) {
+                res.add(getByUid(id).get());
+            }
+        }
+        return res;
+    }
+
     public List<User> getAllFriendRequests(User user) {
         if (user == null){
             return Arrays.asList();

@@ -1,10 +1,13 @@
 package trackour.trackour.views.dashboard;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -12,16 +15,23 @@ import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.listbox.ListBox;
+import com.vaadin.flow.component.listbox.MultiSelectListBox;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LocalDateTimeRenderer;
@@ -31,6 +41,7 @@ import com.vaadin.flow.router.RouteAlias;
 
 import jakarta.annotation.security.PermitAll;
 import trackour.trackour.model.CustomUserDetailsService;
+import trackour.trackour.model.project.CollaborationMode;
 import trackour.trackour.model.project.Project;
 import trackour.trackour.model.project.ProjectsService;
 import trackour.trackour.model.user.User;
@@ -116,25 +127,77 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
 
     // Use a ComponentRenderer to create the Span component for each project
     grid.addColumn(new ComponentRenderer<>(project -> {
-        // Create a new Span object and set its text to the project's collaboration mode value
-        Span modeSpan = new Span(project.getCollaborationMode().getValue());
-        // Use a switch statement to add the badge theme variants to the span according to the collaboration mode value
-        switch (project.getCollaborationMode()) {
-            case SOLO:
-                modeSpan.getElement().getThemeList().add("badge contrast small");
-                break;
-            case TEAM:
-                modeSpan.getElement().getThemeList().add("badge primary small");
-                break;
-        }
+
+        Select<CollaborationMode> collabModeSelect = new Select<>();
+
+        // set the items from the enum values
+        collabModeSelect.setItems(EnumSet.allOf(CollaborationMode.class));
+
+        // set the label generator to use the getValue() method
+        collabModeSelect.setItemLabelGenerator(CollaborationMode::getValue);
+        collabModeSelect.setValue(project.getCollaborationMode());
+        
+        collabModeSelect.addValueChangeListener(event -> {
+            // get the new selected value
+            CollaborationMode mode = event.getValue();
+        
+            // show a notification with the new value
+            Notification.show("Selected mode: " + mode.getValue());
+            // update
+            project.setCollaborationMode(mode);
+            projectsService.updateProject(project);
+        });
         // Return the Span object
-        return modeSpan;
-})).setHeader("Collaboration mode").setKey("collaborationMode").setSortable(true);
+        return collabModeSelect;
+    })).setHeader("Collaboration mode").setKey("collaborationMode").setSortable(true);
 
 
-    
     // Modify the progress column to make it resizable
     grid.getColumnByKey("progress").setResizable(true);
+
+    grid.addColumn(new ComponentRenderer<>(proj -> {
+
+        Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
+        User user = userOptional.get();
+
+        MultiSelectComboBox<User> collabModeSelect = new MultiSelectComboBox<>();
+
+        // set the items from the enum values
+        collabModeSelect.setItems(customUserDetailsService.getAllFriends(user));
+
+        // set the label generator to use the getValue() method
+        collabModeSelect.setItemLabelGenerator(User::getUsername);
+        // collabModeSelect.setValue(project.getCollaborationMode());
+        
+        // Get the selected users from the multiselectcombobox
+        Set<User> selectedUsers = collabModeSelect.getValue();
+
+        // Do something with the selected users
+        // For example, print their usernames
+        for (User usr : selectedUsers) {
+            System.out.println(usr.getUsername());
+        }
+
+        // Add a value change listener to the multiselectcombobox
+        collabModeSelect.addValueChangeListener(event -> {
+        // Get the old and new values of the multiselectcombobox
+        // Set<User> oldValue = event.getOldValue();
+        Set<User> newValue = event.getValue();
+
+        // add some users to the set
+        String users = newValue.stream()
+        .map(User::getUsername) // convert each user to a string
+        .collect(Collectors.joining(", ")); // join them with commas
+        Notification.show("Selected users: " + users);
+
+        // Do something when the value changes
+        // For example, show a notification with the new value
+        Notification.show("Selected users: " + users);
+        });
+
+        // Return the Span object
+        return collabModeSelect;
+    })).setHeader("Participants");
     
     // Use a ComponentRenderer to create the button component for each project 
     grid.addColumn(new ComponentRenderer<>(project -> { 
@@ -143,6 +206,8 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
         button.addThemeVariants(ButtonVariant.LUMO_PRIMARY); 
         button.addClickListener(e -> { 
             // Open the project view in a new tab with the project id as a parameter 
+            // QueryParameters queryParameters = QueryParameters.simple(Map.of("query", searchValue));
+            //         ui.navigate("search", queryParameters);
             UI.getCurrent().getPage().open("project/" + project.getId(), "_blank"); }); 
             // Wrap the button object in a Div component and return it 
             Div div = new Div(button); 
@@ -207,6 +272,17 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
         // Call the createButton's click listener
         createButton.click();
     });
+
+    // create a select component
+    Select<CollaborationMode> collabModeSelect = new Select<>();
+
+    // set the items from the enum values
+    collabModeSelect.setItems(EnumSet.allOf(CollaborationMode.class));
+
+    // set the label generator to use the getValue() method
+    collabModeSelect.setItemLabelGenerator(CollaborationMode::getValue);
+    collabModeSelect.setValue(CollaborationMode.SOLO);
+
     createButton.addClickListener(e -> {
         // Get the value from the text field
         String title = titleField.getValue();
@@ -215,6 +291,8 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
         User user = userOptional.get();
         // Create a new project object with the user id as the owner
         Project newProj = new Project(user);
+        // set collab mode
+        newProj.setCollaborationMode(collabModeSelect.getValue());
         // // Set the title of the new project with the value from the text field
         newProj.setTitle(title);
         // // Save the new project to the database using the service
@@ -225,7 +303,7 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
         newProjectDialog.close();
     });
 
-    newProjectDialog.add(titleField, createButton);
+    newProjectDialog.add(titleField, collabModeSelect, createButton);
 
     // Modify the add new project button's click listener to open the dialog or show the layout instead of creating directly
     addButton.addClickListener(e -> {

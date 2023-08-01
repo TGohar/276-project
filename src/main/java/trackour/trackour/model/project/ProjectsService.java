@@ -45,13 +45,13 @@ public class ProjectsService {
         return new ArrayList<>();
     }
 
-    // public Set<User> getAllParticipantsForProject(Long projectId) {
-    //     Optional<Project> projectOptional = projectRepository.findById(projectId);
-    //     if (projectOptional.isPresent()) {
-    //         return projectRepository.findById(projectId).get().getParticipants();
-    //     }
-    //     return new HashSet<>();
-    // }
+    public Set<Long> getAllParticipantIdsForProject(Long projectId) {
+        Optional<Project> projectOptional = projectRepository.findById(projectId);
+        if (projectOptional.isPresent()) {
+            return projectRepository.findById(projectId).get().getParticipants();
+        }
+        return new HashSet<>();
+    }
     
     // /**
     //  * pass the project id and the list of friends usernames
@@ -104,6 +104,10 @@ public class ProjectsService {
 
     public List<Project> getAllProjects() {
         return projectRepository.findAll();
+    }
+
+    public boolean projectExists(Long id) {
+        return projectRepository.findById(id).isPresent() ? true : false; 
     }
       
     public Optional<Project> findProjectById(Long id) {

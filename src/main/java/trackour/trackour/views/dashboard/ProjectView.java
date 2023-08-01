@@ -1,20 +1,14 @@
 package trackour.trackour.views.dashboard;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.vaadin.addons.jhoffmann99.TrixEditor;
 import org.vaadin.addons.tatu.CircularProgressBar;
 
-import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Span;
@@ -24,31 +18,32 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.OptionalParameter;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouteParameters;
 
 import jakarta.annotation.security.PermitAll;
 import trackour.trackour.model.CustomUserDetailsService;
-import trackour.trackour.model.project.Project;
 import trackour.trackour.model.project.ProjectsService;
-import trackour.trackour.model.task.Task;
-import trackour.trackour.model.task.TaskService;
 import trackour.trackour.model.user.User;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.components.NavBar;
 
 // View for the project workspace
-@Route("project")
+@Route("project/")
 @RouteAlias("project-workspace")
 @PreserveOnRefresh
 @PageTitle("Project Workspace | Trackour")
 @PermitAll
-public class ProjectView extends VerticalLayout implements HasUrlParameter<Long> {
+public class ProjectView extends VerticalLayout implements BeforeEnterObserver, HasUrlParameter<Long> {
 
 @Autowired
     SecurityViewService securityViewService;
@@ -58,9 +53,29 @@ public class ProjectView extends VerticalLayout implements HasUrlParameter<Long>
     
     @Autowired
     ProjectsService projectsService;
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+
+    }
   
     @Override
     public void setParameter(BeforeEvent event, Long id) {
+
+      // boolean projectExists = projectsService.getAllProjects().stream()
+      // .anyMatch(project -> project.getId() == id);
+      // System.out.println("idX: " + id);
+      
+      // check if the id is invalid
+      if (!projectsService.projectExists(id)) {
+          // 404 error page
+          event.rerouteToError(new NotFoundException("Invalid id"), null);
+      } 
+      else {
+          // do something with the id
+          
+      }
+
         User user = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername()).get();
         // set the layout to fill the whole page
         this.setSizeFull();
