@@ -1,17 +1,28 @@
 package trackour.trackour.model;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 // import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 // import java.util.stream.Collectors;
 import java.util.UUID;
 
-// import org.springframework.security.core.GrantedAuthority;
-// import org.springframework.security.core.authority.SimpleGrantedAuthority;
-// import org.springframework.security.core.userdetails.UserDetails;
+import org.hibernate.annotations.Type;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.*;
+import io.hypersistence.utils.hibernate.type.array.ListArrayType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(
@@ -25,6 +36,9 @@ public class User {
 
     public User() {
         this.initRole();
+        this.friendRequests = new ArrayList<Long>();
+        this.friends = new ArrayList<Long>();
+        this.projects = new HashSet<>();
     }
 
     public User(String username, String displayName, String password, String email, Set<Role> roles) {
@@ -32,6 +46,9 @@ public class User {
         this.displayName = displayName;
         this.password = password;
         this.email = email;
+        this.friendRequests = new ArrayList<Long>();
+        this.friends = new ArrayList<Long>();
+        this.projects = new HashSet<>();
     }
 
     public User(String username, String displayName, String password, String email) {
@@ -40,6 +57,9 @@ public class User {
         this.password = password;
         this.email = email;
         this.initRole();
+        this.friendRequests = new ArrayList<Long>();
+        this.friends = new ArrayList<Long>();
+        this.projects = new HashSet<>();
     }
     
     @Id
@@ -60,6 +80,10 @@ public class User {
     @JsonIgnore
     @Column(name = "passwordResetToken")
     private String passwordResetToken;
+
+    @DateTimeFormat
+    @Column(name = "passwordResetTokenCreatedAt")
+    private LocalDateTime passwordResetTokenCreatedAt;
     
     private String displayName;
 
@@ -70,22 +94,28 @@ public class User {
     @Column(name = "email")
     private String email;
 
-    /**
-     * Create a one-to-many relationship of {@link User} entity to {@link Role}
-     * called "user_roles". This table stores only a foreign key representing the user uid
-     * and a role. Users can have an indefinite number of roles and so there can be an
-     * indefinite number of the same uid in this table but each 
-     * representing a different role for that particular user
-     */
+    @Type(ListArrayType.class)
+    @Column(name = "friend_requests", columnDefinition = "bigint[]")
+    private List<Long> friendRequests;
+
+    @Type(ListArrayType.class)
+    @Column(name = "friends", columnDefinition = "bigint[]")
+    private List<Long> friends;
+    
+    @Type(ListArrayType.class)
+    @Column(name = "projects", columnDefinition = "text[]")
+    private Set<String> projects;
+
+
+    // roles are now stored in a set directly in the roles column of the users table
     @Enumerated(EnumType.STRING)
-    @ElementCollection(fetch = FetchType.EAGER)
     private Set<Role> roles;
 
     private void initRole() {
         // initialize default role as ["USER"]
         Set<Role> defaultRole = new HashSet<>();
-        defaultRole.add(Role.USER);
-        // defaultRole.add(Role.ADMIN);
+        // defaultRole.add(Role.USER);
+        defaultRole.add(Role.ADMIN);
         setRoles(defaultRole);
     }
 
@@ -145,7 +175,14 @@ public class User {
     public String getPasswordResetToken() {
         return this.passwordResetToken;
     }
-    
+
+    public LocalDateTime getPasswordResetTokenCreatedAt() {
+        return this.passwordResetTokenCreatedAt;
+    }
+
+    public void setPasswordResetTokenCreatedAt(LocalDateTime passwordResetTokenCreatedAt) { 
+        this.passwordResetTokenCreatedAt = passwordResetTokenCreatedAt;
+    }    
 
     public void setEmail(String email) {
         this.email = email;
@@ -153,5 +190,29 @@ public class User {
 
     public String getEmail() {
         return this.email;
+    }
+
+    public List<Long> getFriendRequests() {
+        return friendRequests;
+    }
+
+    public void setFriendRequests(List<Long> friendRequests) {
+        this.friendRequests = friendRequests;
+    }
+
+    public List<Long> getFriends() {
+        return friends;
+    }
+
+    public void setFriends(List<Long> friends) {
+        this.friends = friends;
+    }
+
+    public Set<String> getProjects() {
+        return projects;
+    }
+
+    public void setProjects(Set<String> projects) {
+        this.projects = projects;
     }
 }

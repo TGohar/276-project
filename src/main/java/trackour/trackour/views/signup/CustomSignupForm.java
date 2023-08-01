@@ -103,6 +103,11 @@ public class CustomSignupForm extends FormLayout {
                 }
         });
    }
+
+   public boolean isEmailAlreadyPresent(String emailValue) {
+        return userService.getByEmail(emailValue).isPresent();
+   }
+
    private boolean isEmailValidByRegex(String value) {
         Pattern pattern = Pattern.compile(this.emailValidationRegex);
         return pattern.matcher(value).matches();
@@ -125,6 +130,7 @@ private void doBindFormToValidationRules(Binder<User> binder) {
         // Shorthand for cases without extra configuration
         binder.forField(email)
         .asRequired("This field is required")
+        .withValidator(value -> !isEmailAlreadyPresent(value), "That email address already exists.  Try again with a different Email address.")
         .withValidator(value -> isEmailValidByRegex(value),"Invalid email address")
         .withValidator(new EmailValidator("Invalid email address", false))
         .bind(User::getEmail,  User::setEmail);

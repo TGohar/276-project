@@ -80,7 +80,7 @@ public class ResetPasswordForm extends VerticalLayout {
                 if (binder.isValid()) {
                         System.out.println("Validations all passed!");
                         // retrieve the user record with this token
-                        Optional<User> existingUser = userService.get(user.getUid());
+                        Optional<User> existingUser = userService.getByUid(user.getUid());
                         if (existingUser.isPresent()){
                             Long uid = user.getUid();
                             System.out.println("user "+ uid + "pass changed");

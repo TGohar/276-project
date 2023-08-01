@@ -12,8 +12,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 
-@PageTitle("Error Page")
 @Route(value = "error")
+@PageTitle("Error 404 - Page Not Found | Trackour")
 @AnonymousAllowed
 public class ErrorPage404View extends VerticalLayout implements BeforeLeaveObserver {
 

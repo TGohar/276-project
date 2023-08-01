@@ -1,0 +1,20 @@
+.responsive-layout-hidden {
+    max-height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    transition: max-height 0.5s ease-in-out;
+  }
+
+  #my-scroller-horizontal {
+    display: flex;
+    /* overflow-x: auto; */
+    /* height: 100px;
+    width: 100px; */
+    white-space: nowrap;
+    /* overflow-y: hidden; */
+    overflow-x:scroll;
+  }
+  
+  #my-scroller-horizontal > div {
+    border: solid;
+  }

@@ -30,7 +30,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.repository = repository;
     }
 
-    public Optional<User> get(Long uid) {
+    public Optional<User> getByUid(Long uid) {
         return repository.findByUid(uid);
     }
 
@@ -75,8 +75,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     private static Collection<? extends GrantedAuthority> getAuthorities(User user) {
         System.out.println(user.getDisplayName() + " has roles:");
         return user.getRoles().stream().map(authority -> {
-            System.out.println(authority.getName());
-            return new SimpleGrantedAuthority("ROLE_" + authority.getName());
+            System.out.println(authority.roleToString());
+            return new SimpleGrantedAuthority(authority.roleToRoleString());
         }).collect(Collectors.toList());
     }
     
@@ -128,7 +128,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // extra validation
         // if displayName was submitted as empty, use the username string in place of it
-        newUser.setDisplayName(newUser.getUsername());
+        if (newUser.getDisplayName().isEmpty()){
+            newUser.setDisplayName(newUser.getUsername());
+        }
         return this.submitUser(newUser);
     }
 
@@ -157,6 +159,18 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         update(oldUser);
 
+        return true;
+    }
+
+    //only use this one if no changes to the password have been made
+    public boolean updateUser(User user) {
+        Optional<User> existingUser = getByUsername(user.getUsername());
+        if(!existingUser.isPresent()){
+            return false;
+        }
+
+        update(user);
+        
         return true;
     }
 }

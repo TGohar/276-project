@@ -1,6 +1,7 @@
 package trackour.trackour.views.forgotPassword;
 
 import java.net.URL;
+import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,27 +19,26 @@ import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.model.User;
-import trackour.trackour.security.SecurityService;
-import trackour.trackour.security.SecurityViewHandler;
+import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.login.LoginPage;
 
 @Route("resetPassword")
-@PageTitle("Reset Password")
+@RouteAlias("reset")
+@PageTitle("Forgot Password - Enter Email | Trackour")
 @AnonymousAllowed
 public class enterEmailView extends VerticalLayout implements BeforeLeaveObserver, BeforeEnterObserver {
 
     @Autowired
-    SecurityViewHandler securityViewHandler;
+    SecurityViewService securityService;
     @Autowired
     CustomUserDetailsService customUserDetailsService;
-    @Autowired
-    SecurityService securityService;
-    //PasswordTokenService passwordTokenService;
+    // PasswordTokenService passwordTokenService;
 
     private String mailHost;
     private Integer mailPort;
@@ -46,29 +46,29 @@ public class enterEmailView extends VerticalLayout implements BeforeLeaveObserve
     private String mailPassword;
 
     public enterEmailView(
-        SecurityViewHandler securityViewHandler, 
-        SecurityService securityService, 
-        CustomUserDetailsService customUserDetailsService,
-        @Value("${mail.smtp.host}") String mailHost,
-        @Value("${mail.smtp.port}") Integer mailPort,
-        @Value("${mail.smtp.username}") String mailUsername,
-        @Value("${mail.smtp.password}") String mailPassword) {
+            SecurityViewService securityService,
+            CustomUserDetailsService customUserDetailsService,
+            @Value("${mail.smtp.host}") String mailHost,
+            @Value("${mail.smtp.port}") Integer mailPort,
+            @Value("${mail.smtp.username}") String mailUsername,
+            @Value("${mail.smtp.password}") String mailPassword) {
 
-        this.securityViewHandler = securityViewHandler;
+        this.securityService = securityService;
         this.customUserDetailsService = customUserDetailsService;
 
         this.mailHost = mailHost;
         this.mailPort = mailPort;
         this.mailUsername = mailUsername;
         this.mailPassword = mailPassword;
-        //this.passwordTokenService = passwordTokenService;
+        // this.passwordTokenService = passwordTokenService;
 
         H3 title = new H3("Enter your email");
 
-        Span text = new Span("An email with a link to reset your password will be sent shortly. Remember to check your spam folder!");
+        Span text = new Span(
+                "An email with a link to reset your password will be sent shortly. Remember to check your spam folder!");
 
         EmailField emailField = new EmailField("Email");
-        
+
         Span error = new Span("");
 
         Button submit = new Button("Submit", e -> getEmail(emailField.getValue(), error));
@@ -85,8 +85,8 @@ public class enterEmailView extends VerticalLayout implements BeforeLeaveObserve
 
         FormLayout form = new FormLayout();
         form.add(emailField, submit);
-        form.setColspan(emailField,1);
-        form.setColspan(submit,1);
+        form.setColspan(emailField, 1);
+        form.setColspan(submit, 1);
 
         layout.add(title, text, form, error, loginLink);
 
@@ -106,21 +106,24 @@ public class enterEmailView extends VerticalLayout implements BeforeLeaveObserve
             // update user record with new password token
 
             // send the email
-            
+
             // async method to send email w link
             getUI().get().getPage().fetchCurrentURL(currentUrl -> {
-                // create a new token whenever a reset request is sent to invalidate any old token that may have not been used
+                // create a new token whenever a reset request is sent to invalidate any old
+                // token that may have not been used
                 // this is to avoid stolen tokens from remaining valid
                 user.generatePasswordResetToken();
                 String token = user.getPasswordResetToken();
                 System.out.println("Password token: " + token);
                 System.out.println("currentUrl: " + currentUrl);
+                // mark token timestamp
+                user.setPasswordResetTokenCreatedAt(LocalDateTime.now());
                 customUserDetailsService.update(user);
-                sendResetLink(currentUrl, token, email);
+                sendResetLink(user.getUsername(), currentUrl, token, email);
             });
 
-            //PasswordToken token = new PasswordToken();
-            //passwordTokenService.newToken(token);
+            // PasswordToken token = new PasswordToken();
+            // passwordTokenService.newToken(token);
 
         } else {
             System.out.println("Could not find user");
@@ -128,39 +131,29 @@ public class enterEmailView extends VerticalLayout implements BeforeLeaveObserve
         }
     }
 
-    void sendResetLink(URL currentUrl, String token, String recipientEmail) {
+    void sendResetLink(String username, URL currentUrl, String token, String recipientEmail) {
         String resetLink = currentUrl.toString() + "/" + token;
         System.out.println("link: " + resetLink);
-        ResetLinkHandler resetLinkHandler = new ResetLinkHandler(
-            this.mailHost,
-            this.mailPort,
-            this.mailUsername,
-            this.mailPassword,
-            recipientEmail,
-            resetLink
-        );
+        ResetLinkService resetLinkHandler = new ResetLinkService(
+                this.mailHost,
+                this.mailPort,
+                this.mailUsername,
+                this.mailPassword,
+                recipientEmail,
+                resetLink);
 
-        resetLinkHandler.sendEmail();
-        // this.mailHost
+        resetLinkHandler.sendEmail(username);
     }
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-        // this method call reroutes get requests to this view if the current session is already authenticated
-        this.securityViewHandler.handleAnonymousOnly(beforeEnterEvent, true);
-        if (beforeEnterEvent.getLocation()
-                .getQueryParameters()
-                .getParameters()
-                .containsKey("error")) {
-        }
+        // this method call reroutes get requests to this view if the current session is
+        // already authenticated
+        this.securityService.handleAnonymousOnly(beforeEnterEvent, true);
     }
 
     @Override
     public void beforeLeave(BeforeLeaveEvent event) {
-        // reroute to error page
-        if (event.hasUnknownReroute()){
-            System.out.println("Rerouting to Error Page!");
-        }
     }
-    
+
 }

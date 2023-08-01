@@ -1,5 +1,9 @@
 package trackour.trackour.views.forgotPassword;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -12,19 +16,21 @@ import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.model.User;
-import trackour.trackour.security.SecurityViewHandler;
+import trackour.trackour.security.SecurityViewService;
 
 @Route(value = "resetPassword")
-@PageTitle("Set New Password")
+@RouteAlias("new-password")
+@PageTitle("Forgot Password - Reset Password | Trackour")
 @AnonymousAllowed
 public class ResetPasswordView extends VerticalLayout implements BeforeLeaveObserver, BeforeEnterObserver, HasUrlParameter<String> {
 
     @Autowired
-    SecurityViewHandler securityViewHandler;
+    SecurityViewService securityViewHandler;
 
     @Autowired
     CustomUserDetailsService userService;
@@ -60,9 +66,16 @@ public class ResetPasswordView extends VerticalLayout implements BeforeLeaveObse
 
         System.out.println("this.token: " + this.token);
 
-        if (userService.getByPasswordResetToken(parameter).isPresent()) {
-            this.user = userService.getByPasswordResetToken(parameter).get();
+        Optional<User> existingUser = userService.getByPasswordResetToken(parameter);
 
+        if (existingUser.isPresent()) {
+            this.user = existingUser.get();
+            if (isResetLinkExpired(user)) {
+                System.out.println("showing error page since token is expired");
+                // else display an error page
+                event.rerouteTo("error");
+            };
+            
             this.resetPasswordForm = new ResetPasswordForm(userService, user);
             // Center the form
             setAlignItems(FlexComponent.Alignment.CENTER);
@@ -76,8 +89,17 @@ public class ResetPasswordView extends VerticalLayout implements BeforeLeaveObse
         }
     }
 
+    private boolean isResetLinkExpired(User existingUser) {
+        final Integer HRS24_IN_SECONDS = 86400;
+        if (existingUser == null) return false;
+        LocalDateTime currDateTime = LocalDateTime.now();
+        var dateTimeDiff = existingUser.getPasswordResetTokenCreatedAt().until(currDateTime, ChronoUnit.SECONDS);
+        System.out.println("getPasswordResetTokenCreatedAt(): " + existingUser.getPasswordResetTokenCreatedAt());
+        return dateTimeDiff >= HRS24_IN_SECONDS;
+    }
+
     public ResetPasswordView(
-        SecurityViewHandler securityViewHandler,
+        SecurityViewService securityViewHandler,
         CustomUserDetailsService userService) {
         this.userService = userService;
         this.securityViewHandler = securityViewHandler;

@@ -7,6 +7,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * The entry point of the Spring Boot application.
@@ -18,6 +19,7 @@ import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConf
 @SpringBootApplication(exclude=ErrorMvcAutoConfiguration.class)
 @PWA(name = "trackour", shortName = "trackour")
 @Theme(value = "trackour", variant = Lumo.DARK)
+@EnableScheduling
 public class Application implements AppShellConfigurator {
 
     public static void main(String[] args) {

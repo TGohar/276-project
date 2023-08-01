@@ -1,0 +1,13 @@
+.playicon {
+    display: none;
+}
+
+.albumB:hover .playicon {
+    display: inline-block;
+}
+
+.category-layout {
+    display: flex;
+    flex-wrap: wrap;
+
+}
