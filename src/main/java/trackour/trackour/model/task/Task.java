@@ -1,6 +1,7 @@
 package trackour.trackour.model.task;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -9,23 +10,35 @@ import org.hibernate.annotations.GenericGenerator;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 // import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import trackour.trackour.model.project.Project;
+import trackour.trackour.model.user.User;
 
 @Entity
 @Table( name="tasks",   uniqueConstraints= @UniqueConstraint(columnNames={"task_id"}) )
 public class Task {
 
     @Id
-    @Column(name = "task_id", length = 36, nullable = false, updatable = false)
-    @GeneratedValue(generator = "uuid")
-    @GenericGenerator(name = "uuid", strategy = "uuid2")
-    private String id;
+    @Column(name = "task_id", nullable = false, updatable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    // a task can have many assignees
+    @ManyToMany
+    @JoinTable(
+        name = "task_assignees", // name of the join table
+        joinColumns = @JoinColumn(name = "task_id"), // foreign key column for Task
+        inverseJoinColumns = @JoinColumn(name = "user_id") // foreign key column for User
+    )
+    private Set<User> assignees;
 
     @Column(name = "task_title")
     private String title;
@@ -40,8 +53,6 @@ public class Task {
     @Column(name = "createdAt")
     private LocalDateTime createdAt;
 
-    private Set<Long> assignees;
-
     @ManyToOne
     @JoinColumn(name = "project_id")
     private Project project;
@@ -52,13 +63,18 @@ public class Task {
         this.description = "Placeholder description.";
         this.status = TaskStatus.NOT_STARTED;
         this.project = project;
+        initCollections();
+    }
+
+    private void initCollections() {
+        assignees = new HashSet<>();
     }
     
-    public Set<Long> getAssignees() {
+    public Set<User> getAssignees() {
         return assignees;
     }
     
-    public void setAssignees(Set<Long> assignees) {
+    public void setAssignees(Set<User> assignees) {
         this.assignees = assignees;
     }
 
@@ -70,11 +86,11 @@ public class Task {
         this.project = project;
     }    
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
     
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
     

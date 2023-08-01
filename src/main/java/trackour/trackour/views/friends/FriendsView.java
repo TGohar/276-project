@@ -2,6 +2,8 @@ package trackour.trackour.views.friends;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -13,6 +15,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
@@ -27,7 +30,7 @@ import trackour.trackour.views.components.NavBar;
 @Route("friends")
 @RouteAlias("friends")
 @PageTitle("Friends | Trackour")
-@PreserveOnRefresh
+// @PreserveOnRefresh
 @RolesAllowed({"ADMIN", "USER"})
 public class FriendsView extends VerticalLayout {
     SecurityViewService securityViewHandler;
@@ -131,86 +134,84 @@ public class FriendsView extends VerticalLayout {
 
             currentUser = customUserDetailsService.getByUsername(securityService.getAuthenticatedUser().getUsername()).get();
             */
-            if(currentUser.getFriendRequests() != null) {
-                System.out.println("Friend requests: " + Arrays.toString(currentUser.getFriendRequests().toArray()));
+            if(!currentUser.getFriendRequests().isEmpty()) {
+                List<String> requestUsernames = currentUser.getPendingFriendRequests().stream()
+                .map(User::getUsername)
+                .collect(Collectors.toList());
+                System.out.println("Friend requests: " + Arrays.toString(requestUsernames.toArray()));
             }
-            if(currentUser.getFriends() != null) {
-                System.out.println("Friends: " + Arrays.toString(currentUser.getFriends().toArray()));
+            if(!currentUser.getFriendsWith().isEmpty()) {
+                List<String> friendsUsernames = currentUser.getPendingFriendRequests().stream()
+                .map(User::getUsername)
+                .collect(Collectors.toList());
+                System.out.println("Friends: " + Arrays.toString(friendsUsernames.toArray()));
             }
     }
 
     //friend request grid
     private void configureRequestGrid() {
+
         this.friendRequestGrid.addClassNames("friend-requests-grid");
-        // this.friendRequestGrid.setSizeFull();
         this.friendRequestGrid.addColumn(User::getUsername).setHeader("Username");
         this.friendRequestGrid.addComponentColumn((ev) -> addFriendButton(ev));
         this.friendRequestGrid.addComponentColumn((ev) -> deleteFriendRequestButton(ev));
         this.friendRequestGrid.getColumns().forEach(col -> col.setAutoWidth(true));
-        this.friendRequestGrid.setItems(findRequests());
+        this.friendRequestGrid.setItems(findYourFriendRequestsList());
     }
 
     //friends grid
     private void configureFriendsGrid() {
+        // get the list of usernames from the list of users
         this.currentFriendsGrid.addClassNames("friends-grid");
-        // this.currentFriendsGrid.setSizeFull();
         this.currentFriendsGrid.addColumn(User::getUsername).setHeader("Username");
         this.currentFriendsGrid.addComponentColumn((ev) -> deleteFriendButton(ev));
         this.currentFriendsGrid.getColumns().forEach(col -> col.setAutoWidth(true));
-        this.currentFriendsGrid.setItems(findFriends());
+        this.currentFriendsGrid.setItems(findYourFriends());
     }
 
     private void sendFriendRequest(String username, Span text) {
-        //Check if friend user exists
-        if (!customUserDetailsService.getByUsername(username).isPresent()) {
-            text.setText("Unable to find " + username + "!");
-            return;
-        }
-
-        this.friend = customUserDetailsService.getByUsername(username).get();
-
-        if(friend.getUid() == currentUser.getUid()) {
-            text.setText("You cannot add yourself as a friend!");
-            return;
-        }
-
-        List<Long> friendRequests = this.friend.getFriendRequests();
-        List<Long> friends = this.currentUser.getFriends();
-
-        if(friendRequests == null) {
-            friendRequests = new ArrayList<Long>();
-        }
-        //check if user has already sent a request, or is already friends with the user
-        if (friendRequests.contains(this.currentUser.getUid())){
-            text.setText("Request already sent to " + username + "!");
-            return;
-        }
-
-        if(friends == null) {
-            friends = new ArrayList<Long>();
-        }
-        if (friends.contains(this.friend.getUid())) {
-            text.setText("You are already friends with " + username + "!");
-            return;
-        }
+        System.out.println("Find username[for request]: " + username);
+        // send friend request to that user
+        Optional<User> friendIsPresent = customUserDetailsService.getByUsername(username);
         
-        //add new friend request to friend's list and update DB
-        // friendRequests.contains(this.currentUser.getUid())
-        friendRequests.add(this.currentUser.getUid());
-        friend.setFriendRequests(friendRequests);
-
-        customUserDetailsService.updateUser(friend);
-
-        text.setText("Friend request sent!");
+        if (friendIsPresent.isPresent()) {
+            System.out.println("USER EXISTS!!");
+            this.friend = friendIsPresent.get();
+            FriendRequestEnum requestResult = customUserDetailsService.sendFriendRequestToThatUser(currentUser, friend);
+            refreshGrids();
+            
+            if(requestResult.equals(FriendRequestEnum.CANNOT_ADD_YOURSELF)) {
+                text.setText("You cannot add yourself as a friend!");
+                return;
+            }
+    
+            //check if user has already sent a request, or is already friends with the user
+            if (requestResult.equals(FriendRequestEnum.REQUEST_ALREADY_SENT)){
+                text.setText("Request already sent to " + username + "!");
+                return;
+            }
+    
+            // check if already friends
+            if (requestResult.equals(FriendRequestEnum.ALREADY_FRIENDS)) {
+                text.setText("You are already friends with " + username + "!");
+                return;
+            }
+            text.setText("Friend request sent!");
+            return;   
+        }
+        refreshGrids();
+        // this.getUI().get().getPage().reload();
+        text.setText("User with username \"" + username + "\" doesn't exist!");
+        return;
     }
 
-    private List<User> findRequests() {
+    private List<User> findYourFriendRequestsList() {
         List<User> friendRequests = new ArrayList<User>();
 
-        if(currentUser.getFriendRequests() != null) {
-            for (Long request : currentUser.getFriendRequests()) {
-                if(customUserDetailsService.getByUid(request).isPresent()) {
-                    friendRequests.add(customUserDetailsService.getByUid(request).get());
+        if(customUserDetailsService.getAllFriendRequests(currentUser) != null) {
+            for (User request : customUserDetailsService.getAllFriendRequests(currentUser)) {
+                if(customUserDetailsService.getByUid(request.getUid()).isPresent()) {
+                    friendRequests.add(customUserDetailsService.getByUid(request.getUid()).get());
                 }
             } 
         }
@@ -218,12 +219,12 @@ public class FriendsView extends VerticalLayout {
     }
 
     private Button deleteFriendRequestButton(User user) {
+        // reject friend request (removes that user from your friends request list)
         Icon icon = new Icon("lumo","cross");
         Button button = new Button(icon, (ev) -> {
-            List<Long> requests = this.currentUser.getFriendRequests();
-            requests.remove(user.getUid());
-            this.currentUser.setFriendRequests(requests);
-            this.customUserDetailsService.updateUser(currentUser);
+            System.out.println("REJECT!");
+            customUserDetailsService.deleteUserFromYourFriendsRequests(currentUser, user);
+            refreshGrids();
             this.getUI().get().getPage().reload();
         });
 
@@ -231,79 +232,43 @@ public class FriendsView extends VerticalLayout {
     }
 
     private Button addFriendButton(User newFriend) {
+        // accept friend request and create friendship
         Icon icon = new Icon("lumo","checkmark");
         Button button = new Button(icon, (ev) -> {
-            List<Long> requests = this.currentUser.getFriendRequests();
-            List<Long> friends = this.currentUser.getFriends();
-            var otherUserRequests = newFriend.getFriendRequests();
-            if (friends == null) {
-                friends = new ArrayList<Long>();
-            }
-
-            List<Long> newFriendFriends = newFriend.getFriends();
-            if (newFriendFriends == null) {
-                newFriendFriends = new ArrayList<Long>();
-            }
-
-            friends.add(newFriend.getUid());
-
-            // remove the requst from this user's requests list as well as from the added user's request list
-            requests.remove(newFriend.getUid());
-            if (otherUserRequests == null) {
-                otherUserRequests = new ArrayList<>();
-            }
-            otherUserRequests.remove(currentUser.getUid());
-
-            newFriendFriends.add(this.currentUser.getUid());
-
-            this.currentUser.setFriends(friends);
-            this.currentUser.setFriendRequests(requests);
-
-            newFriend.setFriends(newFriendFriends);
-
-            customUserDetailsService.updateUser(currentUser);
-            customUserDetailsService.updateUser(newFriend);
-
+            System.out.println("BEFRIEND!");
+            customUserDetailsService.addUserToYourFriendsList(currentUser, newFriend);
+            refreshGrids();
             this.getUI().get().getPage().reload();
         });
 
         return button;
     }
 
-    private List<User> findFriends() {
-        List<User> friends = new ArrayList<User>();
-
-        if(currentUser.getFriends() != null) {
-            for (Long friend : currentUser.getFriends()) {
-                if(customUserDetailsService.getByUid(friend).isPresent()) {
-                    friends.add(customUserDetailsService.getByUid(friend).get());
-                }
-            } 
-        }
-        return friends;
+    private List<User> findYourFriends() {
+        return customUserDetailsService.getAllFriends(currentUser);
     }
 
     private Button deleteFriendButton(User friend) {
+        // unfriend
         Icon icon = new Icon("lumo","cross");
         Button button = new Button(icon, (ev) -> {
-            List<Long> friends = this.currentUser.getFriends();
-            friends.remove(friend.getUid());
-
-            List<Long> friendFriends = friend.getFriends();
-            if (friendFriends == null) {
-                friendFriends = new ArrayList<>();
-            }
-            friendFriends.remove(this.currentUser.getUid());
-
-            this.currentUser.setFriends(friends);
-            this.customUserDetailsService.updateUser(currentUser);
-            
-            friend.setFriends(friendFriends);
-            this.customUserDetailsService.updateUser(friend);
+            System.out.println("UNFRIEND!");
+            customUserDetailsService.deleteUserFromYourFriendsList(currentUser, friend);
+            refreshGrids();
             this.getUI().get().getPage().reload();
         });
 
         return button;
+    }
+
+    public void refreshGrids() {
+        ListDataProvider<User> dataProvider2 = new ListDataProvider<>(findYourFriends());
+        currentFriendsGrid.setDataProvider(dataProvider2);
+        dataProvider2.refreshAll();
+        
+        ListDataProvider<User> dataProvider1 = new ListDataProvider<>(findYourFriendRequestsList());
+        friendRequestGrid.setDataProvider(dataProvider1);
+        dataProvider1.refreshAll();
     }
 
     // @Override

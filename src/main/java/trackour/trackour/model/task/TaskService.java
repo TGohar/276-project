@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import jakarta.transaction.Transactional;
-import trackour.trackour.model.project.Project;
 
 @Service
 @Transactional
@@ -30,11 +29,11 @@ public class TaskService {
         return repository.findAll();
     }
       
-    public Optional<Task> findTaskById(String id) {
+    public Optional<Task> findTaskById(Long id) {
         return repository.findById(id);
     }
       
-    public List<Task> getAllByProject(String id) {
+    public List<Task> getAllByProject(Long id) {
         List<Task> listTasks = new ArrayList<>();
         for (Task project : this.getAllTasks()) {
             if (project.getId() == id){

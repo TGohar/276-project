@@ -48,7 +48,7 @@ import trackour.trackour.views.components.NavBar;
 @PreserveOnRefresh
 @PageTitle("Project Workspace | Trackour")
 @PermitAll
-public class ProjectView extends VerticalLayout implements HasUrlParameter<String> {
+public class ProjectView extends VerticalLayout implements HasUrlParameter<Long> {
 
 @Autowired
     SecurityViewService securityViewService;
@@ -60,7 +60,7 @@ public class ProjectView extends VerticalLayout implements HasUrlParameter<Strin
     ProjectsService projectsService;
   
     @Override
-    public void setParameter(BeforeEvent event, String id) {
+    public void setParameter(BeforeEvent event, Long id) {
         User user = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername()).get();
         // set the layout to fill the whole page
         this.setSizeFull();
@@ -129,18 +129,10 @@ public class ProjectView extends VerticalLayout implements HasUrlParameter<Strin
         Span assigneesLabel = new Span("Assignees:");
 
         MultiSelectListBox<String> assigneesListBox = new MultiSelectListBox<>();
-        //   keysListBox.setItems(project.getParticipants());
-        // get the list of friends ids from the user
-        List<Long> friendsIds = user.getFriends();
-
-        // filter the list of all users by matching their ids with the friends ids
-        List<User> userFriends = customUserDetailsService.getAll().stream()
-            .filter(u -> friendsIds.contains(u.getUid()))
-            .collect(Collectors.toList());
-
-        List<String> userFriendsUsernames = userFriends.stream()
-            .map(u -> u.getUsername())
-            .collect(Collectors.toList());
+        // filter the list of all users by getUsername
+        List<String> userFriendsUsernames = user.getFriendsWith().stream()
+                  .map(User::getUsername)
+                  .collect(Collectors.toList());
 
         List<String> friendsList = userFriendsUsernames; //customUserDetailsService.getAll().stream().map(usr -> user.getFriendRequests().contains(usr.getUid())).collect(Collectors.toList())
         assigneesListBox.setItems(friendsList);

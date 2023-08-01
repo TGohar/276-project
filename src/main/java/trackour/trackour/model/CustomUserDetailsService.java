@@ -1,5 +1,7 @@
 package trackour.trackour.model;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 // import java.util.HashSet;
@@ -7,6 +9,7 @@ import java.util.Optional;
 // import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,20 +19,132 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
 import jakarta.transaction.Transactional;
 import trackour.trackour.model.user.User;
 import trackour.trackour.model.user.UserRepository;
+import trackour.trackour.views.friends.FriendRequestEnum;
 
 @Service
 @Transactional
 public class CustomUserDetailsService implements UserDetailsService {
-    private final UserRepository repository;
-        public CustomUserDetailsService(UserRepository repository) {
-        this.repository = repository;
+    @Autowired
+    private UserRepository repository;
+
+    public List<User> getAllFriends(User user) {
+        if (user == null){
+            return Arrays.asList();
+        }
+        Optional<User> currentUserOptional = repository.findByUid(user.getUid());
+        if (currentUserOptional.isPresent()) {
+            return repository.findByUid(user.getUid()).get().getFriendsWith();
+        }
+        return Arrays.asList();
+    }
+
+    public List<User> getAllFriendRequests(User user) {
+        if (user == null){
+            return Arrays.asList();
+        }
+        Optional<User> currentUserOptional = repository.findByUid(user.getUid());
+        if (currentUserOptional.isPresent()) {
+            return repository.findByUid(user.getUid()).get().getPendingFriendRequests();
+        }
+        return Arrays.asList();
+    }
+
+    public FriendRequestEnum sendFriendRequestToThatUser(User currentUser, User friend) {
+        // they are swapped cus 4 soime reason it was populating the sender's/requester/s request list instead of the recepient's.
+        // i was fed up and just did this temp fix
+        if (friend == null) {
+            return FriendRequestEnum.USER_DOES_NOT_EXIST;
+        }
+        System.out.println("Send " + friend.getUsername() + " a friend req");
+        if (friend.getUsername().equals(currentUser.getUsername())) {
+            return FriendRequestEnum.CANNOT_ADD_YOURSELF;
+        }
+        
+        List<User> friendRequests = getAllFriendRequests(friend);
+        List<User> friends = getAllFriends(currentUser);
+
+        if (friendRequests.stream().anyMatch(user -> user.getUid().equals(currentUser.getUid()))){
+            return FriendRequestEnum.REQUEST_ALREADY_SENT;
+        }
+
+        if (friends.stream().anyMatch(user -> user.getUid().equals(friend.getUid()))){
+            return FriendRequestEnum.ALREADY_FRIENDS;
+        }
+
+        friendRequests.add(currentUser);
+        friend.setPendingFriendRequests(friendRequests);
+
+        update(friend);
+        return FriendRequestEnum.SUCCESS;
+    }
+
+    public boolean addUserToYourFriendsList(User currentUser, User newFriend) {
+        System.out.println("Adding " + newFriend.getUsername() + " as a new friend");
+        // friends lists
+        List<User> requests = getAllFriendRequests(currentUser); // get the list of your friend requests
+        List<User> friends = getAllFriends(currentUser); // get the list of your friends
+        List<User> otherUserRequests = getAllFriendRequests(newFriend); // get the list of your friend requests
+        List<User> newFriendFriends = getAllFriends(newFriend); // get the list of your friends
+
+        
+        friends.add(newFriend);
+
+        // remove the requst from this user's requests list as well as from the added user's request list
+        requests = requests.stream()
+          .filter(user -> !user.getUid().equals(newFriend.getUid()))
+          .collect(Collectors.toList());
+        otherUserRequests = otherUserRequests.stream()
+          .filter(user -> !user.getUid().equals(currentUser.getUid()))
+          .collect(Collectors.toList());
+
+        newFriendFriends.add(currentUser);
+
+        currentUser.setFriendsWith(friends);
+        currentUser.setPendingFriendRequests(requests);
+
+        newFriend.setFriendsWith(newFriendFriends);
+
+        update(currentUser);
+        update(newFriend);
+        return true;
+    }
+
+    public boolean deleteUserFromYourFriendsRequests(User currentUser, User user) {
+        System.out.println("Reject " + user.getUsername() + " from ur friend requests");
+        List<User> requests = getAllFriendRequests(currentUser);  // get the list of your friend requests
+        requests = requests.stream()
+          .filter(u -> !u.getUid().equals(user.getUid()))
+          .collect(Collectors.toList());
+
+        currentUser.setPendingFriendRequests(requests);
+        // sve your modified data
+        update(currentUser);
+        return true;
+    }
+
+    public boolean deleteUserFromYourFriendsList(User currentUser, User friend) {
+        System.out.println("Rem " + friend.getUsername() + " from ur friend list");
+        // friends lists
+        List<User> friends = getAllFriends(currentUser);
+        friends = friends.stream()
+          .filter(u -> !u.getUid().equals(friend.getUid()))
+          .collect(Collectors.toList());
+        
+        List<User> friendFriends = getAllFriends(friend);
+        friendFriends = friendFriends.stream()
+          .filter(u -> !u.getUid().equals(currentUser.getUid()))
+          .collect(Collectors.toList());
+
+        currentUser.setFriendsWith(friends);
+        update(currentUser);
+
+        friend.setFriendsWith(friendFriends);
+        update(friend);
+        
+        return true;
     }
 
     public Optional<User> getByUid(Long uid) {

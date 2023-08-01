@@ -29,6 +29,7 @@ import jakarta.persistence.UniqueConstraint;
 import jakarta.transaction.Transactional;
 import jakarta.persistence.JoinColumn;
 import trackour.trackour.model.project.Project;
+import trackour.trackour.model.task.Task;
 
 @Entity
 @Table(name="Users", uniqueConstraints=@UniqueConstraint(columnNames={"uid", "username", "email"}))
@@ -39,7 +40,11 @@ public class User {
     @Column(name = "uid")
     private Long uid;
 
-    @ManyToMany
+    // a user can be assigned to many tasks
+    @ManyToMany(mappedBy = "assignees") // use mappedBy to indicate the owner side of the relationship
+    private Set<Task> tasks;
+
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "friends_with",
         joinColumns = @JoinColumn(name = "user_id"),
@@ -47,7 +52,7 @@ public class User {
     )
     private List<User> friendsWith;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "pending_friend_requests",
         joinColumns = @JoinColumn(name = "user_id"),
@@ -55,12 +60,11 @@ public class User {
     )
     private List<User> pendingFriendRequests;
     
-    @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private List<Project> ownedProjects;
     
     @Column(name = "username")
     private String username;
-    
 
     @Column(name = "passwordResetToken")
     private String passwordResetToken;
@@ -119,12 +123,39 @@ public class User {
         
         this.friendsWith = new ArrayList<>();
         this.pendingFriendRequests = new ArrayList<>();
+
+        this.tasks = new HashSet<>();
+        this.ownedProjects = new ArrayList<>();
         
         // initialize default role as ["USER"]
         Set<Role> defaultRole = new HashSet<>();
         // defaultRole.add(Role.USER);
         defaultRole.add(Role.ADMIN);
         setRoles(defaultRole);
+    }
+
+    public Set<Task> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(Set<Task> tasks) {
+        this.tasks = tasks;
+    }
+
+    public List<User> getFriendsWith() {
+        return friendsWith;
+    }
+
+    public void setFriendsWith(List<User> friendsWith) {
+        this.friendsWith = friendsWith;
+    }
+
+    public List<User> getPendingFriendRequests() {
+        return pendingFriendRequests;
+    }
+
+    public void setPendingFriendRequests(List<User> pendingFriendRequests) {
+        this.pendingFriendRequests = pendingFriendRequests;
     }
 
     @Transactional
