@@ -7,7 +7,6 @@
     "@polymer/paper-button": "^3.0.1",
     "@polymer/paper-icon-button": "^3.0.2",
     "@polymer/polymer": "3.5.1",
-    "@vaadin-component-factory/vcf-enhanced-rich-text-editor": "3.0.2",
     "@vaadin/a11y-base": "24.1.1",
     "@vaadin/accordion": "24.1.1",
     "@vaadin/app-layout": "24.1.1",
@@ -103,7 +102,6 @@
       "@polymer/paper-button": "^3.0.1",
       "@polymer/paper-icon-button": "^3.0.2",
       "@polymer/polymer": "3.5.1",
-      "@vaadin-component-factory/vcf-enhanced-rich-text-editor": "3.0.2",
       "@vaadin/a11y-base": "24.1.1",
       "@vaadin/accordion": "24.1.1",
       "@vaadin/app-layout": "24.1.1",
@@ -193,7 +191,7 @@
       "workbox-core": "7.0.0",
       "workbox-precaching": "7.0.0"
     },
-    "hash": "009df42d7a836115dfacc5444cd988a80450cb93f8313004b996b7c72a0039f9"
+    "hash": "7a925d167932e1cccbea2deb868fb82dca5a0c92fea3ca5a8d4f878a57dfa5a2"
   },
   "overrides": {
     "@vaadin/bundles": "$@vaadin/bundles",
@@ -269,7 +267,6 @@
     "@polymer/paper-icon-button": "$@polymer/paper-icon-button",
     "lit-element": "$lit-element",
     "@polymer/paper-button": "$@polymer/paper-button",
-    "@vaadin-component-factory/vcf-enhanced-rich-text-editor": "$@vaadin-component-factory/vcf-enhanced-rich-text-editor",
     "trix": "$trix"
   }
 }

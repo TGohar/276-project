@@ -39,7 +39,7 @@ public class Task {
     private LocalDateTime createdAt;
 
     @ManyToOne
-    @JoinColumn(name = "project_id")
+    @JoinColumn(name = "project")
     private Project project;
 
     // ----------methods------------------------------------------
