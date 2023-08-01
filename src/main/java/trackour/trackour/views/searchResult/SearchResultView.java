@@ -10,6 +10,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H5;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
@@ -32,6 +33,7 @@ import se.michaelthelin.spotify.model_objects.specification.Track;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.spotify.SearchTrack;
+import trackour.trackour.views.api.APIController;
 import trackour.trackour.views.components.NavBar;
 import trackour.trackour.views.components.SimpleSearchField;
 import trackour.trackour.views.login.LoginPage;
@@ -124,9 +126,14 @@ public class SearchResultView extends VerticalLayout implements BeforeEnterObser
                 albumField.setReadOnly(true);
                 albumLabel.add(albumField);
 
+                String trackURL = APIController.spotifyURL(track.getId());
+                Anchor trackLink = new Anchor(trackURL, new Icon(VaadinIcon.PLAY_CIRCLE));
+                trackLink.setTarget("_blank");
+                Button playButton = new Button(trackLink);
+                playButton.addThemeVariants(ButtonVariant.LUMO_ICON);
                 artist_and_Album.add(aristLabel, albumLabel);
 
-                trackCard.add(albumCoverImage, songField, artist_and_Album);
+                trackCard.add(albumCoverImage, songField, artist_and_Album, playButton);
 
                 trackCard.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
                 trackCard.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
@@ -135,26 +142,6 @@ public class SearchResultView extends VerticalLayout implements BeforeEnterObser
                     // .setHeader(trackHeader)
                     .setFlexGrow(1)
                     .setAutoWidth(true);
-
-            grid.addColumn(new ComponentRenderer<>(track -> {
-                // vaadin:arrow-forward
-                Button moreInfoButton = new Button(new Icon(VaadinIcon.INFO_CIRCLE_O));
-                moreInfoButton.addThemeVariants(ButtonVariant.LUMO_ICON);
-                moreInfoButton.setAriaLabel("More Info");
-                moreInfoButton.setTooltipText("View more info about this track in a new tab");
-                return moreInfoButton;
-            }))
-                    .setFlexGrow(0)
-                    .setAutoWidth(true);
-
-            // when user clicks on list item, the playback feature shows
-            grid.setItemDetailsRenderer(new ComponentRenderer<>(track -> {
-                Button playbackButton = new Button(new Icon(VaadinIcon.PLAY_CIRCLE_O));
-                playbackButton.addThemeVariants(ButtonVariant.LUMO_ICON);
-                playbackButton.setAriaLabel("Listen to song");
-                playbackButton.setTooltipText("Playback feature");
-                return playbackButton;
-            }));
 
             grid.setItems(tracks);
 
