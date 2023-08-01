@@ -126,21 +126,21 @@ public class ProjectView extends VerticalLayout implements HasUrlParameter<Long>
         songs_audioDetails.add(keysArea);
         dataSection.add(title, progressBarContainer, status_collab, songs_audioDetails);
 
-        Span assigneesLabel = new Span("Assignees:");
+        Span participantsLabel = new Span("Participants:");
 
-        MultiSelectListBox<String> assigneesListBox = new MultiSelectListBox<>();
+        MultiSelectListBox<String> participantsListBox = new MultiSelectListBox<>();
         // filter the list of all users by getUsername
         List<String> userFriendsUsernames = user.getFriendsWith().stream()
                   .map(User::getUsername)
                   .collect(Collectors.toList());
 
         List<String> friendsList = userFriendsUsernames; //customUserDetailsService.getAll().stream().map(usr -> user.getFriendRequests().contains(usr.getUid())).collect(Collectors.toList())
-        assigneesListBox.setItems(friendsList);
+        participantsListBox.setItems(friendsList);
 
         VerticalLayout participantsSection = new VerticalLayout();
         participantsSection.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
         participantsSection.setSizeFull();
-        participantsSection.add(title, assigneesLabel, assigneesListBox);
+        participantsSection.add(title, participantsLabel, participantsListBox);
 
 
         // right section customization

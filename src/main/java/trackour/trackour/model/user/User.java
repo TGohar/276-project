@@ -21,15 +21,14 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.transaction.Transactional;
-import jakarta.persistence.JoinColumn;
 import trackour.trackour.model.project.Project;
-import trackour.trackour.model.task.Task;
 
 @Entity
 @Table(name="Users", uniqueConstraints=@UniqueConstraint(columnNames={"uid", "username", "email"}))
@@ -39,10 +38,6 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "uid")
     private Long uid;
-
-    // a user can be assigned to many tasks
-    @ManyToMany(mappedBy = "assignees") // use mappedBy to indicate the owner side of the relationship
-    private Set<Task> tasks;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -63,6 +58,9 @@ public class User {
     @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private List<Project> ownedProjects;
     
+    @OneToMany(mappedBy = "participants", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    private Set<Project> participatedProjects;
+
     @Column(name = "username")
     private String username;
 
@@ -124,7 +122,7 @@ public class User {
         this.friendsWith = new ArrayList<>();
         this.pendingFriendRequests = new ArrayList<>();
 
-        this.tasks = new HashSet<>();
+        this.participatedProjects = new HashSet<>();
         this.ownedProjects = new ArrayList<>();
         
         // initialize default role as ["USER"]
@@ -134,12 +132,12 @@ public class User {
         setRoles(defaultRole);
     }
 
-    public Set<Task> getTasks() {
-        return tasks;
+    public Set<Project> getParticipatedProjects() {
+        return participatedProjects;
     }
 
-    public void setTasks(Set<Task> tasks) {
-        this.tasks = tasks;
+    public void setParticipatedProjects(Set<Project> participatedProjects) {
+        this.participatedProjects = participatedProjects;
     }
 
     public List<User> getFriendsWith() {

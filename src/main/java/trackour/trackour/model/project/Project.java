@@ -17,6 +17,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -38,6 +40,15 @@ public class Project {
     @JoinColumn(name = "user_id", referencedColumnName = "uid")
     private User owner;
 
+    // a project can have many assignees
+    @ManyToMany
+    @JoinTable(
+        name = "project_participants", // name of the join table
+        joinColumns = @JoinColumn(name = "project_id"), // foreign key column for Task
+        inverseJoinColumns = @JoinColumn(name = "user_id") // foreign key column for User
+    )
+    private Set<User> participants;
+
     @Column(name = "title")
     private String title;
 
@@ -53,10 +64,6 @@ public class Project {
     // is this project collaborative
     @Column(name = "collaboration_mode")
     private CollaborationMode collaborationMode;
-    
-
-    // a project can have many participants
-    private Set<Long> participants;
 
     // progress double. can be used by progress bar or charts
     @Column(name = "progress")
@@ -160,11 +167,11 @@ public class Project {
         this.status = status;
     }
 
-    public Set<Long> getParticipants() {
+    public Set<User> getParticipants() {
         return participants;
     }
 
-    public void setParticipants(Set<Long> participants) {
+    public void setParticipants(Set<User> participants) {
         this.participants = participants;
     }
 
