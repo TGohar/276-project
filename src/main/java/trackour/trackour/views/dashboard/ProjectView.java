@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.vaadin.addons.tatu.CircularProgressBar;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
@@ -41,6 +44,7 @@ import jakarta.annotation.security.PermitAll;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.model.project.ProjectsService;
 import trackour.trackour.model.task.Task;
+import trackour.trackour.model.task.TaskService;
 import trackour.trackour.model.user.User;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.components.NavBar;
@@ -63,21 +67,41 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver, 
     @Autowired
     ProjectsService projectsService;
 
+    @Autowired
+    TaskService taskService;
+
+    private Grid<Task> grid;
+
+    public ProjectView(SecurityViewService securityViewService,
+    CustomUserDetailsService customUserDetailsService,
+    ProjectsService projectsService,
+    TaskService taskService
+    ) {
+      grid = new Grid<>();
+      
+    }
+
+    public void updateGrid(Long id) {
+        // Get the user object from the service
+        Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
+        User user = userOptional.get();
+        // Create a new project object with the user id as the owner
+        grid.setItems(projectsService.getAllTasksByProject(id));
+    }
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
 
     }
 
-    private VerticalLayout generateTasksGrid(Long projectId) {
+    private VerticalLayout generateTasksGrid(Grid<Task> grid, Long projectId) {
 
+      // projectsService.getAllTasksByProject(id)
       VerticalLayout hLayout = new VerticalLayout();
       hLayout.setSizeFull();
 
       Project project = projectsService.getById(projectId);
 
       if (project != null) {
-        // Create a grid with the columns for title, status, and createdAt
-        Grid<Task> grid = new Grid<>();
         grid.setSizeFull();
         grid.addColumn(trackour.trackour.model.task.Task::getTitle).setHeader("Title");
         grid.addColumn(Task::getStatus).setHeader("Status");
@@ -86,57 +110,54 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver, 
         // .setKey("createdAt")
         // .setSortable(true); // Set the sortable property to true for the column
   
-        // Set some items for the grid
-        List<Task> tasks = Arrays.asList(
-          new Task(project),
-          new Task(project),
-          new Task(project),
-          new Task(project),
-          new Task(project));
-        grid.setItems(tasks);
-  
+        
         // Make the tasks selectable
         grid.setSelectionMode(Grid.SelectionMode.MULTI);
   
-        // Add a delete button and edit button to each row
-        grid.addComponentColumn(task -> {
-          HorizontalLayout layout = new HorizontalLayout();
-          // Create a delete button and add a click listener
-          Button deleteButton = new Button("Delete");
-          deleteButton.addClickListener(event -> {
-            // Delete the task from the backend
-            // deleteTask(task);
-            // Remove the task from the grid
-            // grid.setItems(projectsService.getAllTasksForProject(projectId));
-          });
-          // Create an edit button and add a click listener
-          Button editButton = new Button("Edit");
-          editButton.addClickListener(event -> {
-            // Open a dialog to edit the task
-            // openEditDialog(task);
-          });
-          // Add the buttons to the layout
-          layout.add(deleteButton, editButton);
-          return layout;
-        }).setHeader("Actions");
-  
         // Add any other features you think it needs
         // For example, you can add a filter field to search by title
+        HorizontalLayout topAreaOfGrid = new HorizontalLayout();
+        topAreaOfGrid.setWidthFull();
         TextField filterField = new TextField();
         filterField.setPlaceholder("Filter by title");
         filterField.addValueChangeListener(event -> {
+          // Set some items for the grid
+          List<Task> tasks = projectsService.getAllTasksByProject(projectId);
+        // as well as the ones you don't own but  participated in
+    
+        System.out.println("projects size: " + tasks.size());
+          grid.setItems(projectsService.getAllTasksByProject(projectId));
           // Get the filter value
           String filter = event.getValue();
           // Filter the tasks by title
           List<Task> filteredTasks = tasks.stream()
-            .filter(task -> task.getTitle().toLowerCase().contains(filter.toLowerCase()))
+            .filter(tsk -> tsk.getTitle().toLowerCase().contains(filter.toLowerCase()))
             .collect(Collectors.toList());
           // Set the filtered tasks to the grid
           grid.setItems(filteredTasks);
         });
-        
-        // Add the filter field above the grid
-        hLayout.add(filterField, grid);
+        Button addButton = new Button("Add new task");
+          addButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+          addButton.addClickListener(e -> {
+            // Open the newProjectDialog or show the layout
+            taskService.createNewTask(new Task(project));
+            updateGrid(projectId);
+        });
+        // Create a delete button and add a click listener
+        Button deleteButton = new Button("Delete", e -> {
+            // Get the set of selected items from the grid
+            Set<Task> selectedTasks = grid.getSelectedItems();
+            // Iterate over the set and delete each project from the database using the service
+            for (Task delTask : selectedTasks) {
+                System.out.println("delete task " + delTask.getId());
+                taskService.deleteTask(delTask);
+            }
+            // Update the grid with the latest project list
+            updateGrid(projectId);
+        });
+      topAreaOfGrid.add(filterField, addButton, deleteButton);
+      // Add the filter field above the grid
+      hLayout.add(topAreaOfGrid, grid);
       }
       return hLayout;
     }
@@ -238,7 +259,10 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver, 
         // create a vertical layout for the top component
         VerticalLayout topComponent = new VerticalLayout();
         topComponent.setSizeFull();
-        topComponent.add(generateTasksGrid(id));
+        
+        topComponent.add(generateTasksGrid(grid, id));
+
+        grid.setItems(projectsService.getAllTasksByProject(id));
         
         VerticalLayout editingSection = new VerticalLayout();
         editingSection.setSizeFull();

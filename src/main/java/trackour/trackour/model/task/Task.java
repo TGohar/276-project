@@ -43,6 +43,12 @@ public class Task {
     private Project project;
 
     // ----------methods------------------------------------------
+    public Task() {
+        this.title = "New Task";
+        this.description = "Placeholder description.";
+        this.status = TaskStatus.NOT_STARTED;
+        initCollections();
+    }
     public Task(Project project) {
         this.title = "New Task";
         this.description = "Placeholder description.";

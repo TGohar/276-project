@@ -212,4 +212,15 @@ public class ProjectsService {
         }
         return null;
     }
+
+    public List<Task> getAllTasksByProject(Long projectId) {
+        if (projectId != null){
+            Optional<Project> projOptional = projectRepository.findById(projectId);
+            if (projOptional.isPresent()) {
+                // keeping the database access open
+                return projectRepository.findById(projectId).get().getTasks();
+            }
+        }
+        return new ArrayList<>();
+    }
 }

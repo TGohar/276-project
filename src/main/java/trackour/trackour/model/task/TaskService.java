@@ -12,39 +12,46 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import jakarta.transaction.Transactional;
+import trackour.trackour.model.project.Project;
+import trackour.trackour.model.project.ProjectRepository;
+import trackour.trackour.model.user.User;
 
 @Service
 @Transactional
 public class TaskService {
     
     @Autowired
-    private TaskRepository repository;
+    private TaskRepository taskRepository;
+    
+    @Autowired
+    private ProjectRepository projectRepository;
 
     public void createNewTask(Task task) {
         // printTaskObj(task);
-        repository.saveAndFlush(task);
+        taskRepository.saveAndFlush(task);
+    }
+
+    public List<Task> getAllByProject(Long id) {
+        if (id != null){
+            Optional<Project> currentUserOptional = projectRepository.findById(id);
+            if (currentUserOptional.isPresent()) {
+                // keeping the database access open
+                return projectRepository.findById(id).get().getTasks();
+            }
+        }
+        return new ArrayList<>();
     }
 
     public List<Task> getAllTasks() {
-        return repository.findAll();
+        return taskRepository.findAll();
     }
       
     public Optional<Task> findTaskById(Long id) {
-        return repository.findById(id);
-    }
-      
-    public List<Task> getAllByProject(Long id) {
-        List<Task> listTasks = new ArrayList<>();
-        for (Task project : this.getAllTasks()) {
-            if (project.getId() == id){
-                listTasks.add(project);
-            }
-        }
-        return listTasks;
+        return taskRepository.findById(id);
     }
 
     // public Project getProject() {
-    //     return repository.findB
+    //     return taskRepository.findB
     // }
       
     public List<Task> findAllTasksByStatus(TaskStatus status) {
@@ -58,7 +65,9 @@ public class TaskService {
     }
       
     public void deleteTask(Task task) {
-        repository.delete(task);
+        if (task != null) {
+            taskRepository.delete(task);
+        }
     }
       
     public void updateTask(Task task) {

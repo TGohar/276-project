@@ -68,7 +68,7 @@ public class Project {
     @Column(name = "bpm")
     private Set<String> bpm;
 
-    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "project", fetch = FetchType.EAGER)
     private List<Task> tasks;
 
     
