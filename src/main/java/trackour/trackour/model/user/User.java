@@ -12,15 +12,21 @@ import org.hibernate.annotations.Type;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import io.hypersistence.utils.hibernate.type.array.ListArrayType;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.transaction.Transactional;
+import trackour.trackour.model.project.Project;
+import trackour.trackour.model.task.Task;
 
 @Entity
 @Table(name="Users", uniqueConstraints=@UniqueConstraint(columnNames={"uid", "username", "email"}))
@@ -30,6 +36,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "uid")
     private Long uid;
+
+    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    private List<Project> ownedProjects;
     
     @Column(name = "username")
     private String username;
@@ -59,7 +68,7 @@ public class User {
     // roles are now stored in a set directly in the roles column of the users table
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;    
-    
+
     // --------------methods------------------------------
     public User() {
         this.initCollections();
@@ -78,6 +87,7 @@ public class User {
         this.displayName = displayName;
         this.password = password;
         this.email = email;
+        ownedProjects = new ArrayList<>();
         this.initCollections();
     }
     
@@ -90,6 +100,16 @@ public class User {
         // defaultRole.add(Role.USER);
         defaultRole.add(Role.ADMIN);
         setRoles(defaultRole);
+    }
+
+    @Transactional
+    public List<Project> getOwnedProjects() {
+        return ownedProjects;
+    }
+
+    @Transactional
+    public void setOwnedProjects(List<Project> ownedProjects) {
+        this.ownedProjects = ownedProjects;
     }
 
     public void setRoles(Set<Role> roles) {

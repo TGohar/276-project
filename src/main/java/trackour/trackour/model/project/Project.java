@@ -1,24 +1,29 @@
 package trackour.trackour.model.project;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 // import java.util.Set;
 import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import trackour.trackour.model.task.Task;
+import trackour.trackour.model.user.User;
 
 @Entity
 @Table( name="projects", uniqueConstraints= @UniqueConstraint(columnNames={"project_id"}))
@@ -29,7 +34,11 @@ public class Project {
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
     private String id;
-
+    
+    // a project can have one owner
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "uid")
+    private User owner;
 
     @Column(name = "title")
     private String title;
@@ -43,15 +52,10 @@ public class Project {
     @Column(name = "status", nullable = false)
     private ProjectStatus status;
     
-    private Set<String> tasks;
-    
     // is this project collaborative
     @Column(name = "collaboration_mode")
     private CollaborationMode collaborationMode;
     
-    // a project can have one owner
-    @Column(name = "owner", nullable = false)
-    private Long owner;
 
     // a project can have many participants
     private Set<Long> participants;
@@ -66,13 +70,15 @@ public class Project {
     @Column(name = "bpm")
     private Set<String> bpm;
 
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
+    private List<Task> tasks;
+
     
     // ----------methods------------------------------------------
-    private Project() {
-        initCollections();
-        this.owner = -1l;
+    public Project() {
+        // for hiberbnate
     }
-    public Project(Long owner) {
+    public Project(User owner) {
         initCollections();
         this.owner = owner;
     }
@@ -83,11 +89,18 @@ public class Project {
         this.title = "New Project";
         this.collaborationMode = CollaborationMode.SOLO;
         // Initialize the collections as empty sets
-        this.tasks = new HashSet<>();
         this.participants = new HashSet<>();
         this.keys = new HashSet<>();
         this.bpm = new HashSet<>();
     }
+
+    public List<Task> getTasks() {
+        return tasks;
+    }
+    
+    public void setTasks(List<Task> tasks) {
+        this.tasks = tasks;
+    }    
 
     private void initStatus() {
         this.status = ProjectStatus.IN_PROGRESS;
@@ -133,11 +146,11 @@ public class Project {
         this.createdAt = createdAt;
     }
 
-    public Long getOwner() {
+    public User getOwner() {
         return owner;
     }
 
-    public void setOwner(Long owner) {
+    public void setOwner(User owner) {
         this.owner = owner;
     }
     
@@ -147,14 +160,6 @@ public class Project {
     
     public void setStatus(ProjectStatus status) {
         this.status = status;
-    }
-    
-    public Set<String> getTasks() {
-        return tasks;
-    }
-    
-    public void setTasks(Set<String> tasks) {
-        this.tasks = tasks;
     }
 
     public Set<Long> getParticipants() {

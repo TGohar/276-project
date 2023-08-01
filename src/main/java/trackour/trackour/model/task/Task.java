@@ -1,6 +1,7 @@
 package trackour.trackour.model.task;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
@@ -10,8 +11,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 // import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import trackour.trackour.model.project.Project;
 
 @Entity
 @Table( name="tasks",   uniqueConstraints= @UniqueConstraint(columnNames={"task_id"}) )
@@ -36,21 +40,33 @@ public class Task {
     @Column(name = "createdAt")
     private LocalDateTime createdAt;
 
-    // the project id this task belongs to
-    private String project;
+    private Set<Long> assignees;
+
+    @ManyToOne
+    @JoinColumn(name = "project_id")
+    private Project project;
 
     // ----------methods------------------------------------------
-    public Task() {
+    public Task(Project project) {
         this.title = "New Task";
         this.description = "Placeholder description.";
         this.status = TaskStatus.NOT_STARTED;
+        this.project = project;
+    }
+    
+    public Set<Long> getAssignees() {
+        return assignees;
+    }
+    
+    public void setAssignees(Set<Long> assignees) {
+        this.assignees = assignees;
     }
 
-    public String getProject() {
+    public Project getProject() {
         return this.project;
     }
     
-    public void setProject(String project) {
+    public void setProject(Project project) {
         this.project = project;
     }    
 

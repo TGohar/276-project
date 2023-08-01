@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.atmosphere.config.service.Post;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,36 +14,52 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import jakarta.transaction.Transactional;
 import trackour.trackour.model.user.User;
+import trackour.trackour.model.user.UserRepository;
 
 @Service
 @Transactional
 public class ProjectsService {
     
     @Autowired
-    private ProjectRepository repository;
+    private ProjectRepository projectRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    public List<Project> getAllByOwner(User user) {
+        if (user != null){
+            return projectRepository.findByOwner(user);
+        }
+        return new ArrayList<>();
+    }
+    
+    
     public void createNewProject(Project project) {
         // printProjectObj(project);
-        repository.saveAndFlush(project);
+        projectRepository.saveAndFlush(project);
     }
 
     public List<Project> getAllProjects() {
-        return repository.findAll();
+        return projectRepository.findAll();
     }
       
     public Optional<Project> findProjectById(String id) {
-        return repository.findById(id);
+        return projectRepository.findById(id);
     }
       
-    public List<Project> getAllByOwner(Long uid) {
-        List<Project> userProjects = new ArrayList<>();
-        for (Project project : this.getAllProjects()) {
-            if (project.getOwner() == (uid)){
-                userProjects.add(project);
-            }
-        }
-        return userProjects;
-    }
+      
+    // public List<Project> getAllByOwner(User user) {
+    //     if (user == null){
+    //         return null;
+    //     }
+    //     List<Project> userProjects = new ArrayList<>();
+    //     for (Project project : this.getAllProjects()) {
+    //         if (project.getOwner().equals(user)){
+    //             userProjects.add(project);
+    //         }
+    //     }
+    //     return userProjects;
+    // }
       
     public List<Project> findAllCompletedProjects() {
         List<Project> allCompleted = new ArrayList<>();
@@ -65,7 +82,7 @@ public class ProjectsService {
     }
       
     public void deleteTask(Project task) {
-        repository.delete(task);
+        projectRepository.delete(task);
     }
       
     public void updateProject(Project project) {
@@ -90,7 +107,7 @@ public class ProjectsService {
 
     public void deleteProject(Project project) {
         if (project != null) {
-            repository.delete(project);
+            projectRepository.delete(project);
         }
     }
 }

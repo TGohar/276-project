@@ -1,5 +1,6 @@
 package trackour.trackour.views.dashboard;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -213,10 +214,10 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
         Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
         User user = userOptional.get();
         // Create a new project object with the user id as the owner
-        Project newProj = new Project(user.getUid());
-        // Set the title of the new project with the value from the text field
+        Project newProj = new Project(user);
+        // // Set the title of the new project with the value from the text field
         newProj.setTitle(title);
-        // Save the new project to the database using the service
+        // // Save the new project to the database using the service
         projectsService.createNewProject(newProj);
         // Update the grid with the new project list
         updateGrid();
@@ -272,33 +273,26 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
     updateGrid();
 }
 
-// A method to create and save a new project, and update the grid
-private void addNewProject() {
-    // Get the user object from the service
-    Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
-    User user = userOptional.get();
-
-    // Create a new project object with the user id as the owner
-    Project newProj = new Project(user.getUid());
-
-    // Save the new project to the database using the service
-    projectsService.createNewProject(newProj);
-
-    // Update the grid with the new project list
-    updateGrid();
-}
-
 // A method to update the grid with the latest projects from the database
 private void updateGrid() {
     // Get the user object from the service
     Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
     User user = userOptional.get();
 
-    // Get the list of projects owned by the user from the service
-    List<Project> projects = projectsService.getAllByOwner(user.getUid());
-
-    // Set the grid items to the project list
-    grid.setItems(projects);
+    List<Project> projects = new ArrayList<>();
+    
+    if (userOptional.isPresent()){
+        projects = projectsService.getAllByOwner(user);
+    
+        System.out.println("projects size: " + projects.size());
+    
+        // Get the list of projects owned by the user from the service
+        // List<Project> projects = user.getOwnedProjects();
+        // List<Project> projects = projectsService.getAllByOwner(user.getUid());
+    
+        // Set the grid items to the project list
+        grid.setItems(projects);
+    }
 }
 }
 
