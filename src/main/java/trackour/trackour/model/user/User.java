@@ -21,12 +21,14 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.transaction.Transactional;
+import jakarta.persistence.JoinColumn;
 import trackour.trackour.model.project.Project;
-import trackour.trackour.model.task.Task;
 
 @Entity
 @Table(name="Users", uniqueConstraints=@UniqueConstraint(columnNames={"uid", "username", "email"}))
@@ -37,12 +39,29 @@ public class User {
     @Column(name = "uid")
     private Long uid;
 
-    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToMany
+    @JoinTable(
+        name = "friends_with",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "friend_id")
+    )
+    private List<User> friendsWith;
+
+    @ManyToMany
+    @JoinTable(
+        name = "pending_friend_requests",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "requester_id")
+    )
+    private List<User> pendingFriendRequests;
+    
+    @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     private List<Project> ownedProjects;
     
     @Column(name = "username")
     private String username;
     
+
     @Column(name = "passwordResetToken")
     private String passwordResetToken;
     
@@ -64,14 +83,17 @@ public class User {
     @Type(ListArrayType.class)
     @Column(name = "friends", columnDefinition = "bigint[]")
     private List<Long> friends;
+
     
     // roles are now stored in a set directly in the roles column of the users table
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;    
 
     // --------------methods------------------------------
+
     public User() {
-        this.initCollections();
+        // for hibernate
+        initCollections();
     }
 
     public User(String username, String displayName, String password, String email, Set<Role> roles) {
@@ -94,6 +116,9 @@ public class User {
     private void initCollections() {
         this.friendRequests = new ArrayList<>();
         this.friends = new ArrayList<>();
+        
+        this.friendsWith = new ArrayList<>();
+        this.pendingFriendRequests = new ArrayList<>();
         
         // initialize default role as ["USER"]
         Set<Role> defaultRole = new HashSet<>();
