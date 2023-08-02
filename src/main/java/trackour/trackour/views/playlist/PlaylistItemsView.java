@@ -24,7 +24,8 @@ import se.michaelthelin.spotify.model_objects.specification.PlaylistTrack;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
-import trackour.trackour.spotify.PlaylistsItems;
+// import trackour.trackour.spotify.PlaylistsItems;
+import trackour.trackour.spotify.SpotifySessionService;
 import trackour.trackour.views.components.NavBar;
 import trackour.trackour.views.api.APIController;
 
@@ -51,8 +52,9 @@ public class PlaylistItemsView extends Div implements BeforeEnterObserver {
         // setText(String.format("Hello, %s!", parameter));
         playlistItemId = event.getRouteParameters().get("playlistItemId").get();
         playlistName = event.getRouteParameters().get("playlistName").get();
-        PlaylistsItems items = new PlaylistsItems(playlistItemId);
-        List<PlaylistTrack> playlistItem = items.getItemsInPlaylist();
+        // PlaylistsItems items = new PlaylistsItems(playlistItemId);
+        List<PlaylistTrack> playlistItem = SpotifySessionService.getItemsInPlaylist(playlistItemId);
+        // List<PlaylistTrack> playlistItem = items.getItemsInPlaylist();
         H1 header = new H1(new Text("Enjoy, " + playlistName + " !!"));
         contentContainer.add(header);
         VerticalLayout trackView = new VerticalLayout();

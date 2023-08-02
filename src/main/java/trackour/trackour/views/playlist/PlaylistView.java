@@ -23,10 +23,11 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
+import se.michaelthelin.spotify.model_objects.specification.Playlist;
 import se.michaelthelin.spotify.model_objects.specification.PlaylistSimplified;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
-import trackour.trackour.spotify.Playlist;
+import trackour.trackour.spotify.SpotifySessionService;
 import trackour.trackour.views.components.NavBar;
 
 @Route("Playlists/:playlistId/:playlistName")
@@ -52,10 +53,7 @@ public class PlaylistView extends Div implements BeforeEnterObserver {
     public void beforeEnter(BeforeEnterEvent event) {
         playlistId = event.getRouteParameters().get("playlistId").get();
         playlistName = event.getRouteParameters().get("playlistName").get();
-        Playlist p = new Playlist(playlistId);
-        H1 header = new H1(new Text("Discover " + playlistName + " !!"));
-        contentContainer.add(header);
-        List<PlaylistSimplified> playlists = p.getPlaylists();
+        List<PlaylistSimplified> playlists = SpotifySessionService.getPlaylists(playlistId);
 
         FlexLayout playlistLayout = new FlexLayout();
         playlistLayout.setFlexGrow(1);

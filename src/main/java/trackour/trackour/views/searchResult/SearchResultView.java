@@ -34,7 +34,7 @@ import jakarta.annotation.security.PermitAll;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
-import trackour.trackour.spotify.SearchTrack;
+import trackour.trackour.spotify.SpotifySessionService;
 import trackour.trackour.views.api.APIController;
 import trackour.trackour.views.components.NavBar;
 import trackour.trackour.views.components.SimpleSearchField;
@@ -81,8 +81,7 @@ public class SearchResultView extends VerticalLayout implements BeforeEnterObser
     private void generatePaginationGridLayout() {
         if (search != null) {
             System.out.println("search: " + search);
-            SearchTrack searchTracks = new SearchTrack();
-            List<Track> tracks = searchTracks.getTrackList(search);
+            List<Track> tracks = SpotifySessionService.getTrackList(search);
 
             grid.setSizeFull();
             grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);

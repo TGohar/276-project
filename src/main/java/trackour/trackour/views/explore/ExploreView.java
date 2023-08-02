@@ -28,7 +28,7 @@ import jakarta.annotation.security.RolesAllowed;
 import se.michaelthelin.spotify.model_objects.specification.Category;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
-import trackour.trackour.spotify.Explore;
+import trackour.trackour.spotify.SpotifySessionService;
 import trackour.trackour.views.components.NavBar;
 import trackour.trackour.views.components.responsive.MyBlockResponsiveLayout;
 
@@ -44,8 +44,6 @@ public class ExploreView extends MyBlockResponsiveLayout {
 
     public ExploreView(SecurityViewService securityViewHandler,
             CustomUserDetailsService customUserDetailsService) {
-
-        Explore xplore = new Explore();
 
         Optional<UserDetails> username = securityViewHandler.getSessionOptional();
         String sessionUsername = username.get().getUsername();
@@ -63,7 +61,7 @@ public class ExploreView extends MyBlockResponsiveLayout {
         greetings.add(header, smileSpan);
 
         // greetings
-        List<Category> categories = xplore.getCategories();
+        List<Category> categories = SpotifySessionService.getCategories();
 
         // int columns = 5;
         FlexLayout categoryLayout = new FlexLayout();

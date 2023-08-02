@@ -35,7 +35,7 @@ import jakarta.annotation.security.RolesAllowed;
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
-import trackour.trackour.spotify.NewReleases;
+import trackour.trackour.spotify.SpotifySessionService;
 import trackour.trackour.views.components.NavBar;
 // import trackour.trackour.views.components.NavBar;
 // import trackour.trackour.views.components.ResponsiveNavBar;
@@ -87,9 +87,8 @@ public class HomeView extends VerticalLayout {
         H2 newRelease = new H2("New Releases");
         newRelease.getStyle().set("margin-left", "25px");
         newRelease.getStyle().set("margin-top", "25px");
-            
-        NewReleases newReleases = new NewReleases();
-        List<AlbumSimplified> albums = newReleases.getNewReleases();
+
+        List<AlbumSimplified> albums = SpotifySessionService.getNewReleases();
         SimpleCarousel trendingCarousel = new SimpleCarousel(albums);
         
         // H2 utiliy = new H2("Audio Utility");
