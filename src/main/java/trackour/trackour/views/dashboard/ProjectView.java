@@ -1,32 +1,41 @@
 package trackour.trackour.views.dashboard;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.vaadin.addons.jhoffmann99.TrixEditor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.annotation.Secured;
 import org.vaadin.addons.tatu.CircularProgressBar;
+import com.vaadin.data.Binder;
 
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.listbox.MultiSelectListBox;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.renderer.LocalDateTimeRenderer;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.renderer.LitRenderer;
+import com.vaadin.flow.data.renderer.Renderer;
+import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeEvent;
@@ -34,63 +43,136 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
-import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.router.RouteParameters;
-import com.vaadin.ui.Component;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.security.PermitAll;
 import trackour.trackour.model.CustomUserDetailsService;
+import trackour.trackour.model.project.Project;
 import trackour.trackour.model.project.ProjectsService;
 import trackour.trackour.model.task.Task;
 import trackour.trackour.model.task.TaskService;
+import trackour.trackour.model.task.TaskStatus;
 import trackour.trackour.model.user.User;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.components.NavBar;
-import trackour.trackour.model.project.Project;
 
-// View for the project workspace
-@Route("project/")
+@Route("project")
 @RouteAlias("project-workspace")
 @PreserveOnRefresh
 @PageTitle("Project Workspace | Trackour")
 @PermitAll
-public class ProjectView extends VerticalLayout implements BeforeEnterObserver, HasUrlParameter<Long> {
+public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,HasUrlParameter<Long> {
+  private Long projectId;
 
-@Autowired
-    SecurityViewService securityViewService;
+  private SecurityViewService securityViewService;
     
-    @Autowired
-    CustomUserDetailsService customUserDetailsService;
+  private CustomUserDetailsService customUserDetailsService;
     
-    @Autowired
-    ProjectsService projectsService;
+  private ProjectsService projectsService;
 
-    @Autowired
-    TaskService taskService;
+  private TaskService taskService;
 
-    private Grid<Task> grid;
+  private Grid<Task> grid;
+  private Grid<Double> progressGrid;
 
-    public ProjectView(SecurityViewService securityViewService,
+  // Use @Autowired on the constructor parameters instead of the fields
+  @Autowired
+  public ProjectView(SecurityViewService securityViewService,
     CustomUserDetailsService customUserDetailsService,
     ProjectsService projectsService,
     TaskService taskService
     ) {
+      this.securityViewService = securityViewService;
+      this.customUserDetailsService = customUserDetailsService;
+      this.projectsService = projectsService;
+      this.taskService = taskService;
       grid = new Grid<>();
+      progressGrid = new Grid<>();
       
     }
 
     public void updateGrid(Long id) {
         // Get the user object from the service
         Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
-        User user = userOptional.get();
+        // User user = userOptional.get();
+        
         // Create a new project object with the user id as the owner
         grid.setItems(projectsService.getAllTasksByProject(id));
+        grid.getDataProvider().refreshAll();
     }
-    @Override
-    public void beforeEnter(BeforeEnterEvent event) {
 
+    public void updateProgressGrid(Long id) {
+        // Get the user object from the service
+        Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
+        // User user = userOptional.get();
+        projectsService.updateProgress(id);
+        
+        // Create a new project object with the user id as the owner
+        progressGrid.setItems(Arrays.asList(projectsService.getProgress(id)));
+        progressGrid.getDataProvider().refreshAll();
+        // UI.getCurrent().getPage().reload();
+    }
+
+    private static Renderer<Task> createToggleDetailsRenderer(
+        Grid<Task> grid) {
+    return LitRenderer.<Task> of(
+            "<vaadin-button theme=\"tertiary\" @click=\"${handleClick}\">Edit</vaadin-button>")
+            .withFunction("handleClick",
+                    task -> grid.setDetailsVisible(task,
+                            !grid.isDetailsVisible(task)));
+        }
+
+    private Grid<Double> generateProgressBarGrid(Grid<Double> progressGrid, Long projectId) {
+
+      // projectsService.getAllTasksByProject(id)
+      // VerticalLayout progressBarContainer = new VerticalLayout();
+      // progressBarContainer.setSizeFull();
+
+      Project project = projectsService.getById(projectId);
+
+      H1 title = new H1(projectsService.getById(projectId) == null ? "No title" : projectsService.getById(projectId).getTitle());
+      Span collaborationMode = new Span();
+      Div audioDetails = new Div();
+      Span status = new Span();
+
+      Span status_collab = new Span();
+      status_collab.add(status, collaborationMode);
+
+      Span songs_audioDetails = new Span();
+
+      VerticalLayout keysArea = new VerticalLayout();
+
+      // String keysListString = "";
+      // for (String key : selectedKeys) { // Use the injected list of keys
+      //   keysListString.concat(", " + key);
+      // }
+
+      TextArea selectedKeysArea = new TextArea("Selected Keys");
+      List<String> tempKeys = Arrays.asList("C", "C#", "Bb");
+      selectedKeysArea.setReadOnly(true);
+      keysArea.add(selectedKeysArea);
+      songs_audioDetails.add(keysArea);
+
+      if (project != null) {
+        double progresD = projectsService.getProgress(projectId);
+        progressGrid.setItems(Arrays.asList(progresD));
+
+         // ad progress bar column
+        progressGrid.addColumn(new ComponentRenderer<>(tsk -> {
+          VerticalLayout container = new VerticalLayout();
+          grid.addThemeVariants(GridVariant.LUMO_NO_ROW_BORDERS);
+          CircularProgressBar cprogressBar = new CircularProgressBar();
+          cprogressBar.setCaption("Complete");
+          cprogressBar.getStyle().setWidth("12rem");
+          cprogressBar.getStyle().setHeight("12rem");
+          cprogressBar.setPercent(progresD);
+          container.add(cprogressBar, title, status_collab, songs_audioDetails);
+          return container;
+        })).setHeader("Progress Bar");
+      }
+      return progressGrid;
     }
 
     private VerticalLayout generateTasksGrid(Grid<Task> grid, Long projectId) {
@@ -104,15 +186,55 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver, 
       if (project != null) {
         grid.setSizeFull();
         grid.addColumn(trackour.trackour.model.task.Task::getTitle).setHeader("Title");
-        grid.addColumn(Task::getStatus).setHeader("Status");
-        // grid.addColumn(new LocalDateTimeRenderer <>(Task::getCreatedAt, "yyyy-MM-dd HH:mm:ss"))
-        // .setHeader("Created at")
-        // .setKey("createdAt")
-        // .setSortable(true); // Set the sortable property to true for the column
-  
-        
+        // Use a ComponentRenderer to create the Span component for each project
+        grid.addColumn(new ComponentRenderer<>(tsk -> {
+
+            Select<TaskStatus> collabModeSelect = new Select<>();
+
+            // set the items from the enum values
+            collabModeSelect.setItems(EnumSet.allOf(TaskStatus.class));
+
+            // set the label generator to use the getValue() method
+            collabModeSelect.setItemLabelGenerator(TaskStatus::getValue);
+            collabModeSelect.setValue(tsk.getStatus());
+            
+            collabModeSelect.addValueChangeListener(event -> {
+                // get the new selected value
+                TaskStatus stat = event.getValue();
+            
+                // show a notification with the new value
+                Notification.show("Selected status: " + stat.getValue()); // Use Notification instead of System.out.println
+                // update
+                tsk.setStatus(stat);
+                taskService.updateTask(tsk);
+                projectsService.updateProgress(projectId);
+                if (stat.equals(TaskStatus.COMPLETED)) {
+                  updateProgressGrid(projectId);
+                }
+            });
+            // Return the Span object
+            return collabModeSelect;
+        })).setHeader("Status");
+
         // Make the tasks selectable
         grid.setSelectionMode(Grid.SelectionMode.MULTI);
+        // editingSection for editing
+        grid.addColumn(createToggleDetailsRenderer(grid));
+        grid.setDetailsVisibleOnClick(false);
+        grid.setItemDetailsRenderer(new ComponentRenderer<>(proj ->  {
+        VerticalLayout editingSection = new VerticalLayout();
+          editingSection.setSizeFull();
+          // trix rich text editor
+          String editorInitialValue = "Add more details.";
+          TextArea editor = new TextArea();
+          editor.setWidthFull();
+          editor.setLabel("Description");
+          editor.setValue(editorInitialValue);
+          editingSection.add(editor);  
+          // set proj description to the ediotor's value and save/update on value change
+          // proj
+          return editingSection;      
+      }));
   
         // Add any other features you think it needs
         // For example, you can add a filter field to search by title
@@ -136,24 +258,89 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver, 
           // Set the filtered tasks to the grid
           grid.setItems(filteredTasks);
         });
-        Button addButton = new Button("Add new task");
-          addButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-          addButton.addClickListener(e -> {
-            // Open the newProjectDialog or show the layout
-            taskService.createNewTask(new Task(project));
+        
+        // Create a dialog instance for adding or editing tasks
+        Dialog dialog = new Dialog();
+
+        // Create a form layout for the task fields
+        FormLayout formLayout = new FormLayout();
+
+        // Create a binder instance
+        Binder<Task> binder = new Binder<>(Task.class);
+
+        // Create the fields for the task properties
+        TextField titleField = new TextField("Title");
+        TextArea descriptionField = new TextArea("Description");
+        Select<TaskStatus> statusField = new Select<>();
+
+        // Bind the fields to the binder
+        // binder.forField(titleField)
+        //   // .withValidator(new StringLengthValidator(
+        //   //   "Please enter a title", 1, null))
+        //   .bind(Task::getTitle, Task::setTitle);
+        // binder.forField(descriptionField)
+        //   .bind(Task::getDescription, Task::setDescription);
+        // binder.forField(statusField)
+        //   // .withValidator(Objects::nonNull, "Please select a status")
+        //   .bind(Task::getStatus, Task::setStatus);
+
+        // Add the fields to the form layout
+        formLayout.add(titleField, descriptionField, statusField);
+
+        // Create a horizontal layout for the buttons
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+
+        // Create a save button and add a click listener
+        Button saveButton = new Button("Save", e -> {
+          // Validate and save the task using the binder
+          if (binder.validate().isOk()) {
+            Task task = binder.getBean();
+            // taskService.saveTask(task);
+            // Update the grid with the latest task list
             updateGrid(projectId);
+            updateProgressGrid(projectId);
+            // Close the dialog
+            dialog.close();
+          }
         });
+
+        // Create a cancel button and add a click listener
+        Button cancelButton = new Button("Cancel", e -> {
+          // Close the dialog
+          dialog.close();
+        });
+
+        // Add the buttons to the button layout
+        buttonLayout.add(saveButton, cancelButton);
+
+        // Add the form layout and the button layout to the dialog
+        dialog.add(formLayout, buttonLayout);
+
+        // Open the dialog when the add button is clicked
+        Button addButton = new Button("Add new task");
+        addButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        addButton.addClickListener(e -> {
+          // Create a new task instance with the project id
+          Task task = new Task(project);
+          // Set the bean instance to edit
+          binder.setBean(task);
+          // Open the dialog
+          dialog.open();
+        });
+        
         // Create a delete button and add a click listener
         Button deleteButton = new Button("Delete", e -> {
             // Get the set of selected items from the grid
             Set<Task> selectedTasks = grid.getSelectedItems();
             // Iterate over the set and delete each project from the database using the service
             for (Task delTask : selectedTasks) {
-                System.out.println("delete task " + delTask.getId());
+                // Show a notification when a task is deleted
+                Notification.show("Task deleted successfully");
                 taskService.deleteTask(delTask);
             }
             // Update the grid with the latest project list
             updateGrid(projectId);
+            updateProgressGrid(projectId);
         });
       topAreaOfGrid.add(filterField, addButton, deleteButton);
       // Add the filter field above the grid
@@ -162,6 +349,9 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver, 
       return hLayout;
     }
   
+    // Use @PostConstruct to initialize the view after dependency injection
+    // @Override
+    // public void setParameter(BeforeEvent event, Long id) {
     @Override
     public void setParameter(BeforeEvent event, Long id) {
 
@@ -178,6 +368,8 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver, 
           // do something with the id
           
       }
+      // Use projectId as needed
+      this.projectId = id;
 
         User user = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername()).get();
         // set the layout to fill the whole page
@@ -202,46 +394,38 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver, 
         VerticalLayout dataSection = new VerticalLayout();
         dataSection.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
         dataSection.setSizeFull();
-        H1 title = new H1(projectsService.getById(id) == null ? "No title" : projectsService.getById(id).getTitle());
-        Span collaborationMode = new Span();
-        Div audioDetails = new Div();
-        Span status = new Span();
 
         CircularProgressBar progressBar = new CircularProgressBar();
         progressBar.setCaption("Complete");
         progressBar.getStyle().setWidth("12rem");
         progressBar.getStyle().setHeight("12rem");
-        progressBar.setPercent(0);
+        progressBar.setPercent(projectsService.getProgress(projectId));
 
         VerticalLayout progressBarContainer = new VerticalLayout();
-        progressBarContainer.add(progressBar);
 
-        Span status_collab = new Span();
-        status_collab.add(status, collaborationMode);
+        progressBarContainer.setSizeFull();
 
-        Span songs_audioDetails = new Span();
+        progressBarContainer.removeAll();
 
-        VerticalLayout keysArea = new VerticalLayout();
+        progressGrid = new Grid<>();
 
-        String keysListString = "";
-        for (String key : Arrays.asList("C", "C#")) {
-          keysListString.concat(", " + key);
-        }
+        progressGrid = generateProgressBarGrid(progressGrid, projectId);
+        
+        progressBarContainer.add(progressGrid);
 
-        TextArea selectedKeys = new TextArea("Selected Keys");
-        List<String> tempKeys = Arrays.asList("C", "C#", "Bb");
-        selectedKeys.setReadOnly(true);
-        keysArea.add(selectedKeys);
-        songs_audioDetails.add(keysArea);
-        dataSection.add(title, progressBarContainer, status_collab, songs_audioDetails);
+        progressGrid.setItems(Arrays.asList(projectsService.getProgress(projectId)));
+        // progressBarContainer.add(progressBar);
+
+        // grid area onleft
+        dataSection.add(progressBarContainer);
 
         Span participantsLabel = new Span("Participants:");
 
         MultiSelectListBox<String> participantsListBox = new MultiSelectListBox<>();
         // filter the list of all users by getUsername
         List<String> userFriendsUsernames = user.getFriendsWith().stream()
-                  .map(User::getUsername)
-                  .collect(Collectors.toList());
+          .map(User::getUsername)
+          .collect(Collectors.toList());
         // get the Set<User> of participants
         // Set<User> participants = projectsService.getAllParticipantsForProject(id);
         // // convert the Set<User> to a List<String> of usernames
@@ -252,33 +436,26 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver, 
 
         // right section customization
         // create another split layout for the right section
-        SplitLayout rightSplitLayout = new SplitLayout();
+        SplitLayout rightSplitLayout = new SplitLayout(); // Use VerticalSplitLayout instead of SplitLayout
         rightSplitLayout.setSizeFull();
-        rightSplitLayout.setOrientation(SplitLayout.Orientation.VERTICAL);
 
         // create a vertical layout for the top component
         VerticalLayout topComponent = new VerticalLayout();
         topComponent.setSizeFull();
-        
-        topComponent.add(generateTasksGrid(grid, id));
 
-        grid.setItems(projectsService.getAllTasksByProject(id));
+        topComponent.removeAll();
+
+        grid = new Grid<>();
         
-        VerticalLayout editingSection = new VerticalLayout();
-        editingSection.setSizeFull();
-        // trix rich text editor
-        String editorInitialValue = "Add more details.";
-        TrixEditor editor = new TrixEditor(editorInitialValue, "Description");
-        editor.getStyle().setColor("white");
-        editor.getStyle().setWidth("100%");
-        editor.getStyle().setHeight("100%");
-        // editor.getStyle().setBackground("red");
-        editingSection.add(editor);
+        topComponent.add(generateTasksGrid(grid, projectId));
+
+        grid.setItems(projectsService.getAllTasksByProject(projectId));
+
         // rightSection.add(editingSection);
 
         // add the top component and the editing section to the right split layout
         rightSplitLayout.addToPrimary(topComponent);
-        rightSplitLayout.addToSecondary(editingSection);
+        rightSplitLayout.addToSecondary(new Span("Empty"));
 
         
         VerticalLayout socialSection = new VerticalLayout();
@@ -294,8 +471,7 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver, 
         splitLayout.addToPrimary(leftSection);
         splitLayout.addToSecondary(rightSection);        
         splitLayout.setSplitterPosition(37);
-        // splitLayout.getPrimaryComponent().getStyle().set("background-color", "olivegreen");
-        // splitLayout.getSecondaryComponent().getStyle().set("background-color", "purple");
+        
         // set the split layout as the content of the navbar's AppLayout
         navbar.setContent(splitLayout);
 
@@ -303,10 +479,10 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver, 
         removeAll();
         this.add(navbar);
     }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {}
 }
-
-
-
 
   
   // Define a method to get a project by id

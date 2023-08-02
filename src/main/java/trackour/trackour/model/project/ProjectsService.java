@@ -18,6 +18,7 @@ import com.vaadin.flow.component.Component;
 import jakarta.transaction.Transactional;
 import trackour.trackour.model.task.Task;
 import trackour.trackour.model.task.TaskRepository;
+import trackour.trackour.model.task.TaskStatus;
 import trackour.trackour.model.user.User;
 import trackour.trackour.model.user.UserRepository;
 import trackour.trackour.views.components.camelotwheel.Key;
@@ -222,5 +223,28 @@ public class ProjectsService {
             }
         }
         return new ArrayList<>();
+    }
+
+    public void updateProgress(Long projectId) {
+        
+        Optional<Project> projectOptional = findProjectById(projectId);
+        if (projectOptional.isPresent()) {
+            Project project = projectOptional.get();
+            List<Task> tasks = getAllTasksByProject(projectId);
+            int completeCount = (int) tasks.stream()
+            .filter(task -> task.getStatus() == TaskStatus.COMPLETED) // keep only the tasks with status COMPLETE
+            .count();
+            Double newProgress = (double)completeCount / tasks.size();
+            project.setProgress(newProgress);
+            updateProject(project);
+        }
+    }
+
+    public double getProgress(Long id) {
+        double progress = projectRepository.findById(id).get().getProgress();
+        if (progress > 1) {
+            return 1;
+        }
+        else return projectRepository.findById(id).get().getProgress();
     }
 }

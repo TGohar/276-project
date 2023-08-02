@@ -201,6 +201,12 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency> -->
 
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-spring</artifactId>
+            <version>${vaadin.version}</version>
+        </dependency>
+
 
 
     </dependencies>
