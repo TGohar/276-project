@@ -92,9 +92,9 @@ public class HomeView extends VerticalLayout {
         List<AlbumSimplified> albums = newReleases.getNewReleases();
         SimpleCarousel trendingCarousel = new SimpleCarousel(albums);
         
-        H2 utiliy = new H2("Audio Utility");
-        utiliy.getStyle().set("margin-left", "25px");
-        content.add(simpleSearch, newRelease, trendingCarousel.generateComponent(), utiliy);
+        // H2 utiliy = new H2("Audio Utility");
+        // utiliy.getStyle().set("margin-left", "25px");
+        content.add(simpleSearch, newRelease, trendingCarousel.generateComponent());
 
         // simpleSearch.onEnterKeyUp(event -> this.searchSubmit(event, simpleSearch.getSearchValue()));
         return content;

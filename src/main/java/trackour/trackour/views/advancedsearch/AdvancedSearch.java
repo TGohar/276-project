@@ -1,16 +1,20 @@
 package trackour.trackour.views.advancedsearch;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.vaadin.klaudeta.PaginatedGrid;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -44,7 +48,9 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
     
     @Autowired
     CustomUserDetailsService customUserDetailsService;
-    
+
+    PaginatedGrid<TrackSimplified, Component> grid;
+
     public AdvancedSearch(SecurityViewService securityViewHandler,
     CustomUserDetailsService customUserDetailsService) {
 
@@ -52,9 +58,11 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
 
         TextField genre = new TextField();
         genre.setLabel("Genre");
-        genre.setHelperText("The genre you want to search in.");
+        genre.setHelperText("The genre you want to search in. Add up to 5 genres, seperated by commas." +
+                            " Genres with spaces in them are written with a hypen." +
+                            "Ex. \"hip-hop\"");
         genre.setRequired(true);
-        genre.setAllowedCharPattern("[a-z,]");
+        genre.setAllowedCharPattern("[a-z,-]");
 
         TextField acousticness = new TextField();
         acousticness.setLabel("Acousticness");
@@ -150,6 +158,13 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
         searchButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         searchButton.addClickListener(event -> {
             
+            String[] validate = genre.getValue().split(",");
+
+            if (validate.length > 5) {
+                errorMessage.open();
+                genre.setInvalid(true);
+            }
+
             if (Float.parseFloat(acousticness.getValue()) > 1.0) {
                 errorMessage.open();
                 acousticness.setInvalid(true);
@@ -239,10 +254,27 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
 
             TrackSimplified[] tracks = APIController.getRecommendations(genreValue, acousticnessValue, danceabilityValue, energyValue, instrumentalnessValue, keyValue, loudnessValue, modeValue, tempoValue, timeSignatureValue, valenceValue);
 
-            // TESTING
-            System.out.println(tracks[0].getName());
+            Dialog resultsDialog = new Dialog();
+            VerticalLayout resultsBody = new VerticalLayout();
+
+            for (int i = 0; i < tracks.length; i++) {
+                Image albumCover = new Image();
+                albumCover.setSrc(APIController.getAlbumImage(APIController.getAlbum(tracks[i].getId()).getId())[0].getUrl());
+                albumCover.setWidth("200px");
+                albumCover.setHeight("200px");
+
+                H2 songTitle = new H2(tracks[i].getName());
+                H3 artist = new H3("by " + tracks[i].getArtists()[0].getName());
+
+                resultsBody.setAlignItems(Alignment.CENTER);
+                resultsBody.add(albumCover, songTitle, artist, new Hr());
+            }
+            resultsDialog.add(resultsBody);
+            resultsDialog.setHeaderTitle("Search Results");
+
+            resultsDialog.open();
         });
-        
+
         FormLayout formLayout = new FormLayout();
         formLayout.add(genre, acousticness, danceability, energy, instrumentalness, key, 
                         loudness, mode, tempo, timeSignature, valence, searchButton);
@@ -252,20 +284,14 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
         );
         formLayout.setHeight("400px");
         formLayout.setWidth("900px");
-
-        Grid<TrackSimplified> resultsGrid = new Grid<>();
-        resultsGrid.addColumn(TrackSimplified::getName).setHeader("Song");
-        resultsGrid.addColumn(TrackSimplified::getArtists).setHeader("Artist");
-        resultsGrid.setHeight("400px");
-        resultsGrid.setWidth("900px");
-
+        
         // main container contining cards area and button
         VerticalLayout verticalLayout = new VerticalLayout();
         Div placeHolderTextContainer = new Div();
         placeHolderTextContainer.add(new H3("Advanced Search"));
 
         HorizontalLayout main = new HorizontalLayout();
-        main.add(formLayout, resultsGrid);
+        main.add(formLayout);
 
         verticalLayout.add(placeHolderTextContainer, main);
         verticalLayout.setAlignItems(Alignment.CENTER);
