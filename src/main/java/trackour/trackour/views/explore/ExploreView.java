@@ -36,35 +36,35 @@ import trackour.trackour.views.components.responsive.MyBlockResponsiveLayout;
 @RouteAlias("explore")
 @PageTitle("Explore the Best Playlists for Any Occasion | Trackour")
 @PreserveOnRefresh
-@RolesAllowed({"USER", "ADMIN"})
+@RolesAllowed({ "USER", "ADMIN" })
 
 public class ExploreView extends MyBlockResponsiveLayout {
 
     private final String CATEGORY_CARD_SIZE = "12.5rem";
+
     public ExploreView(SecurityViewService securityViewHandler,
-    CustomUserDetailsService customUserDetailsService) {
-        
+            CustomUserDetailsService customUserDetailsService) {
+
         Explore xplore = new Explore();
-        
+
         Optional<UserDetails> username = securityViewHandler.getSessionOptional();
         String sessionUsername = username.get().getUsername();
         String displayNameString = customUserDetailsService.getByUsername(sessionUsername).get().getDisplayName();
-        
+
         Icon smile = new Icon(VaadinIcon.SMILEY_O);
         smile.setColor("Pink");
         H1 header = new H1(displayNameString + ", How are you feeling today");
         HorizontalLayout greetings = new HorizontalLayout();
-        
+
         Span smileSpan = new Span(smile);
         smileSpan.getStyle().set("align-self", "center");
-        
+
         greetings.setAlignItems(FlexComponent.Alignment.START);
         greetings.add(header, smileSpan);
-        
-        
+
         // greetings
         List<Category> categories = xplore.getCategories();
-        
+
         // int columns = 5;
         FlexLayout categoryLayout = new FlexLayout();
         categoryLayout.setFlexGrow(1);
@@ -75,21 +75,21 @@ public class ExploreView extends MyBlockResponsiveLayout {
         categoryLayout.setAlignItems(FlexLayout.Alignment.CENTER);
         categoryLayout.setJustifyContentMode(FlexLayout.JustifyContentMode.CENTER);
         // categoryLayout.getStyle().setBackground("cyan");
-        
+
         try {
             for (Category category : categories) {
                 Image coverImage = new Image(category.getIcons()[0].getUrl(), "Category Cover");
                 coverImage.setWidth(CATEGORY_CARD_SIZE);
                 coverImage.setHeight(CATEGORY_CARD_SIZE);
-                
+
                 Button catButton = new Button(coverImage);
                 catButton.getStyle().setWidth(CATEGORY_CARD_SIZE);
                 catButton.getStyle().setHeight(CATEGORY_CARD_SIZE);
                 catButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-                
+
                 Div categoryInfo = new Div(new Text(category.getName()));
                 categoryInfo.setWidth(CATEGORY_CARD_SIZE);
-                
+
                 VerticalLayout catLayout = new VerticalLayout();
                 catLayout.add(catButton, categoryInfo);
                 catLayout.getStyle().setWidth("auto");
@@ -97,18 +97,18 @@ public class ExploreView extends MyBlockResponsiveLayout {
 
                 catButton.addClickListener(event -> {
                     System.out
-                    .println("Button clicked for category: " + category.getName() + " with ID " + category.getId());
-                    UI.getCurrent().navigate("Playlists/" + category.getId());
-                
+                            .println("Button clicked for category: " + category.getName() + " with ID "
+                                    + category.getId());
+                    UI.getCurrent().navigate("Playlists/" + category.getId() + "/" + category.getName());
+
                 });
 
-                
                 // if (counter % columns == 0 && counter > 0) {
-                //     categoryLayout.add(rowLayout);
-                //     rowLayout = new HorizontalLayout(); // Create a new rowLayout
-                //     rowLayout.setWidth("100%");
+                // categoryLayout.add(rowLayout);
+                // rowLayout = new HorizontalLayout(); // Create a new rowLayout
+                // rowLayout.setWidth("100%");
                 // }
-                
+
                 // catLayout.getStyle().setBackground("cyan");
                 // catLayout.getStyle().setMargin("1rem");
                 // categoryLayout.getStyle().setBackground("red");
@@ -120,16 +120,15 @@ public class ExploreView extends MyBlockResponsiveLayout {
         }
 
         // if (rowLayout.getComponentCount() > 0) {
-        //     categoryLayout.add(rowLayout);
+        // categoryLayout.add(rowLayout);
         // }
 
         // container for the main contents of this page
         VerticalLayout contentContainer = new VerticalLayout();
         contentContainer.setSizeFull();
         contentContainer.add(
-            greetings,
-            categoryLayout
-        );
+                greetings,
+                categoryLayout);
 
         // generate responsive navbar
         NavBar nav = new NavBar(customUserDetailsService, securityViewHandler);

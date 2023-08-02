@@ -1,4 +1,5 @@
 package trackour.trackour.views.searchResult;
+
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +42,7 @@ import trackour.trackour.views.login.LoginPage;
 @PreserveOnRefresh
 @PermitAll
 public class SearchResultView extends VerticalLayout implements BeforeEnterObserver {
-    
+
     private String search;
     // private String searchString;
     @Autowired
@@ -52,9 +53,10 @@ public class SearchResultView extends VerticalLayout implements BeforeEnterObser
     NavBar navigation;
     PaginatedGrid<Track, Component> grid;
     VerticalLayout container;
+
     public SearchResultView(SecurityViewService securityViewHandler,
-    CustomUserDetailsService customUserDetailsService) {
-        this.grid =  new PaginatedGrid<>();
+            CustomUserDetailsService customUserDetailsService) {
+        this.grid = new PaginatedGrid<>();
         this.container = new VerticalLayout();
         this.securityViewHandler = securityViewHandler;
         this.customUserDetailsService = customUserDetailsService;
@@ -71,13 +73,13 @@ public class SearchResultView extends VerticalLayout implements BeforeEnterObser
         });
         this.navigation = new NavBar(customUserDetailsService, securityViewHandler);
     }
-    
+
     private void generatePaginationGridLayout() {
         if (search != null) {
             System.out.println("search: " + search);
             SearchTrack searchTracks = new SearchTrack();
             List<Track> tracks = searchTracks.getTrackList(search);
-            
+
             grid.setSizeFull();
             grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
@@ -102,7 +104,7 @@ public class SearchResultView extends VerticalLayout implements BeforeEnterObser
                 VerticalLayout artist_and_Album = new VerticalLayout();
                 artist_and_Album.addClassName("song-and-artist");
                 artist_and_Album.getStyle().set("margin-left", "10px");
-                
+
                 // artist label
                 H5 aristLabel = new H5("Artist: ");
                 TextField artistField = new TextField("");
@@ -130,9 +132,9 @@ public class SearchResultView extends VerticalLayout implements BeforeEnterObser
                 trackCard.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
                 return trackCard;
             }))
-            // .setHeader(trackHeader)
-            .setFlexGrow(1)
-            .setAutoWidth(true);
+                    // .setHeader(trackHeader)
+                    .setFlexGrow(1)
+                    .setAutoWidth(true);
 
             grid.addColumn(new ComponentRenderer<>(track -> {
                 // vaadin:arrow-forward
@@ -142,9 +144,8 @@ public class SearchResultView extends VerticalLayout implements BeforeEnterObser
                 moreInfoButton.setTooltipText("View more info about this track in a new tab");
                 return moreInfoButton;
             }))
-            .setFlexGrow(0)
-            .setAutoWidth(true);
-
+                    .setFlexGrow(0)
+                    .setAutoWidth(true);
 
             // when user clicks on list item, the playback feature shows
             grid.setItemDetailsRenderer(new ComponentRenderer<>(track -> {
@@ -154,28 +155,28 @@ public class SearchResultView extends VerticalLayout implements BeforeEnterObser
                 playbackButton.setTooltipText("Playback feature");
                 return playbackButton;
             }));
-            
+
             grid.setItems(tracks);
 
             // Sets the max number of items to be rendered on the grid for each page
             grid.setPageSize(7);
-            
-            // Sets how many pages should be visible on the pagination before and/or after the current selected page
+
+            // Sets how many pages should be visible on the pagination before and/or after
+            // the current selected page
             grid.setPaginatorSize(3);
 
             grid.setPaginationLocation(PaginatedGrid.PaginationLocation.BOTTOM);
             grid.setPaginationVisibility(true);
             // gridLayout.setSizeFull();
             grid.setSizeFull();
-            
+
             // gridLayout.add(grid);
             // generate responsive navbar
             navigation = new NavBar(customUserDetailsService, securityViewHandler);
             container.add(simpleSearch, grid);
             navigation.setContent(container);
             add(navigation);
-        }
-        else {
+        } else {
             navigation = new NavBar(customUserDetailsService, securityViewHandler);
             container.add(simpleSearch);
             navigation.setContent(container);
@@ -189,7 +190,7 @@ public class SearchResultView extends VerticalLayout implements BeforeEnterObser
         this.remove(navigation);
         navigation = null;
         container = new VerticalLayout();
-        this.grid =  new PaginatedGrid<>();
+        this.grid = new PaginatedGrid<>();
     }
 
     @Override
@@ -202,14 +203,14 @@ public class SearchResultView extends VerticalLayout implements BeforeEnterObser
             Map<String, List<String>> parametersMap = queryParameters.getParameters();
             if (parametersMap.containsKey("query")) {
                 this.search = parametersMap.get("query").get(0);
-              } else {
+            } else {
                 this.search = null;
-              }
+            }
             // update view with the search res
             generatePaginationGridLayout();
         } else {
             // the user is not authenticated, redirect to the login view
             event.rerouteTo(LoginPage.class);
-        }   
+        }
     }
 }

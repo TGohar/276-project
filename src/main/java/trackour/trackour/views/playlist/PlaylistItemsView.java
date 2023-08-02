@@ -3,16 +3,17 @@ package trackour.trackour.views.playlist;
 import java.util.List;
 
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -25,14 +26,17 @@ import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.spotify.PlaylistsItems;
 import trackour.trackour.views.components.NavBar;
+import trackour.trackour.views.api.APIController;
 
-@Route(value = "PlaylistItems")
+@Route("PlaylistItems/:playlistItemId/:playlistName")
 @RouteAlias("playlistitems")
 @PageTitle("Playlist Items | Trackour")
 @AnonymousAllowed
-public class PlaylistItemsView extends Div implements HasUrlParameter<String> {
+public class PlaylistItemsView extends Div implements BeforeEnterObserver {
 
     VerticalLayout contentContainer;
+    private String playlistItemId;
+    private String playlistName;
 
     public PlaylistItemsView(SecurityViewService securityViewService,
             CustomUserDetailsService customUserDetailsService) {
@@ -43,76 +47,62 @@ public class PlaylistItemsView extends Div implements HasUrlParameter<String> {
     }
 
     @Override
-    public void setParameter(BeforeEvent event, String parameter) {
-
-        System.out.println("param: " + parameter);
-        // String catId = parameter;
-        // Explore catExplore = new Explore();
-        // if (catId == null) {
-        //     UI.getCurrent().getPage().setTitle("Search Results | Trackour");
-        // }
-        // else {
-        //     catExplore.getCategories().forEach(cat -> {
-        //         if (cat.getId() != null && cat.getId().equals(catId)) {
-        //             if (cat.getName() != null){
-        //                 UI.getCurrent().getPage().setTitle("Trackour - Playlist View - " + cat.getName());
-        //             }
-        //             else {
-        //                 UI.getCurrent().getPage().setTitle("Playlist View | Trackour");
-        //             }
-        //         }
-        //     });
-        // }
+    public void beforeEnter(BeforeEnterEvent event) {
         // setText(String.format("Hello, %s!", parameter));
-        PlaylistsItems items = new PlaylistsItems(parameter);
+        playlistItemId = event.getRouteParameters().get("playlistItemId").get();
+        playlistName = event.getRouteParameters().get("playlistName").get();
+        PlaylistsItems items = new PlaylistsItems(playlistItemId);
         List<PlaylistTrack> playlistItem = items.getItemsInPlaylist();
-
+        H1 header = new H1(new Text("Enjoy, " + playlistName + " !!"));
+        contentContainer.add(header);
         VerticalLayout trackView = new VerticalLayout();
 
         if (playlistItem != null && !playlistItem.isEmpty()) {
             for (PlaylistTrack playlistTrack : playlistItem) {
                 IPlaylistItem track = playlistTrack.getTrack();
                 String trackName = track.getName();
-                // String trackURL = track.getHref();
-        
+                String trackURL = APIController.spotifyURL(track.getId());
+                Anchor trackLink = new Anchor(trackURL, trackName);
+                trackLink.setTarget("_blank");
+
                 Image trackImage = null;
                 if (track instanceof Track) {
                     Track trackItem = (Track) track;
                     // check for possible null values before accessing the array element
-                    if (trackItem.getAlbum() != null && trackItem.getAlbum().getImages() != null && trackItem.getAlbum().getImages().length > 0 && trackItem.getAlbum().getImages()[0].getUrl() != null) {
+                    if (trackItem.getAlbum() != null && trackItem.getAlbum().getImages() != null
+                            && trackItem.getAlbum().getImages().length > 0
+                            && trackItem.getAlbum().getImages()[0].getUrl() != null) {
                         trackImage = new Image(trackItem.getAlbum().getImages()[0].getUrl(), "Track Image");
                         trackImage.setWidth("50px");
                         trackImage.setHeight("50px");
-                    }
-                    else {
+                    } else {
                         // handle the case when there is no image URL
                     }
                 }
-        
+
                 Hr visuals = new Hr();
                 visuals.getStyle().setWidth("100%");
                 visuals.getStyle().set("margin", "0");
-        
+
                 FlexLayout trackLayout = new FlexLayout();
                 trackLayout.getStyle().set("align-items", "center");
-        
+
                 if (trackImage != null) {
                     trackLayout.add(trackImage);
                 }
-        
-                Div trackNameDiv = new Div(new H2(new Text(trackName)));
+
+                Div trackNameDiv = new Div(new H3(trackLink));
                 trackNameDiv.getStyle().set("margin-left", "10px");
                 trackNameDiv.getStyle().setWidth("100%");
                 trackNameDiv.add(visuals);
-        
+
                 trackLayout.add(trackNameDiv);
-        
+
                 HorizontalLayout trackList = new HorizontalLayout();
                 trackList.add(trackLayout);
                 trackView.add(trackList);
             }
-        }
-        else {
+        } else {
             // use a common method to display an empty message
             displayEmptyMessage(trackView);
         }

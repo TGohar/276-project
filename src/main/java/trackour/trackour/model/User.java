@@ -1,5 +1,6 @@
 package trackour.trackour.model;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 // import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +36,9 @@ public class User {
 
     public User() {
         this.initRole();
+        this.friendRequests = new ArrayList<Long>();
+        this.friends = new ArrayList<Long>();
+        this.projects = new HashSet<>();
     }
 
     public User(String username, String displayName, String password, String email, Set<Role> roles) {
@@ -42,6 +46,9 @@ public class User {
         this.displayName = displayName;
         this.password = password;
         this.email = email;
+        this.friendRequests = new ArrayList<Long>();
+        this.friends = new ArrayList<Long>();
+        this.projects = new HashSet<>();
     }
 
     public User(String username, String displayName, String password, String email) {
@@ -50,6 +57,9 @@ public class User {
         this.password = password;
         this.email = email;
         this.initRole();
+        this.friendRequests = new ArrayList<Long>();
+        this.friends = new ArrayList<Long>();
+        this.projects = new HashSet<>();
     }
     
     @Id
@@ -93,7 +103,7 @@ public class User {
     private List<Long> friends;
     
     @Type(ListArrayType.class)
-    @Column(name = "projects", columnDefinition = "bigint[]")
+    @Column(name = "projects", columnDefinition = "text[]")
     private Set<String> projects;
 
 
@@ -196,5 +206,13 @@ public class User {
 
     public void setFriends(List<Long> friends) {
         this.friends = friends;
+    }
+
+    public Set<String> getProjects() {
+        return projects;
+    }
+
+    public void setProjects(Set<String> projects) {
+        this.projects = projects;
     }
 }

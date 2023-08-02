@@ -1,13 +1,16 @@
 package trackour.trackour.views.components;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -16,6 +19,7 @@ import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
+import se.michaelthelin.spotify.model_objects.specification.ExternalUrl;
 
 @CssImport("./styles/my-block__responsive-layout.css")
 public class SimpleCarousel extends HorizontalLayout {
@@ -25,6 +29,7 @@ public class SimpleCarousel extends HorizontalLayout {
     Double scrollTopValue;
     int currentChildIndex = 0;
     List<AlbumSimplified> itemsList;
+
     public SimpleCarousel(List<AlbumSimplified> itemsList) {
         this.thisScroller = new Scroller();
         thisScroller.setMinWidth(300, Unit.PIXELS);
@@ -33,7 +38,8 @@ public class SimpleCarousel extends HorizontalLayout {
         this.itemsList = itemsList;
     }
 
-    // the component that instantiates this class runs this to return the whole carousel
+    // the component that instantiates this class runs this to return the whole
+    // carousel
     // effectively, this is the main method for this class
     private Scroller genCarouselInnerScroller() {
         // create a horizontal layout for the cards
@@ -69,7 +75,23 @@ public class SimpleCarousel extends HorizontalLayout {
             albumButton.setWidth("250px");
 
             // create a div with the album name as the text
-            Div albumInfo = new Div(new Text(album.getName()));
+            String albumName = album.getName();
+            ExternalUrl url = album.getExternalUrls();
+            String URL = url.toString();
+            Pattern pattern = Pattern.compile("https://[\\w./-]+");
+            Matcher matcher = pattern.matcher(URL);
+            String extractedUrl = "";
+            if (matcher.find()) {
+                extractedUrl = matcher.group();
+            } else {
+                System.out.println("URL not found or invalid format.");
+
+            }
+            System.out.println(extractedUrl);
+
+            Anchor albumLink = new Anchor(extractedUrl, albumName);
+            albumLink.setTarget("_blank");
+            Div albumInfo = new Div(new H2(albumLink));
 
             // create a vertical layout for the card and add the button and the info
             VerticalLayout albumCard = new VerticalLayout();
@@ -102,13 +124,12 @@ public class SimpleCarousel extends HorizontalLayout {
     public HorizontalLayout generateComponent() {
         HorizontalLayout carouselContainer = new HorizontalLayout();
         carouselContainer.setWidthFull();
-        
+
         // carouselContainer.getStyle().setOverflow(Overflow.HIDDEN);
         carouselContainer.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         // carouselContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
         carouselContainer.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
 
-        
         Icon swipeLeft = new Icon("lumo", "angle-left");
         Icon swipeRight = new Icon("lumo", "angle-right");
         Scroller scroller = genCarouselInnerScroller();
@@ -117,16 +138,15 @@ public class SimpleCarousel extends HorizontalLayout {
         leftCarouselButton.addClickListener(ev -> {
             // Call the scrollLeft function from the JavaScript file
             leftCarouselButton.getElement().executeJs(
-                "function scrollL() {"+
-                "   const element = document.getElementById('my-scroller-horizontal');"+
-                "   if (element.offsetWidth <= 300) {"+
-                "   element.scrollLeft -= 300;"+
-                "   return;"+
-                "}"+
-                "   element.scrollLeft -= element.offsetWidth;"+
-                "}"+
-                "scrollL();"
-            );
+                    "function scrollL() {" +
+                            "   const element = document.getElementById('my-scroller-horizontal');" +
+                            "   if (element.offsetWidth <= 300) {" +
+                            "   element.scrollLeft -= 300;" +
+                            "   return;" +
+                            "}" +
+                            "   element.scrollLeft -= element.offsetWidth;" +
+                            "}" +
+                            "scrollL();");
         });
         leftCarouselButton.setHeightFull();
 
@@ -134,25 +154,23 @@ public class SimpleCarousel extends HorizontalLayout {
         rightCarouselButton.addClickListener(ev -> {
             // Call the scrollRight function from the JavaScript file
             rightCarouselButton.getElement().executeJs(
-                "function scrollR() {"+
-                "   const element = document.getElementById('my-scroller-horizontal');"+
-                "   if (element.offsetWidth <= 300) {"+
-                "   element.scrollLeft += 300;"+
-                "   return;"+
-                "   }"+
-                "   element.scrollLeft += element.offsetWidth;"+
-                "}"+
-                "scrollR();"
-            );
+                    "function scrollR() {" +
+                            "   const element = document.getElementById('my-scroller-horizontal');" +
+                            "   if (element.offsetWidth <= 300) {" +
+                            "   element.scrollLeft += 300;" +
+                            "   return;" +
+                            "   }" +
+                            "   element.scrollLeft += element.offsetWidth;" +
+                            "}" +
+                            "scrollR();");
         });
         rightCarouselButton.setHeightFull();
 
         // attachScrollEventListener(this.thisScroller);
         carouselContainer.add(
-            leftCarouselButton,
-            scroller,
-            rightCarouselButton
-            );
+                leftCarouselButton,
+                scroller,
+                rightCarouselButton);
         return carouselContainer;
     }
 }

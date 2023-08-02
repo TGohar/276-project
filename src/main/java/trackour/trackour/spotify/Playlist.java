@@ -53,10 +53,6 @@ public class Playlist {
         initialize();
         try {
             final CompletableFuture<Paging<PlaylistSimplified>> pagingFuture = getCategoryRequest.executeAsync();
-
-            // Thread free to do other tasks...
-
-            // Example Only. Never block in production code.
             final Paging<PlaylistSimplified> playlistSimplifiedPaging = pagingFuture.join();
             playlistSimplifiedPaging.getClass().getName();
 
