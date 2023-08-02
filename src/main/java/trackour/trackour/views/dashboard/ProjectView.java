@@ -159,13 +159,23 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
       //   keysListString.concat(", " + key);
       // }
 
-      TextArea selectedKeys = new TextArea("Selected Keys");
+      TextArea selectedKeys = new TextArea("Keys");
+      selectedKeys.setReadOnly(true);
+      // selectedKeys.setValue(null);
+      TextArea selectedBpm = new TextArea("BPM");
+      selectedBpm.setReadOnly(true);
+      // selectedKeys.setValue(null);
       TextArea selecteStatus = new TextArea("Status");
-      TextArea selectedCollab = new TextArea("Selected Collab");
-      TextArea selectedParticipants = new TextArea("Selected Participants");
-      List<String> tempKeys = Arrays.asList("C", "C#", "Bb");
+      selecteStatus.setReadOnly(true);
+      // selectedKeys.setValue(null);
+      TextArea selectedCollab = new TextArea("Collab Mode");
+      selectedCollab.setReadOnly(true);
+      // selectedKeys.setValue(null);
+      TextArea selectedParticipants = new TextArea("Participants");
+      selectedParticipants.setReadOnly(true);
       // selectedKeysArea.setReadOnly(true);
       // keysArea.add(selectedKeysArea);
+      keysArea.add(selectedKeys, selectedBpm, selecteStatus, selectedCollab, selectedParticipants);
       songs_audioDetails.add(keysArea);
       // keys 
       // status
@@ -187,7 +197,7 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
           cprogressBar.setPercent(progresD);
           container.add(cprogressBar, title, status_collab, songs_audioDetails);
           return container;
-        })).setHeader("Progress Bar");
+        }));
       }
       return progressGrid;
     }
