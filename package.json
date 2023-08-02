@@ -75,8 +75,7 @@
     "lit": "2.7.4",
     "lit-element": "^3.2.2",
     "lit-html": "2.4.0",
-    "mobile-drag-drop": "2.3.0-rc.2",
-    "trix": "2.0.4"
+    "mobile-drag-drop": "2.3.0-rc.2"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "5.0.2",
@@ -170,8 +169,7 @@
       "lit": "2.7.4",
       "lit-element": "^3.2.2",
       "lit-html": "2.4.0",
-      "mobile-drag-drop": "2.3.0-rc.2",
-      "trix": "2.0.4"
+      "mobile-drag-drop": "2.3.0-rc.2"
     },
     "devDependencies": {
       "@rollup/plugin-replace": "5.0.2",
@@ -191,7 +189,7 @@
       "workbox-core": "7.0.0",
       "workbox-precaching": "7.0.0"
     },
-    "hash": "7a925d167932e1cccbea2deb868fb82dca5a0c92fea3ca5a8d4f878a57dfa5a2"
+    "hash": "6152e091c37e8c014ff558cc366885e3f758e38311ab30a4104ddb0f904e9c84"
   },
   "overrides": {
     "@vaadin/bundles": "$@vaadin/bundles",
@@ -266,7 +264,6 @@
     "lit-html": "$lit-html",
     "@polymer/paper-icon-button": "$@polymer/paper-icon-button",
     "lit-element": "$lit-element",
-    "@polymer/paper-button": "$@polymer/paper-button",
-    "trix": "$trix"
+    "@polymer/paper-button": "$@polymer/paper-button"
   }
 }
