@@ -12,8 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.annotation.Secured;
 import org.vaadin.addons.tatu.CircularProgressBar;
-import com.vaadin.data.Binder;
-
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -77,6 +77,13 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
   private Grid<Task> grid;
   private Grid<Double> progressGrid;
 
+  // Create the fields for the task properties
+  private TextField titleField;
+  private TextArea descriptionField;
+
+  private Select<TaskStatus> statusField;
+  private Binder<Task> binder;
+
   // Use @Autowired on the constructor parameters instead of the fields
   @Autowired
   public ProjectView(SecurityViewService securityViewService,
@@ -90,7 +97,10 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
       this.taskService = taskService;
       grid = new Grid<>();
       progressGrid = new Grid<>();
-      
+      titleField = new TextField("Title");
+      descriptionField = new TextArea("Description");
+      statusField = new Select<>();
+      binder = new Binder<>(Task.class);      
     }
 
     public void updateGrid(Long id) {
@@ -149,11 +159,18 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
       //   keysListString.concat(", " + key);
       // }
 
-      TextArea selectedKeysArea = new TextArea("Selected Keys");
+      TextArea selectedKeys = new TextArea("Selected Keys");
+      TextArea selecteStatus = new TextArea("Status");
+      TextArea selectedCollab = new TextArea("Selected Collab");
+      TextArea selectedParticipants = new TextArea("Selected Participants");
       List<String> tempKeys = Arrays.asList("C", "C#", "Bb");
-      selectedKeysArea.setReadOnly(true);
-      keysArea.add(selectedKeysArea);
+      // selectedKeysArea.setReadOnly(true);
+      // keysArea.add(selectedKeysArea);
       songs_audioDetails.add(keysArea);
+      // keys 
+      // status
+      // collaboration mode
+      // participants
 
       if (project != null) {
         double progresD = projectsService.getProgress(projectId);
@@ -205,11 +222,19 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
                 // show a notification with the new value
                 Notification.show("Selected status: " + stat.getValue()); // Use Notification instead of System.out.println
                 // update
-                tsk.setStatus(stat);
-                taskService.updateTask(tsk);
-                projectsService.updateProgress(projectId);
-                if (stat.equals(TaskStatus.COMPLETED)) {
+                // stat change
+                boolean oldStatusIsCompleted = tsk.getStatus().equals(TaskStatus.COMPLETED);
+                boolean newStatusIsCompleted = stat.equals(TaskStatus.COMPLETED);
+                boolean switchBetweenCompletedAndNotCompleted = (oldStatusIsCompleted && !newStatusIsCompleted) || 
+                (!oldStatusIsCompleted && newStatusIsCompleted);
+                if (switchBetweenCompletedAndNotCompleted) {
+                  tsk.setStatus(stat);
+                  taskService.updateTask(tsk);
+                  projectsService.updateProgress(projectId);
+                  // updateProgressGrid(projectId);
+                  updateGrid(projectId);
                   updateProgressGrid(projectId);
+                  UI.getCurrent().getPage().reload();
                 }
             });
             // Return the Span object
@@ -221,18 +246,38 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
         // editingSection for editing
         grid.addColumn(createToggleDetailsRenderer(grid));
         grid.setDetailsVisibleOnClick(false);
-        grid.setItemDetailsRenderer(new ComponentRenderer<>(proj ->  {
+        grid.setItemDetailsRenderer(new ComponentRenderer<>(task ->  {
         VerticalLayout editingSection = new VerticalLayout();
           editingSection.setSizeFull();
           // trix rich text editor
-          String editorInitialValue = "Add more details.";
           TextArea editor = new TextArea();
+          String editorInitialValue = "Add more details.";
           editor.setWidthFull();
           editor.setLabel("Description");
-          editor.setValue(editorInitialValue);
-          editingSection.add(editor);  
+          editor.setValue(task.getDescription());
+
+          TextField titleEditor = new TextField();
+          titleEditor.setLabel("Title");
+          titleEditor.setValue(task.getTitle());
+          titleEditor.setWidthFull();
           // set proj description to the ediotor's value and save/update on value change
           // proj
+          Button saveDescriptionButton = new Button("Save", e -> {
+            // Get the current task from the binder
+            // Task task = binder.getBean();
+            // binder.readBean(task);
+            System.out.println("new desc:" + editor.getValue());
+            System.out.println("new title:" + editor.getValue());
+
+            task.setDescription(editor.getValue());
+            task.setTitle(titleEditor.getValue());
+            // // Save or update the task using the service
+            taskService.createNewTask(task);
+            updateGrid(projectId);
+            updateProgressGrid(projectId);
+            // taskService.createNewTask(task);
+          });
+          editingSection.add(titleEditor, editor, saveDescriptionButton);  
           return editingSection;      
       }));
   
@@ -266,26 +311,25 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
         FormLayout formLayout = new FormLayout();
 
         // Create a binder instance
-        Binder<Task> binder = new Binder<>(Task.class);
-
-        // Create the fields for the task properties
-        TextField titleField = new TextField("Title");
-        TextArea descriptionField = new TextArea("Description");
-        Select<TaskStatus> statusField = new Select<>();
-
         // Bind the fields to the binder
-        // binder.forField(titleField)
-        //   // .withValidator(new StringLengthValidator(
-        //   //   "Please enter a title", 1, null))
-        //   .bind(Task::getTitle, Task::setTitle);
-        // binder.forField(descriptionField)
+        binder.forField(titleField)
+          .withValidator(new StringLengthValidator(
+            "Please enter a title", 1, null))
+          .bind(Task::getTitle, Task::setTitle);
+        binder.forField(descriptionField)
+          .bind(Task::getDescription, Task::setDescription);
+        // binder.forField(editor)
         //   .bind(Task::getDescription, Task::setDescription);
         // binder.forField(statusField)
         //   // .withValidator(Objects::nonNull, "Please select a status")
         //   .bind(Task::getStatus, Task::setStatus);
 
+        // String value = event.getValue();
+        
+        // taskService.createNewTask(null);
+
         // Add the fields to the form layout
-        formLayout.add(titleField, descriptionField, statusField);
+        formLayout.add(titleField, descriptionField); //, statusField);
 
         // Create a horizontal layout for the buttons
         HorizontalLayout buttonLayout = new HorizontalLayout();
@@ -295,6 +339,8 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
           // Validate and save the task using the binder
           if (binder.validate().isOk()) {
             Task task = binder.getBean();
+            binder.readBean(task);
+            taskService.createNewTask(task);
             // taskService.saveTask(task);
             // Update the grid with the latest task list
             updateGrid(projectId);
@@ -324,6 +370,7 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
           Task task = new Task(project);
           // Set the bean instance to edit
           binder.setBean(task);
+          taskService.createNewTask(task);
           // Open the dialog
           dialog.open();
         });

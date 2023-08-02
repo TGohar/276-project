@@ -235,6 +235,12 @@ public class ProjectsService {
             .filter(task -> task.getStatus() == TaskStatus.COMPLETED) // keep only the tasks with status COMPLETE
             .count();
             Double newProgress = (double)completeCount / tasks.size();
+            if (newProgress == 1){
+                project.setStatus(ProjectStatus.COMPLETED);
+            }
+            else {
+                project.setStatus(ProjectStatus.IN_PROGRESS);
+            }
             project.setProgress(newProgress);
             updateProject(project);
         }
