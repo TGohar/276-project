@@ -32,7 +32,7 @@ import com.vaadin.flow.router.RouteAlias;
 
 import jakarta.annotation.security.PermitAll;
 import se.michaelthelin.spotify.model_objects.specification.Track;
-import trackour.trackour.model.CustomUserDetailsService;
+import trackour.trackour.model.user.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.spotify.SpotifySessionService;
 import trackour.trackour.views.api.APIController;

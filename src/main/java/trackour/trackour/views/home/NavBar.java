@@ -24,7 +24,7 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
 
-import trackour.trackour.model.CustomUserDetailsService;
+import trackour.trackour.model.user.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.friends.FriendsView;
 

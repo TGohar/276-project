@@ -27,7 +27,7 @@ import com.vaadin.flow.router.RouteAlias;
 
 import jakarta.annotation.security.PermitAll;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
-import trackour.trackour.model.CustomUserDetailsService;
+import trackour.trackour.model.user.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.api.APIController;
 import trackour.trackour.views.components.NavBar;

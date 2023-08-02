@@ -15,7 +15,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 
-import trackour.trackour.model.Role;
+import trackour.trackour.model.user.Role;
 
 /**
  * This class includes "View-manipulation" methods

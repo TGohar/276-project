@@ -2,7 +2,7 @@ package trackour.trackour.security;
 
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
 
-import trackour.trackour.model.CustomUserDetailsService;
+import trackour.trackour.model.user.CustomUserDetailsService;
 import trackour.trackour.views.login.LoginPage;
 
 import org.springframework.beans.factory.annotation.Autowired;

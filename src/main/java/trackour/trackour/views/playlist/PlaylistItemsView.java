@@ -22,7 +22,7 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import se.michaelthelin.spotify.model_objects.IPlaylistItem;
 import se.michaelthelin.spotify.model_objects.specification.PlaylistTrack;
 import se.michaelthelin.spotify.model_objects.specification.Track;
-import trackour.trackour.model.CustomUserDetailsService;
+import trackour.trackour.model.user.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
 // import trackour.trackour.spotify.PlaylistsItems;
 import trackour.trackour.spotify.SpotifySessionService;
