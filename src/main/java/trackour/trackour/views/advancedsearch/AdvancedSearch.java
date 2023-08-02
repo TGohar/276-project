@@ -5,10 +5,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -28,7 +32,7 @@ import trackour.trackour.views.components.responsive.MyBlockResponsiveLayout;
 @Route("search/advanced")
 @RouteAlias("search/advanced")
 @PreserveOnRefresh
-@PageTitle("Advanced Search Results for [Keyword] | Trackour")
+@PageTitle("Advanced Search | Trackour")
 // Admins are users but also have the "admin" special role so pages that can be
 // viewed by
 // both users and admins should have the admin role specified as well
@@ -91,7 +95,8 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
         TextField loudness = new TextField();
         loudness.setLabel("Loudness");
         loudness.setHelperText("The average loudness of the track." + 
-                                " These values have mostly a range between -60 and 0 decibels.");
+                                " These values have mostly a range between -60 and 0 decibels." +
+                                " Input values as positive.");
         loudness.setRequired(true);
         loudness.setAllowedCharPattern("[0-9.]");
 
@@ -114,8 +119,9 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
         timeSignature.setLabel("Time Signature");
         timeSignature.setHelperText("The estimated overall time signature of the track." +
                                     " The time signature is the number of beats in a bar." +
-                                    " A three quarters beat would be given as the value 3.");
-        timeSignature.setPattern("[1-9]");
+                                    " A three quarters beat would be given as the value 3." +
+                                    " Range Allowed: 3-7");
+        timeSignature.setAllowedCharPattern("[3-7]");
         timeSignature.setRequired(true);
 
         TextField valence = new TextField();
@@ -126,9 +132,63 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
         valence.setRequired(true);
         valence.setAllowedCharPattern("[0-9.]");
 
+        Dialog errorMessage = new Dialog();
+        VerticalLayout dialogLayout = new VerticalLayout();
+        errorMessage.add(dialogLayout);
+        errorMessage.setHeaderTitle("ERROR");
+        
+        Paragraph errorParagraph = new Paragraph();
+        errorParagraph.setText("Input is invalid!");
+        dialogLayout.add(errorParagraph);
+
+        Button closeButton = new Button(new Icon("lumo", "cross"),
+            (e) -> errorMessage.close());
+        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        errorMessage.getHeader().add(closeButton);
+
         Button searchButton = new Button("Search");
         searchButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         searchButton.addClickListener(event -> {
+            
+            if (Float.parseFloat(acousticness.getValue()) > 1.0) {
+                errorMessage.open();
+                acousticness.setInvalid(true);
+            }
+
+            if (Float.parseFloat(danceability.getValue()) > 1.0) {
+                errorMessage.open();
+                danceability.setInvalid(true);
+            }
+
+            if (Float.parseFloat(energy.getValue()) > 1.0) {
+                errorMessage.open();
+                energy.setInvalid(true);
+            }
+
+            if (Float.parseFloat(instrumentalness.getValue()) > 1.0) {
+                errorMessage.open();
+                instrumentalness.setInvalid(true);
+            }
+
+            if (Float.parseFloat(loudness.getValue()) > 60) {
+                errorMessage.open();
+                loudness.setInvalid(true);
+            }
+
+            if (Float.parseFloat(tempo.getValue()) > 200) {
+                errorMessage.open();
+                tempo.setInvalid(true);
+            }
+
+            if (Integer.parseInt(timeSignature.getValue()) > 7) {
+                errorMessage.open();
+                timeSignature.setInvalid(true);
+            }
+
+            if (Float.parseFloat(valence.getValue()) > 1.0) {
+                errorMessage.open();
+                valence.setInvalid(true);
+            }
 
             String genreValue = genre.getValue().toLowerCase();
             float acousticnessValue = Float.parseFloat(acousticness.getValue());
@@ -178,6 +238,9 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
             float valenceValue = Float.parseFloat(valence.getValue());
 
             TrackSimplified[] tracks = APIController.getRecommendations(genreValue, acousticnessValue, danceabilityValue, energyValue, instrumentalnessValue, keyValue, loudnessValue, modeValue, tempoValue, timeSignatureValue, valenceValue);
+
+            // TESTING
+            System.out.println(tracks[0].getName());
         });
         
         FormLayout formLayout = new FormLayout();
@@ -190,13 +253,19 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
         formLayout.setHeight("400px");
         formLayout.setWidth("900px");
 
+        Grid<TrackSimplified> resultsGrid = new Grid<>();
+        resultsGrid.addColumn(TrackSimplified::getName).setHeader("Song");
+        resultsGrid.addColumn(TrackSimplified::getArtists).setHeader("Artist");
+        resultsGrid.setHeight("400px");
+        resultsGrid.setWidth("900px");
+
         // main container contining cards area and button
         VerticalLayout verticalLayout = new VerticalLayout();
         Div placeHolderTextContainer = new Div();
         placeHolderTextContainer.add(new H3("Advanced Search"));
 
         HorizontalLayout main = new HorizontalLayout();
-        main.add(formLayout);
+        main.add(formLayout, resultsGrid);
 
         verticalLayout.add(placeHolderTextContainer, main);
         verticalLayout.setAlignItems(Alignment.CENTER);
