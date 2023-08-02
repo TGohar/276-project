@@ -147,11 +147,11 @@
             <artifactId>hypersistence-utils-hibernate-62</artifactId>
             <version>3.5.0</version>
         </dependency>
-        <dependency>
+        <!-- <dependency>
             <groupId>se.michaelthelin.spotify</groupId>
             <artifactId>spotify-web-api-java</artifactId>
             <version>8.0.0</version>
-        </dependency>
+        </dependency> -->
 
         <dependency>
             <groupId>org.vaadin.klaudeta</groupId>
@@ -159,17 +159,17 @@
             <version>4.0.0</version>
         </dependency>
 
-        <dependency>
+        <!-- <dependency>
             <groupId>com.github.appreciated</groupId>
             <artifactId>card</artifactId>
             <version>2.0.0</version>
-        </dependency>
+        </dependency> -->
         
-        <dependency>
+        <!-- <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-html-components</artifactId>
             <version>${vaadin.version}</version>
-        </dependency>
+        </dependency> -->
 
 
     </dependencies>
