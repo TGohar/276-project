@@ -43,6 +43,7 @@ import jakarta.annotation.security.PermitAll;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.model.project.CollaborationMode;
 import trackour.trackour.model.project.Project;
+import trackour.trackour.model.project.ProjectStatus;
 import trackour.trackour.model.project.ProjectsService;
 import trackour.trackour.model.user.User;
 import trackour.trackour.security.SecurityViewService;
@@ -100,13 +101,14 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
         .setSortable(true); // Set the sortable property to true for the column
 
     // Add a column for the progress
-    grid.addColumn(project -> Double.toString(project.getProgress())).setHeader("Progress").setKey("progress");
-    
+    // grid.addColumn(project -> Double.toString(project.getProgress())).setHeader("Progress").setKey("progress");
+    // Modify the progress column to make it resizable
+    // grid.getColumnByKey("progress").setResizable(true);
     // Modify the title column to make it sortable
     grid.getColumnByKey("title").setSortable(true);
     
     // Modify the creation date column to make it resizable
-    grid.getColumnByKey("createdAt").setResizable(true);
+    // grid.getColumnByKey("createdAt").setResizable(true);
 
     // Use a ComponentRenderer to create the Span component for each project
     grid.addColumn(new ComponentRenderer<>(project -> {
@@ -150,10 +152,6 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
         // Return the Span object
         return collabModeSelect;
     })).setHeader("Collaboration mode").setKey("collaborationMode").setSortable(true);
-
-
-    // Modify the progress column to make it resizable
-    grid.getColumnByKey("progress").setResizable(true);
 
 //     Set<User> partUsers = project.getParticipants().stream()
 //   .map(partId -> customUserDetailsService.getByUid(partId)).collect(Collectors.toSet());
@@ -208,6 +206,10 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
             Notification.show("Selected users: " + users);
             projectsService.setParticipants(newValue, proj);
         });
+
+        if (proj.getCollaborationMode().equals(CollaborationMode.SOLO)) {
+            collabModeSelect.setItems(new ArrayList<>());
+        }
 
         // Return the Span object
         return collabModeSelect;

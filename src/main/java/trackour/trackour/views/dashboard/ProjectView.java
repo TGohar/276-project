@@ -1,5 +1,6 @@
 package trackour.trackour.views.dashboard;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -164,16 +165,34 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
       // selectedKeys.setValue(null);
       TextArea selectedBpm = new TextArea("BPM");
       selectedBpm.setReadOnly(true);
-      // selectedKeys.setValue(null);
+      Set<String> bpmStr = projectsService.getAllParticipantIdsForProject(projectId).stream()
+        .map(p -> customUserDetailsService.getByUid(p))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .map(p -> p.getUsername())
+        .collect(Collectors.toSet());
+      selectedBpm.setValue(String.join(", ", bpmStr));
+
       TextArea selecteStatus = new TextArea("Status");
       selecteStatus.setReadOnly(true);
-      // selectedKeys.setValue(null);
+      String statStr = projectsService.findProjectById(projectId).get().getStatus().getValue();
+      selecteStatus.setValue(statStr);
+
       TextArea selectedCollab = new TextArea("Collab Mode");
       selectedCollab.setReadOnly(true);
-      // selectedKeys.setValue(null);
+      String collabStr = projectsService.findProjectById(projectId).get().getCollaborationMode().getValue();
+      selecteStatus.setValue(collabStr);
+      
       TextArea selectedParticipants = new TextArea("Participants");
       selectedParticipants.setReadOnly(true);
-      // selectedKeysArea.setReadOnly(true);
+      Set<String> partsUsers = projectsService.getAllParticipantIdsForProject(projectId).stream()
+        .map(p -> customUserDetailsService.getByUid(p))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .map(p -> p.getUsername())
+        .collect(Collectors.toSet());
+      selectedParticipants.setValue(String.join(", ", partsUsers));
+      
       // keysArea.add(selectedKeysArea);
       keysArea.add(selectedKeys, selectedBpm, selecteStatus, selectedCollab, selectedParticipants);
       songs_audioDetails.add(keysArea);
@@ -493,7 +512,7 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
 
         // right section customization
         // create another split layout for the right section
-        SplitLayout rightSplitLayout = new SplitLayout(); // Use VerticalSplitLayout instead of SplitLayout
+        VerticalLayout rightSplitLayout = new VerticalLayout(); // Use VerticalSplitLayout instead of SplitLayout
         rightSplitLayout.setSizeFull();
 
         // create a vertical layout for the top component
@@ -510,9 +529,10 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
 
         // rightSection.add(editingSection);
 
+        rightSplitLayout.add(topComponent);
         // add the top component and the editing section to the right split layout
-        rightSplitLayout.addToPrimary(topComponent);
-        rightSplitLayout.addToSecondary(new Span("Empty"));
+        // rightSplitLayout.addToPrimary(topComponent);
+        // rightSplitLayout.addToSecondary(new Span("Empty"));
 
         
         VerticalLayout socialSection = new VerticalLayout();
