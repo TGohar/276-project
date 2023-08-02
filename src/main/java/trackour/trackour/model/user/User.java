@@ -14,15 +14,23 @@ import org.springframework.format.annotation.DateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import io.hypersistence.utils.hibernate.type.array.ListArrayType;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.transaction.Transactional;
+import trackour.trackour.model.project.Project;
 
 @Entity
 @Table(
@@ -33,34 +41,6 @@ import jakarta.persistence.UniqueConstraint;
             )
         )
 public class User {
-
-    public User() {
-        this.initRole();
-        this.friendRequests = new ArrayList<Long>();
-        this.friends = new ArrayList<Long>();
-        this.projects = new HashSet<>();
-    }
-
-    public User(String username, String displayName, String password, String email, Set<Role> roles) {
-        this.username = username;
-        this.displayName = displayName;
-        this.password = password;
-        this.email = email;
-        this.friendRequests = new ArrayList<Long>();
-        this.friends = new ArrayList<Long>();
-        this.projects = new HashSet<>();
-    }
-
-    public User(String username, String displayName, String password, String email) {
-        this.username = username;
-        this.displayName = displayName;
-        this.password = password;
-        this.email = email;
-        this.initRole();
-        this.friendRequests = new ArrayList<Long>();
-        this.friends = new ArrayList<Long>();
-        this.projects = new HashSet<>();
-    }
     
     @Id
     /**
@@ -73,6 +53,25 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "uid")
     private Long uid;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "friends_with",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "friend_id")
+    )
+    private List<User> friendsWith;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "pending_friend_requests",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "requester_id")
+    )
+    private List<User> pendingFriendRequests;
+
+    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    private List<Project> ownedProjects;
 
     @Column(name = "username")
     private String username;
@@ -111,12 +110,68 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
 
-    private void initRole() {
+    // ---------------------------methods------------------------------------------------
+
+    public User() {
+        initCollections();
+    }
+
+    public User(String username, String displayName, String password, String email, Set<Role> roles) {
+        this.username = username;
+        this.displayName = displayName;
+        this.password = password;
+        this.email = email;
+        this.initCollections();
+    }
+
+    public User(String username, String displayName, String password, String email) {
+        this.username = username;
+        this.displayName = displayName;
+        this.password = password;
+        this.email = email;
+        ownedProjects = new ArrayList<>();
+        this.initCollections();
+    }
+    private void initCollections() {
+        this.friendRequests = new ArrayList<>();
+        this.friends = new ArrayList<>();
+        
+        this.friendsWith = new ArrayList<>();
+        this.pendingFriendRequests = new ArrayList<>();
+
+        this.ownedProjects = new ArrayList<>();
+        
         // initialize default role as ["USER"]
         Set<Role> defaultRole = new HashSet<>();
         // defaultRole.add(Role.USER);
         defaultRole.add(Role.ADMIN);
         setRoles(defaultRole);
+    }
+
+    public List<User> getFriendsWith() {
+        return friendsWith;
+    }
+
+    public void setFriendsWith(List<User> friendsWith) {
+        this.friendsWith = friendsWith;
+    }
+
+    public List<User> getPendingFriendRequests() {
+        return pendingFriendRequests;
+    }
+
+    public void setPendingFriendRequests(List<User> pendingFriendRequests) {
+        this.pendingFriendRequests = pendingFriendRequests;
+    }
+
+    @Transactional
+    public List<Project> getOwnedProjects() {
+        return ownedProjects;
+    }
+
+    @Transactional
+    public void setOwnedProjects(List<Project> ownedProjects) {
+        this.ownedProjects = ownedProjects;
     }
 
     public void setRoles(Set<Role> roles) {

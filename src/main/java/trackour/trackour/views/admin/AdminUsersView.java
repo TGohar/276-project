@@ -109,7 +109,7 @@ public class AdminUsersView extends VerticalLayout {
                 Icon delBtnIcon = new Icon(VaadinIcon.TRASH);
                 Button delButton = new Button(delBtnIcon, (ev) -> {
                         // delete that user record
-                        this.customUserDetailsService.delete(userRecord.getUid());
+                        this.customUserDetailsService.delete(userRecord);
                         boolean isAdminDeletingThemself = securityViewHandler.getSessionOptional().get().getUsername()
                                         .equals(userRecord.getUsername());
 

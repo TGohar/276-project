@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.vaadin.flow.component.avatar.Avatar;
@@ -45,8 +46,14 @@ private final String emailValidationRegex = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Z
   + "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";;
 
 NavBar navBar;
+
+@Autowired
 CustomUserDetailsService customUserDetailsService;
+
+@Autowired
 SecurityViewService securityViewService;
+
+@Autowired
 ProjectsService projectsService;
 User user;
 
@@ -422,35 +429,37 @@ private VerticalLayout createInfoLayout() {
     }
 
     //remove user from projects, delete any non-shared projects
-    Set<String> projects = user.getProjects();
+    List<Project> projects = projectsService.getAllByOwner(user);
     if(projects != null) {
-      for(String projectID : projects) {
+      for(Project project : projects) {
+        Long projectID = project.getId();
         if(projectsService.findProjectById(projectID).isPresent()){
-          Project project = projectsService.findProjectById(projectID).get();
-          List<Long> projectParticipants = project.getParticipants();
+          Set<Long> projectParticipants = projectsService.getAllParticipantIdsForProject(projectID);
 
           //check if owner
-          if(project.getOwner() == user.getUid()) {
-            if(projectParticipants == null || projectParticipants.isEmpty()) {
-              projectsService.deleteTask(project);
+          User projectOwner = projectsService.getProjectOwner(projectID);
+          if (projectOwner != null) {
+            if(projectOwner.getUid() == user.getUid()) {
+              if(projectParticipants == null || projectParticipants.isEmpty()) {
+                projectsService.deleteProject(project);
+              } else {
+                project.setParticipants(projectParticipants);
+  
+                projectsService.updateProject(project);
+              }
             } else {
-              project.setOwner(projectParticipants.get(0));
-              projectParticipants.remove(0);
+              //remove from participants list
+              projectParticipants.remove(user.getUid());
               project.setParticipants(projectParticipants);
-
               projectsService.updateProject(project);
             }
-          } else {
-            //remove from participants list
-            projectParticipants.remove(user.getUid());
-            project.setParticipants(projectParticipants);
           }
         }
       }
     }
 
     //delete account
-    customUserDetailsService.delete(user.getUid());
+    customUserDetailsService.delete(user);
     securityViewService.logOut();
     this.getUI().get().getPage().setLocation("");
   }

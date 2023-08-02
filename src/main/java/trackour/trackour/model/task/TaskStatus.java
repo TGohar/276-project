@@ -1,12 +1,13 @@
-package trackour.trackour.model.project;
+package trackour.trackour.model.task;
 
-public enum ProjectStatus {
+public enum TaskStatus {
+    NOT_STARTED("NOT_STARTED"),
     IN_PROGRESS("IN_PROGRESS"),
     COMPLETED("COMPLETED");
 
     private final String value;
 
-    private ProjectStatus(String value) {
+    private TaskStatus(String value) {
         this.value = value;
     }
 

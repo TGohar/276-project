@@ -1,12 +1,12 @@
 package trackour.trackour.model.project;
 
-public enum ProjectStatus {
-    IN_PROGRESS("IN_PROGRESS"),
-    COMPLETED("COMPLETED");
+public enum CollaborationMode {
+    SOLO("SOLO"),
+    TEAM("TEAM");
 
     private final String value;
 
-    private ProjectStatus(String value) {
+    private CollaborationMode(String value) {
         this.value = value;
     }
 
