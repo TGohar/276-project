@@ -9,7 +9,11 @@ import org.vaadin.klaudeta.PaginatedGrid;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.H5;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
@@ -32,6 +36,7 @@ import se.michaelthelin.spotify.model_objects.specification.Track;
 import trackour.trackour.model.CustomUserDetailsService;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.spotify.SearchTrack;
+import trackour.trackour.views.api.APIController;
 import trackour.trackour.views.components.NavBar;
 import trackour.trackour.views.components.SimpleSearchField;
 import trackour.trackour.views.login.LoginPage;
@@ -124,9 +129,104 @@ public class SearchResultView extends VerticalLayout implements BeforeEnterObser
                 albumField.setReadOnly(true);
                 albumLabel.add(albumField);
 
+                
+                
+                Button infoButton = new Button("Show Audio Features");
+                // infoButton.addThemeVariants(ButtonVariant.LUMO_ICON);
+                
+                
+                infoButton.addClickListener(e -> {
+                    
+                    String trackID = track.getId();
+        
+                    float acousticness = APIController.getAcousticness(trackID);
+                    float danceability = APIController.getDanceability(trackID);
+                    float energy = APIController.getEnergy(trackID);
+                    float instrumentalness = APIController.getInstrumentalness(trackID);
+                    float liveness = APIController.getLiveness(trackID);
+                    float valence = APIController.getValence(trackID);
+                    float tempo = APIController.getTempo(trackID);
+                    int timeSignature = APIController.getTimeSignature(trackID);
+                    float loudness = APIController.getLoudness(trackID);
+                    float key = APIController.getKey(trackID);
+                    float mode = APIController.getMode(trackID);
+
+                    Image trackImage = new Image();
+                    trackImage.setSrc(track.getAlbum().getImages()[0].getUrl());
+                    trackImage.setWidth("150px");
+                    trackImage.setHeight("150px");
+
+                        
+                    Dialog dialog = new Dialog();
+                    dialog.setWidth("700px");
+                    dialog.setHeight("800px");
+                    dialog.setCloseOnEsc(true);
+                    dialog.setCloseOnOutsideClick(true);
+                    dialog.setModal(true);
+                    dialog.setDraggable(true);
+                    dialog.setResizable(true);
+                    // dialog.getStyle().setOpacity("0");
+
+
+                    VerticalLayout dialogLayout = new VerticalLayout();
+                    dialogLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+                    dialogLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+                    dialogLayout.getStyle().set("margin-top", "15px");
+                    dialogLayout.getStyle().set("margin-left", "25px");
+                    dialogLayout.getStyle().set("margin-right", "100px");
+                    dialogLayout.getStyle().set("margin-bottom", "50px");
+                    dialogLayout.getStyle().set("background-color", "#C9CCD5F"); //7195C3
+                    dialogLayout.getStyle().set("border-radius", "25px");
+                    dialogLayout.getStyle().set("box-shadow", "0 0 20px #000000");
+                    dialogLayout.getStyle().set("color", "#FFFFFF");
+                    dialogLayout.getStyle().set("font-size", "20px");
+                    dialogLayout.getStyle().set("font-weight", "bold");
+                    dialogLayout.getStyle().set("text-align", "center");
+                    dialogLayout.getStyle().set("width", "600px");
+                    dialogLayout.getStyle().set("height", "900px");
+
+
+                    HorizontalLayout dialogHeader = new HorizontalLayout();
+                    dialogHeader.add(new H5("Song: " + track.getName()));
+                    dialogHeader.add(new H5("Artist: " + track.getArtists()[0].getName()));
+                    dialogHeader.add(new H5("Album: " + track.getAlbum().getName()));
+                    dialogHeader.setAlignItems(FlexComponent.Alignment.CENTER);
+                    dialogHeader.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+                    dialogHeader.getStyle().set("color", "#4B6587");
+                    dialogHeader.getStyle().set("margin-bottom", "40px");
+                    
+                    dialogLayout.add(trackImage);
+                    dialogLayout.add(dialogHeader);
+                    dialogLayout.add(new H3("Audio Features"));
+                    dialogLayout.add(new H5("Acousticness: " + acousticness));
+                    dialogLayout.add(new H5("Danceability: " + danceability));
+                    dialogLayout.add(new H5("Energy: " + energy));
+                    dialogLayout.add(new H5("Instrumentalness: " + instrumentalness));
+                    dialogLayout.add(new H5("Liveness: " + liveness));
+                    dialogLayout.add(new H5("Valence: " + valence));
+                    dialogLayout.add(new H5("Tempo: " + tempo));
+                    dialogLayout.add(new H5("Time Signature: " + timeSignature));
+                    dialogLayout.add(new H5("Loudness: " + loudness));
+                    dialogLayout.add(new H5("Key: " + key));
+                    dialogLayout.add(new H5("Mode: " + mode));
+                    dialogLayout.add(new H5("Popularity: " + track.getPopularity()));
+                    dialogLayout.add(new H5("Duration: " + track.getDurationMs() + " ms"));
+
+                    dialog.add(dialogLayout);
+                    dialog.open();
+                });
+
+
+                // play button
+                String trackURL = APIController.spotifyURL(track.getId());
+                Anchor trackLink = new Anchor(trackURL, new Icon(VaadinIcon.PLAY_CIRCLE));
+                trackLink.setTarget("_blank");
+
+                Button playButton = new Button(trackLink);
+                playButton.addThemeVariants(ButtonVariant.LUMO_ICON);
                 artist_and_Album.add(aristLabel, albumLabel);
 
-                trackCard.add(albumCoverImage, songField, artist_and_Album);
+                trackCard.add(albumCoverImage, songField, artist_and_Album, infoButton ,playButton);
 
                 trackCard.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
                 trackCard.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
@@ -135,26 +235,6 @@ public class SearchResultView extends VerticalLayout implements BeforeEnterObser
                     // .setHeader(trackHeader)
                     .setFlexGrow(1)
                     .setAutoWidth(true);
-
-            grid.addColumn(new ComponentRenderer<>(track -> {
-                // vaadin:arrow-forward
-                Button moreInfoButton = new Button(new Icon(VaadinIcon.INFO_CIRCLE_O));
-                moreInfoButton.addThemeVariants(ButtonVariant.LUMO_ICON);
-                moreInfoButton.setAriaLabel("More Info");
-                moreInfoButton.setTooltipText("View more info about this track in a new tab");
-                return moreInfoButton;
-            }))
-                    .setFlexGrow(0)
-                    .setAutoWidth(true);
-
-            // when user clicks on list item, the playback feature shows
-            grid.setItemDetailsRenderer(new ComponentRenderer<>(track -> {
-                Button playbackButton = new Button(new Icon(VaadinIcon.PLAY_CIRCLE_O));
-                playbackButton.addThemeVariants(ButtonVariant.LUMO_ICON);
-                playbackButton.setAriaLabel("Listen to song");
-                playbackButton.setTooltipText("Playback feature");
-                return playbackButton;
-            }));
 
             grid.setItems(tracks);
 
@@ -185,6 +265,39 @@ public class SearchResultView extends VerticalLayout implements BeforeEnterObser
 
     }
 
+    //    private void trackFeaturesDialog(float acousticness,float danceability,float energy,float instrumentalness,float liveness,float valence,float tempo,float timeSignature,float loudness,float key,float mode)
+    // {
+    //     Dialog dialog = new Dialog();
+    //     dialog.setWidth("500px");
+    //     dialog.setHeight("500px");
+    //     dialog.setCloseOnEsc(true);
+    //     dialog.setCloseOnOutsideClick(true);
+
+    //     VerticalLayout dialogLayout = new VerticalLayout();
+    //     dialogLayout.setPadding(true);
+    //     dialogLayout.setSpacing(true);
+    //     dialogLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+
+    //     H3 dialogTitle = new H3("Audio Features");
+    //     dialogLayout.add(dialogTitle);
+
+    //     dialogLayout.add("Acousticness: " + acousticness);
+    //     dialogLayout.add("Danceability: " + danceability);
+    //     dialogLayout.add("Energy: " + energy);
+    //     dialogLayout.add("Instrumentalness: " + instrumentalness);
+    //     dialogLayout.add("Liveness: " + liveness);
+    //     dialogLayout.add("Valence: " + valence);
+    //     dialogLayout.add("Tempo: " + tempo);
+    //     dialogLayout.add("Time Signature: " + timeSignature);
+    //     dialogLayout.add("Loudness: " + loudness);
+    //     dialogLayout.add("Key: " + key);
+    //     dialogLayout.add("Mode: " + mode);
+
+    //     dialog.add(dialogLayout);
+    //     dialog.open();
+
+    // }
+
     private void clearPage() {
         this.navigation.clearContent();
         this.remove(navigation);
@@ -213,4 +326,6 @@ public class SearchResultView extends VerticalLayout implements BeforeEnterObser
             event.rerouteTo(LoginPage.class);
         }
     }
+
+    
 }
