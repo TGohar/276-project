@@ -115,6 +115,29 @@ public class ProjectsService {
     //         }
     //     }
     // }
+
+    public  boolean isValidParticipant(Long userId, Long projectId) {
+        boolean retVal = false;
+        for (Project project : getAllProjects()) {
+            if (project.getId() == projectId) {
+                if (projectRepository.findById(projectId).get().getOwner().getUid() == userId){
+                    retVal = true;
+                }
+                // if (project.getParticipants() == null){
+                //     return false;
+                // }
+                // else if (project.getParticipants().isEmpty()) {
+                //     return false;
+                // }
+                if (project.getParticipants().contains(userId)){
+                    if (project.getCollaborationMode().equals(CollaborationMode.TEAM)){
+                        retVal = true;
+                    }
+                }
+            }
+        }
+        return retVal;
+    }
     
     
     public void createNewProject(Project project) {

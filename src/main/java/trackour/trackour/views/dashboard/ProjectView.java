@@ -181,7 +181,7 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
       TextArea selectedCollab = new TextArea("Collab Mode");
       selectedCollab.setReadOnly(true);
       String collabStr = projectsService.findProjectById(projectId).get().getCollaborationMode().getValue();
-      selecteStatus.setValue(collabStr);
+      selectedCollab.setValue(collabStr);
       
       TextArea selectedParticipants = new TextArea("Participants");
       selectedParticipants.setReadOnly(true);
@@ -219,6 +219,17 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
         }));
       }
       return progressGrid;
+    }
+
+    private boolean userIsAuthorizedToAccessProject(Long projectId) {
+      Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
+      if (userOptional.isPresent()) {
+        User user = userOptional.get();
+        if (projectsService.isValidParticipant(user.getUid(), projectId)){
+          return true;
+        }
+      }
+      return false;
     }
 
     private VerticalLayout generateTasksGrid(Grid<Task> grid, Long projectId) {
@@ -440,9 +451,8 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
           // 404 error page
           event.rerouteToError(new NotFoundException("Invalid id"), null);
       } 
-      else {
-          // do something with the id
-          
+      if (!userIsAuthorizedToAccessProject(id)) {
+        event.rerouteToError(new NotFoundException("Invalid id"), null);
       }
       // Use projectId as needed
       this.projectId = id;
