@@ -74,6 +74,10 @@ public class TaskService {
         createNewTask(task);
     }
 
+    public void updateTask(Task task, boolean doRecalculateProgress) {
+        createNewTask(task);
+    }
+
     /**
      * Prettyy print {@link `} object
      * @param user

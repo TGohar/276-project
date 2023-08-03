@@ -123,49 +123,6 @@ public class ProjectsService {
         }
         return lst;
     }
-    
-    // /**
-    //  * pass the project id and the list of friends usernames
-    //  * @param projectId
-    //  * @param usernames
-    //  */
-    // public void setParticipants(Long projectId, List<String> usernames) {
-    //     if (projectRepository.findById(projectId).isPresent()) {
-    //         boolean allPresent = usernames.stream()
-    //         .allMatch(username -> userRepository.findByUsername(username).isPresent());
-    //         if (allPresent) {
-    //             // the project and user exist
-    //             Set<User> selectedParticipants = usernames.stream()
-    //                 .filter(username -> userRepository.findByUsername(username).isPresent()) // filter only the usernames that are present in the userRepository
-    //                 .map(username -> userRepository.findByUsername(username).get()) // map each username to the corresponding User object
-    //                 .collect(Collectors.toSet()); // collect the User objects into a Set
-    //             Project chosenProject = projectRepository.findById(projectId).get();
-    //             chosenProject.setParticipants(selectedParticipants);
-    //             updateProject(chosenProject);
-
-    //         }
-    //     }
-    // }
-
-    // public void unsetParticipants(Long projectId, List<Long> userIds) {
-    //     if (projectRepository.findById(projectId).isPresent()) {
-    //         // make sure the ids are for valid users
-    //         boolean allPresent = userIds.stream()
-    //             .allMatch(userId -> userRepository.findByUid(userId).isPresent());
-    //         if (allPresent) {
-    //             // the project and user exist
-    //             Set<User> selectedParticipants = userIds.stream()
-    //                 .filter(id1 -> userRepository.findByUid(id1).isPresent()) // filter only the id that are present in the userRepository
-    //                 .map(id2 -> userRepository.findByUid(id2).get()) // map each username to the corresponding User object
-    //                 .collect(Collectors.toSet()); // collect the User objects into a Set
-    //             Project chosenProject = projectRepository.findById(projectId).get();
-    //             chosenProject.getParticipants().removeIf(user -> selectedParticipants.stream()
-    //                 .map(User::getUsername) // map each user in selectedParticipants to their username
-    //                 .anyMatch(username -> username.equals(user))); // remove all the selected participants from the project
-    //             updateProject(chosenProject);
-    //         }
-    //     }
-    // }
 
     public  boolean isValidParticipant(Long userId, Long projectId) {
         boolean retVal = false;
@@ -300,7 +257,6 @@ public class ProjectsService {
     }
 
     public void updateProgress(Long projectId) {
-        
         Optional<Project> projectOptional = findProjectById(projectId);
         if (projectOptional.isPresent()) {
             Project project = projectOptional.get();
@@ -316,6 +272,7 @@ public class ProjectsService {
                 project.setStatus(ProjectStatus.IN_PROGRESS);
             }
             project.setProgress(newProgress);
+            System.out.println("updateProgress!: " + newProgress);
             updateProject(project);
         }
     }

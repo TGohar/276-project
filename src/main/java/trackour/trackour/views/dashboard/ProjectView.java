@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.addons.tatu.CircularProgressBar;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -28,6 +27,7 @@ import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.data.renderer.Renderer;
@@ -38,7 +38,6 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 
@@ -57,7 +56,7 @@ import trackour.trackour.views.components.NavBar;
 
 @Route("project")
 @RouteAlias("project-workspace")
-@PreserveOnRefresh
+// @PreserveOnRefresh
 @PageTitle("Project Workspace | Trackour")
 @PermitAll
 public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,HasUrlParameter<Long> {
@@ -87,6 +86,7 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
 
   // private Select<TaskStatus> statusField;
   private Binder<Task> binder;
+  private Binder<Task> editBinder;
 
   // Use @Autowired on the constructor parameters instead of the fields
   @Autowired
@@ -107,29 +107,27 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
       titleField = new TextField("Title");
       descriptionField = new TextArea("Description");
       // statusField = new Select<>();
-      binder = new Binder<>(Task.class);      
+      binder = new Binder<>(Task.class);     
+      editBinder = new Binder<>(Task.class); 
     }
 
-    public void updateGrid(Long id) {
-        // Get the user object from the service
-        // Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
-        // User user = userOptional.get();
+    public void updateTasksGrid(Long id) {
         
         // Create a new project object with the user id as the owner
         grid.setItems(projectsService.getAllTasksByProject(id));
-        grid.getDataProvider().refreshAll();
     }
 
     public void updateProgressGrid(Long id) {
-        // Get the user object from the service
-        // Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
-        // User user = userOptional.get();
         projectsService.updateProgress(id);
+
+        // progressGrid = new Grid<>();
+
+        progressGrid.removeAllColumns();
         
         // Create a new project object with the user id as the owner
         progressGrid.setItems(Arrays.asList(projectsService.getProgress(id)));
-        progressGrid.getDataProvider().refreshAll();
-        // UI.getCurrent().getPage().reload();
+        
+        progressGrid = generateProgressBarGrid(progressGrid, id);
     }
 
     private static Renderer<Task> createToggleDetailsRenderer(
@@ -258,6 +256,9 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
         grid.addColumn(new ComponentRenderer<>(tsk -> {
 
             Select<TaskStatus> collabModeSelect = new Select<>();
+            // bind collabModeSelect to editBinder
+            editBinder.forField(collabModeSelect)
+            .bind(Task::getStatus, Task::setStatus);
 
             // set the items from the enum values
             collabModeSelect.setItems(EnumSet.allOf(TaskStatus.class));
@@ -278,15 +279,21 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
                 boolean newStatusIsCompleted = stat.equals(TaskStatus.COMPLETED);
                 boolean switchBetweenCompletedAndNotCompleted = (oldStatusIsCompleted && !newStatusIsCompleted) || 
                 (!oldStatusIsCompleted && newStatusIsCompleted);
-                if (switchBetweenCompletedAndNotCompleted) {
-                  tsk.setStatus(stat);
-                  taskService.updateTask(tsk);
-                  projectsService.updateProgress(projectId);
-                  // updateProgressGrid(projectId);
-                  updateGrid(projectId);
-                  updateProgressGrid(projectId);
-                  UI.getCurrent().getPage().reload();
-                }
+                // get the current state of the task after status value is changed
+                // repopulate that task item with the changes from task change event
+                // modify tsk with new status
+                // retreive that task bean
+                System.out.println("editedTask stat: " + stat.name());
+                
+                tsk.setStatus(stat);
+                taskService.updateTask(tsk);
+                // save it to db
+                // if (switchBetweenCompletedAndNotCompleted) {
+                //   // if progress recalculation is needed recalculate progress
+                // }
+                projectsService.updateProgress(projectId);
+                updateTasksGrid(projectId);
+                updateProgressGrid(projectId);
             });
             // Return the Span object
             return collabModeSelect;
@@ -298,9 +305,8 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
         grid.addColumn(createToggleDetailsRenderer(grid));
         grid.setDetailsVisibleOnClick(false);
         grid.setItemDetailsRenderer(new ComponentRenderer<>(task ->  {
-        VerticalLayout editingSection = new VerticalLayout();
+          FormLayout editingSection = new FormLayout();
           editingSection.setSizeFull();
-          // trix rich text editor
           TextArea editor = new TextArea();
           // String editorInitialValue = "Add more details.";
           editor.setWidthFull();
@@ -311,24 +317,42 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
           titleEditor.setLabel("Title");
           titleEditor.setValue(task.getTitle());
           titleEditor.setWidthFull();
+
+          editBinder.forField(editor)
+          .bind(Task::getDescription, Task::setDescription);
+
+          // Bind the titleEditor field to the title property
+          editBinder.forField(titleEditor)
+          .withValidator(new StringLengthValidator("Please enter a title", 1, null))
+          .bind(Task::getTitle, Task::setTitle);
+          
           // set proj description to the ediotor's value and save/update on value change
           // proj
-          Button saveDescriptionButton = new Button("Save", e -> {
-            // Get the current task from the binder
-            // Task task = binder.getBean();
-            // binder.readBean(task);
+          Button saveEditButton = new Button("Save Edit", ev -> {
             System.out.println("new desc:" + editor.getValue());
             System.out.println("new title:" + editor.getValue());
 
-            task.setDescription(editor.getValue());
-            task.setTitle(titleEditor.getValue());
-            // // Save or update the task using the service
-            taskService.createNewTask(task);
-            updateGrid(projectId);
-            updateProgressGrid(projectId);
-            // taskService.createNewTask(task);
+            if (editBinder.validate().isOk()) {
+              // loads the bean that binds the fields to the Task obj 
+              Task editedTask = editBinder.getBean();
+              try {
+                // loads/writes the edit data from the fields to the bean
+                editBinder.writeBean(editedTask);
+
+                // save Task bean/obj to db
+                taskService.updateTask(editedTask);
+                
+                // Update the grid with the latest project list
+                updateTasksGrid(projectId);
+                updateProgressGrid(projectId);
+                
+              } catch (ValidationException e) {
+                e.printStackTrace();
+              }
+
+            }
           });
-          editingSection.add(titleEditor, editor, saveDescriptionButton);  
+          editingSection.add(titleEditor, editor, saveEditButton);  
           return editingSection;      
       }));
   
@@ -369,15 +393,6 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
           .bind(Task::getTitle, Task::setTitle);
         binder.forField(descriptionField)
           .bind(Task::getDescription, Task::setDescription);
-        // binder.forField(editor)
-        //   .bind(Task::getDescription, Task::setDescription);
-        // binder.forField(statusField)
-        //   // .withValidator(Objects::nonNull, "Please select a status")
-        //   .bind(Task::getStatus, Task::setStatus);
-
-        // String value = event.getValue();
-        
-        // taskService.createNewTask(null);
 
         // Add the fields to the form layout
         formLayout.add(titleField, descriptionField); //, statusField);
@@ -385,17 +400,35 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
         // Create a horizontal layout for the buttons
         HorizontalLayout buttonLayout = new HorizontalLayout();
 
+        // Open the dialog when the add button is clicked
+        Button addButton = new Button("Add new task");
+        addButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        addButton.addClickListener(e -> {
+          // Create a new task instance with the project id
+          Task task = new Task(project);
+          // Set the bean instance to edit
+          binder.setBean(task);
+          // taskService.createNewTask(task);
+          // Open the dialog
+          dialog.open();
+        });
+
         // Create a save button and add a click listener
-        Button saveButton = new Button("Save", e -> {
-          // Validate and save the task using the binder
+        Button saveButton = new Button("Save New", e -> {
           if (binder.validate().isOk()) {
             Task task = binder.getBean();
-            binder.readBean(task);
             taskService.createNewTask(task);
-            // taskService.saveTask(task);
-            // Update the grid with the latest task list
-            updateGrid(projectId);
+
+            // translate binder's bean to editBinder
+            editBinder.setBean(task);
+            
+            // Then populate the editing fields
+            editBinder.readBean(task);
+
+            // Update the grid with the latest project list
+            updateTasksGrid(projectId);
             updateProgressGrid(projectId);
+          
             // Close the dialog
             dialog.close();
           }
@@ -412,19 +445,6 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
 
         // Add the form layout and the button layout to the dialog
         dialog.add(formLayout, buttonLayout);
-
-        // Open the dialog when the add button is clicked
-        Button addButton = new Button("Add new task");
-        addButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        addButton.addClickListener(e -> {
-          // Create a new task instance with the project id
-          Task task = new Task(project);
-          // Set the bean instance to edit
-          binder.setBean(task);
-          taskService.createNewTask(task);
-          // Open the dialog
-          dialog.open();
-        });
         
         // Create a delete button and add a click listener
         Button deleteButton = new Button("Delete", e -> {
@@ -437,7 +457,7 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
                 taskService.deleteTask(delTask);
             }
             // Update the grid with the latest project list
-            updateGrid(projectId);
+            updateTasksGrid(projectId);
             updateProgressGrid(projectId);
         });
       topAreaOfGrid.add(filterField, addButton, deleteButton);
@@ -447,15 +467,8 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
       return hLayout;
     }
   
-    // Use @PostConstruct to initialize the view after dependency injection
-    // @Override
-    // public void setParameter(BeforeEvent event, Long id) {
     @Override
     public void setParameter(BeforeEvent event, Long id) {
-
-      // boolean projectExists = projectsService.getAllProjects().stream()
-      // .anyMatch(project -> project.getId() == id);
-      // System.out.println("idX: " + id);
       
       // check if the id is invalid
       if (!projectsService.projectExists(id)) {
@@ -506,7 +519,7 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
 
         progressGrid = new Grid<>();
 
-        progressGrid = generateProgressBarGrid(progressGrid, projectId);
+        updateProgressGrid(id);
         
         progressBarContainer.add(progressGrid);
 
@@ -515,19 +528,6 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
 
         // grid area onleft
         dataSection.add(progressBarContainer);
-
-        // Span participantsLabel = new Span("Participants:");
-
-        // MultiSelectListBox<String> participantsListBox = new MultiSelectListBox<>();
-        // filter the list of all users by getUsername
-        // List<String> userFriendsUsernames =  friendshipService.getFriendsUsernames(user.getUid());
-        // get the Set<User> of participants
-        // Set<User> participants = projectsService.getAllParticipantsForProject(id);
-        // // convert the Set<User> to a List<String> of usernames
-        // List<String> participantUsernames = participants.stream()
-        //     .map(User::getUsername) // map each User to their username
-        //     .collect(Collectors.toList()); // collect the usernames into a List
-        // // set default selected participants
 
         // right section customization
         // create another split layout for the right section
@@ -546,13 +546,7 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
 
         grid.setItems(projectsService.getAllTasksByProject(projectId));
 
-        // rightSection.add(editingSection);
-
         rightSplitLayout.add(topComponent);
-        // add the top component and the editing section to the right split layout
-        // rightSplitLayout.addToPrimary(topComponent);
-        // rightSplitLayout.addToSecondary(new Span("Empty"));
-
         
         VerticalLayout socialSection = new VerticalLayout();
         socialSection.setSizeFull();
@@ -579,184 +573,3 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
     @Override
     public void beforeEnter(BeforeEnterEvent event) {}
 }
-
-  
-  // Define a method to get a project by id
-// public Optional<Project> getProjectById(String id) {
-//     // Get the project from a mock data service
-//     return projectsService.findProjectById(id);
-//   }
-
-/**
- * 
- * // Initialize the UI components
-          title = new H1();
-          collaborationMode = new Span();
-          audioDetails = new Div();
-          status = new Span();
-          
-          // Get the project object by id from some data source
-          UserDetails sessionObject = securityViewService.getAuthenticatedRequestSession();
-          String sessionUsername = sessionObject.getUsername();
-          Optional<User> userOptional = customUserDetailsService.getByUsername(sessionUsername);
-          if(userOptional.isPresent()) {
-            User user = userOptional.get();
-
-            Project project = user.getOwnedProjects().stream()
-            .filter(p -> p.getId() == id) // filter by id
-            .findFirst() // get the first match
-            .orElse(null);
-
-            if (project != null) {
-
-              Grid<Task> taskGrid = new Grid<>(Task.class);
-                
-              // Update the UI components with the project details
-              title.setText(project.getTitle());
-              // Create a new Span object and set its text to the project's collaboration mode value
-              collaborationMode = new Span(project.getCollaborationMode().getValue());
-              // Use a switch statement to add the badge theme variants to the span according to the collaboration mode value
-              switch (project.getCollaborationMode()) {
-                  case SOLO:
-                      collaborationMode.getElement().getThemeList().add("badge contrast small");
-                      break;
-                  case TEAM:
-                      collaborationMode.getElement().getThemeList().add("badge primary small");
-                      break;
-              }
-              // map.put("keys", Arrays.asList("C#", "Bb"));
-              // map.put("bpm", Arrays.asList("130", "90"));
-              Div keys = new Div();
-              keys.setText(project.getKeys().toString());
-              Div bpm = new Div();
-              bpm.add(project.getBpm().toString());
-              status.setText(project.getStatus().getValue() + "");
-              // Use a switch statement to add the badge theme variants to the span according to the status value
-              switch (project.getStatus()) {
-                case COMPLETED:
-                    status.getElement().getThemeList().add("badge success small");
-                    break;
-                case IN_PROGRESS:
-                    status.getElement().getThemeList().add("badge primary small");
-                    break;
-                }
-              
-              taskGrid.setSizeFull();
-              taskGrid.setColumns("title", "description", "status", "createdAt");
-              taskGrid.setSelectionMode(Grid.SelectionMode.MULTI);
-              
-              // -----------------------------------------------------------------------------------------------------
-              // Populate the grid with the ArrayList of tasks
-  
-              // project.getTas
-              // project.getO
-              // taskService.createNewTask(new Task(project.getId(), user.getUid()));
-  
-              // taskService.get
-              // -----------------------------------------------------------------------------------------------------
-              
-              SplitLayout projectDetailsContainer = new SplitLayout();
-              projectDetailsContainer.setSizeFull();
-              // projectDetailsContainer.getStyle().setBackground("orange");
-              // (top, bottom)
-              projectDetailsContainer.setOrientation(SplitLayout.Orientation.HORIZONTAL);
-              
-              // main container contining cards area and button
-              HorizontalLayout detailsSection = new HorizontalLayout();
-              detailsSection.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-              detailsSection.setSizeFull();
-              
-              VerticalLayout participantsSection = new VerticalLayout();
-              participantsSection.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-              participantsSection.setSizeFull();
-            //   participantsSection.getStyle().setBackground("purple");
-              Span assigneesLabel = new Span("Assignees:");
-              MultiSelectListBox<String> keysListBox = new MultiSelectListBox<>();
-            //   keysListBox.setItems(project.getParticipants());
-              List<Boolean> friendsList = customUserDetailsService.getAll().stream().map(usr -> user.getFriendRequests().contains(usr.getUid())).collect(Collectors.toList());
-              // keysListBox.setItems(friendsList);
-              
-              VerticalLayout dataSection = new VerticalLayout();
-              dataSection.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-              dataSection.setSizeFull();
-        
-              Span status_collab = new Span();
-              status_collab.add(status, collaborationMode);
-              
-              Span songs_audioDetails = new Span();
-              VerticalLayout keysArea = new VerticalLayout();
-              String keysListString = "";
-              for (String key : project.getKeys()) {
-                keysListString.concat(", " + key);
-              }
-              
-              TextArea selectedKeys = new TextArea("Selected Keys");
-              List<String> tempKeys = Arrays.asList("C", "C#", "Bb");
-              selectedKeys.setReadOnly(true);
-              
-              MultiSelectComboBox<String> keysComboBox = new MultiSelectComboBox<>();
-              keysComboBox.setLabel("Select keys:");
-              keysComboBox.setItems(tempKeys);
-              keysComboBox.addValueChangeListener(e -> {
-                  String selectedKeysText = e.getValue().stream().collect(Collectors.joining(", "));
-                  selectedKeys.setValue(selectedKeysText);
-                });
-                keysArea.add(keysComboBox);
-                keysArea.add(selectedKeys);
-                songs_audioDetails.add(keysArea);
-                
-                CircularProgressBar progressBar = new CircularProgressBar();
-                progressBar.setCaption("Complete");
-                progressBar.setWidthFull();
-                progressBar.setHeightFull();
-                progressBar.setPercent(project.getProgress());
-                VerticalLayout progressBarContainer = new VerticalLayout();
-                progressBarContainer.add(progressBar);
-                
-                dataSection.add(title, progressBarContainer, status_collab, songs_audioDetails);
-                participantsSection.add(title, assigneesLabel, keysListBox);
-                detailsSection.add(dataSection, participantsSection);
-                // detailsSection.getStyle().setBackground("blue");
-                
-                // main container contining cards area and button
-                VerticalLayout editingSection = new VerticalLayout();
-                editingSection.setSizeFull();
-                
-                // trix rich text editor
-                String editorInitialValue = "Add more details.";
-                TrixEditor editor = new TrixEditor(editorInitialValue, "Description");
-                editor.getStyle().setColor("white");
-                editor.getStyle().setWidth("100%");
-                editor.getStyle().setHeight("100%");
-                // editor.getStyle().setBackground("red");
-                editingSection.add(editor);
-                
-                editingSection.getStyle().setBackground("#006994"); // sea blue
-                
-                // project details and editing section 
-                projectDetailsContainer.addToPrimary(taskGrid);
-                  projectDetailsContainer.addToSecondary(editingSection);
-                projectDetailsContainer.setSplitterPosition(50);
-                projectDetailsContainer.setOrientation(SplitLayout.Orientation.VERTICAL);
-                
-                
-                // Set the orientation to horizontal (left, right)
-                splitLayout.setOrientation(SplitLayout.Orientation.HORIZONTAL);
-                
-                // Add the verticalLayout and the taskGrid as its children
-                splitLayout.addToPrimary(detailsSection);
-                splitLayout.addToSecondary(projectDetailsContainer);
-                splitLayout.setSplitterPosition(30);
-                
-                // Set the split position to 50%
-                splitLayout.setSplitterPosition(40);
-
-                // removeAll();
-                VerticalLayout container = new VerticalLayout();
-                container.add(new Text("Hello"));
-                navbar.setContent(container);
-                add(navbar);
-            }
-            
-        }
- */
