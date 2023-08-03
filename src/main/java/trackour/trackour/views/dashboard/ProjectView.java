@@ -17,10 +17,8 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.listbox.MultiSelectListBox;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -45,12 +43,14 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 
 import jakarta.annotation.security.PermitAll;
+import trackour.trackour.model.project.CollaborationMode;
 import trackour.trackour.model.project.Project;
 import trackour.trackour.model.project.ProjectsService;
 import trackour.trackour.model.task.Task;
 import trackour.trackour.model.task.TaskService;
 import trackour.trackour.model.task.TaskStatus;
 import trackour.trackour.model.user.CustomUserDetailsService;
+import trackour.trackour.model.user.FriendshipService;
 import trackour.trackour.model.user.User;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.components.NavBar;
@@ -63,12 +63,19 @@ import trackour.trackour.views.components.NavBar;
 public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,HasUrlParameter<Long> {
   private Long projectId;
 
-  private SecurityViewService securityViewService;
+  @Autowired
+  SecurityViewService securityViewService;
+
+  @Autowired
+  CustomUserDetailsService customUserDetailsService;
+
+  @Autowired
+  FriendshipService friendshipService;
     
-  private CustomUserDetailsService customUserDetailsService;
-    
+  @Autowired
   private ProjectsService projectsService;
 
+  @Autowired
   private TaskService taskService;
 
   private Grid<Task> grid;
@@ -78,31 +85,34 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
   private TextField titleField;
   private TextArea descriptionField;
 
-  private Select<TaskStatus> statusField;
+  // private Select<TaskStatus> statusField;
   private Binder<Task> binder;
 
   // Use @Autowired on the constructor parameters instead of the fields
   @Autowired
-  public ProjectView(SecurityViewService securityViewService,
+  public ProjectView(
+    SecurityViewService securityViewService,
     CustomUserDetailsService customUserDetailsService,
+    FriendshipService friendshipService,
     ProjectsService projectsService,
     TaskService taskService
     ) {
       this.securityViewService = securityViewService;
       this.customUserDetailsService = customUserDetailsService;
+      this.friendshipService = friendshipService;
       this.projectsService = projectsService;
       this.taskService = taskService;
       grid = new Grid<>();
       progressGrid = new Grid<>();
       titleField = new TextField("Title");
       descriptionField = new TextArea("Description");
-      statusField = new Select<>();
+      // statusField = new Select<>();
       binder = new Binder<>(Task.class);      
     }
 
     public void updateGrid(Long id) {
         // Get the user object from the service
-        Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
+        // Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
         // User user = userOptional.get();
         
         // Create a new project object with the user id as the owner
@@ -112,7 +122,7 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
 
     public void updateProgressGrid(Long id) {
         // Get the user object from the service
-        Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
+        // Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
         // User user = userOptional.get();
         projectsService.updateProgress(id);
         
@@ -141,7 +151,7 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
 
       H1 title = new H1(projectsService.getById(projectId) == null ? "No title" : projectsService.getById(projectId).getTitle());
       Span collaborationMode = new Span();
-      Div audioDetails = new Div();
+      Span owner = new Span();
       Span status = new Span();
 
       Span status_collab = new Span();
@@ -149,16 +159,15 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
 
       Span songs_audioDetails = new Span();
 
-      VerticalLayout keysArea = new VerticalLayout();
-
-      // String keysListString = "";
-      // for (String key : selectedKeys) { // Use the injected list of keys
-      //   keysListString.concat(", " + key);
-      // }
+      VerticalLayout projectDetailsArea = new VerticalLayout();
 
       TextArea selectedKeys = new TextArea("Keys");
       selectedKeys.setReadOnly(true);
       // selectedKeys.setValue(null);
+      TextArea ownerTArea = new TextArea("Owner");
+      ownerTArea.setValue(projectsService.getOwner(projectId));
+      ownerTArea.setReadOnly(true);
+      owner.add(ownerTArea);
       TextArea selectedBpm = new TextArea("BPM");
       selectedBpm.setReadOnly(true);
       Set<String> bpmStr = projectsService.getAllParticipantIdsForProject(projectId).stream()
@@ -189,9 +198,15 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
         .collect(Collectors.toSet());
       selectedParticipants.setValue(String.join(", ", partsUsers));
       
-      // keysArea.add(selectedKeysArea);
-      keysArea.add(selectedKeys, selectedBpm, selecteStatus, selectedCollab, selectedParticipants);
-      songs_audioDetails.add(keysArea);
+      if (project.getCollaborationMode().equals(CollaborationMode.SOLO)){
+        projectDetailsArea = new VerticalLayout();
+        projectDetailsArea.add(owner, selectedKeys, selectedBpm, selecteStatus, selectedCollab);
+      }
+      else {
+        projectDetailsArea = new VerticalLayout();
+        projectDetailsArea.add(owner, selectedKeys, selectedBpm, selecteStatus, selectedCollab, selectedParticipants);
+      }
+      songs_audioDetails.add(projectDetailsArea);
       // keys 
       // status
       // collaboration mode
@@ -287,7 +302,7 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
           editingSection.setSizeFull();
           // trix rich text editor
           TextArea editor = new TextArea();
-          String editorInitialValue = "Add more details.";
+          // String editorInitialValue = "Add more details.";
           editor.setWidthFull();
           editor.setLabel("Description");
           editor.setValue(task.getDescription());
@@ -453,7 +468,7 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
       // Use projectId as needed
       this.projectId = id;
 
-        User user = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername()).get();
+        // User user = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername()).get();
         // set the layout to fill the whole page
         this.setSizeFull();
 
@@ -501,13 +516,11 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
         // grid area onleft
         dataSection.add(progressBarContainer);
 
-        Span participantsLabel = new Span("Participants:");
+        // Span participantsLabel = new Span("Participants:");
 
-        MultiSelectListBox<String> participantsListBox = new MultiSelectListBox<>();
+        // MultiSelectListBox<String> participantsListBox = new MultiSelectListBox<>();
         // filter the list of all users by getUsername
-        List<String> userFriendsUsernames = user.getFriendsWith().stream()
-          .map(User::getUsername)
-          .collect(Collectors.toList());
+        // List<String> userFriendsUsernames =  friendshipService.getFriendsUsernames(user.getUid());
         // get the Set<User> of participants
         // Set<User> participants = projectsService.getAllParticipantsForProject(id);
         // // convert the Set<User> to a List<String> of usernames

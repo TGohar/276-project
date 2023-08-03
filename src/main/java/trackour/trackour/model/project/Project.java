@@ -36,7 +36,7 @@ public class Project {
     
     // a project can have one owner
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "uid")
+    @JoinColumn(name = "owner", referencedColumnName = "uid")
     private User owner;
 
     // set of user ids allowed on this project

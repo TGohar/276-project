@@ -31,6 +31,7 @@ import jakarta.annotation.security.PermitAll;
 import trackour.trackour.model.project.Project;
 import trackour.trackour.model.project.ProjectsService;
 import trackour.trackour.model.user.CustomUserDetailsService;
+import trackour.trackour.model.user.FriendshipService;
 import trackour.trackour.model.user.User;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.components.NavBar;
@@ -55,15 +56,24 @@ SecurityViewService securityViewService;
 
 @Autowired
 ProjectsService projectsService;
+
+@Autowired
+FriendshipService friendshipService;
+
 User user;
 
-public ProfilePageView(CustomUserDetailsService customUserDetailsService, ProjectsService projectsService,
-                       SecurityViewService securityViewService) {
+public ProfilePageView(
+  CustomUserDetailsService customUserDetailsService, 
+  ProjectsService projectsService,
+  SecurityViewService securityViewService,
+  FriendshipService friendshipService
+  ) {
     navBar = new NavBar(customUserDetailsService, securityViewService);
 
     this.customUserDetailsService = customUserDetailsService;
     this.projectsService = projectsService;
     this.securityViewService = securityViewService;
+    this.friendshipService = friendshipService;
 
     this.user = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername()).get();
 
@@ -77,6 +87,14 @@ public ProfilePageView(CustomUserDetailsService customUserDetailsService, Projec
     navBar.setContent(mainLayout);
     add(navBar);
 }
+
+// private List<User> findFriends(User user) {
+//   return friendshipService.getFriends(user.getUid());
+// }
+
+// private List<User> findRequests(User user) {
+//   return friendshipService.getFriendRequests(user.getUid());
+// }
 
 private VerticalLayout createMainLayout() {
     VerticalLayout mainLayout = new VerticalLayout();
@@ -365,21 +383,21 @@ private VerticalLayout createInfoLayout() {
     .bind(User::getEmail,  User::setEmail);
   }
 
-  private boolean isUserNameUnique(String username) {
-    // is already present && then false
-    System.out.println("isPresent(): "
-     + username 
-     + " : " 
-     + customUserDetailsService.getByUsername(username).isPresent());
-    return !(customUserDetailsService.getByUsername(username).isPresent() && user.getUsername() != username);
-  }
+  // private boolean isUserNameUnique(String username) {
+  //   // is already present && then false
+  //   System.out.println("isPresent(): "
+  //    + username 
+  //    + " : " 
+  //    + customUserDetailsService.getByUsername(username).isPresent());
+  //   return !(customUserDetailsService.getByUsername(username).isPresent() && user.getUsername() != username);
+  // }
 
-  private boolean isValidUsername(String username) {
-    if (username.isEmpty()) return false;
-    // Perform validation logic and return true or false based on the result
-    // e.g., check if the username meets the required criteria
-    return !username.isEmpty() && username.length() >= 3;
-  }
+  // private boolean isValidUsername(String username) {
+  //   if (username.isEmpty()) return false;
+  //   // Perform validation logic and return true or false based on the result
+  //   // e.g., check if the username meets the required criteria
+  //   return !username.isEmpty() && username.length() >= 3;
+  // }
 
   public boolean isEmailAlreadyPresent(String emailValue) {
     return !(customUserDetailsService.getByEmail(emailValue).isPresent() && user.getEmail() != emailValue);
@@ -415,27 +433,27 @@ private VerticalLayout createInfoLayout() {
   //Delete Account
   private void deleteAccount() {
     //remove from friends' friends lists
-    List<Long> friends = user.getFriends();
-    if(friends != null) {
-      for(Long friendID : friends) {
-        if (customUserDetailsService.getByUid(friendID).isPresent()){
-          User friend = customUserDetailsService.getByUid(friendID).get();
-          List<Long> friendFriends = friend.getFriends();
-          friendFriends.remove(user.getUid());
-          friend.setFriends(friendFriends);
-          customUserDetailsService.update(friend);
-        }
-      }
-    }
-
-    //remove user from projects, delete any non-shared projects
-    List<Project> projects = projectsService.getAllByOwner(user);
-    if(projects != null) {
-      for(Project project : projects) {
-        Long projectID = project.getId();
-        if(projectsService.findProjectById(projectID).isPresent()){
-          Set<Long> projectParticipants = projectsService.getAllParticipantIdsForProject(projectID);
-
+    // List<User> friends = findFriends(user);
+    // if(friends != null) {
+      //   for(Long friendID : friends) {
+        //     if (customUserDetailsService.getByUid(friendID).isPresent()){
+          //       User friend = customUserDetailsService.getByUid(friendID).get();
+          //       List<Long> friendFriends = friend.getFriends();
+          //       friendFriends.remove(user.getUid());
+          //       friend.setFriends(friendFriends);
+          //       customUserDetailsService.update(friend);
+          //     }
+          //   }
+          // }
+          
+          //remove user from projects, delete any non-shared projects
+          List<Project> projects = projectsService.getAllByOwner(user);
+          if(projects != null) {
+            for(Project project : projects) {
+              Long projectID = project.getId();
+              if(projectsService.findProjectById(projectID).isPresent()){
+                Set<Long> projectParticipants = projectsService.getAllParticipantIdsForProject(projectID);
+                
           //check if owner
           User projectOwner = projectsService.getProjectOwner(projectID);
           if (projectOwner != null) {
@@ -444,7 +462,7 @@ private VerticalLayout createInfoLayout() {
                 projectsService.deleteProject(project);
               } else {
                 project.setParticipants(projectParticipants);
-  
+                
                 projectsService.updateProject(project);
               }
             } else {
@@ -457,9 +475,10 @@ private VerticalLayout createInfoLayout() {
         }
       }
     }
-
+    
     //delete account
-    customUserDetailsService.delete(user);
+    // customUserDetailsService.delete(user);
+    customUserDetailsService.deleteUser(user.getUid());
     securityViewService.logOut();
     this.getUI().get().getPage().setLocation("");
   }

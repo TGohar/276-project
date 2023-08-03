@@ -1,4 +1,4 @@
-package trackour.trackour.views.friends;
+package trackour.trackour.model.user;
 
 public enum FriendRequestEnum {
     SUCCESS(0),

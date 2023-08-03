@@ -41,8 +41,10 @@ public class AdminUsersView extends VerticalLayout {
 
         private NavBar navigationComponent;
 
-        public AdminUsersView(SecurityViewService securityViewHandler,
-                        CustomUserDetailsService customUserDetailsService) {
+        public AdminUsersView(
+                SecurityViewService securityViewHandler,
+                CustomUserDetailsService customUserDetailsService
+                ) {
                 this.securityViewHandler = securityViewHandler;
                 this.customUserDetailsService = customUserDetailsService;
 
@@ -109,7 +111,7 @@ public class AdminUsersView extends VerticalLayout {
                 Icon delBtnIcon = new Icon(VaadinIcon.TRASH);
                 Button delButton = new Button(delBtnIcon, (ev) -> {
                         // delete that user record
-                        this.customUserDetailsService.delete(userRecord);
+                        this.customUserDetailsService.deleteUser(userRecord.getUid());
                         boolean isAdminDeletingThemself = securityViewHandler.getSessionOptional().get().getUsername()
                                         .equals(userRecord.getUsername());
 

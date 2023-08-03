@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.vaadin.flow.component.Component;
 
 import jakarta.transaction.Transactional;
 import trackour.trackour.model.task.Task;
@@ -43,6 +41,19 @@ public class ProjectsService {
         }
         return null;
     }
+
+    public List<Project> getAllByParticipation(User user) {
+        List<Project> participatedProjects = new ArrayList<>();
+        List<Project> all = projectRepository.findAll();
+        for (Project project : all){
+            if (getAllParticipantIdsForProject(project.getId()).contains(user.getUid())){
+                if (project.getCollaborationMode().equals(CollaborationMode.TEAM)){
+                    participatedProjects.add(project);
+                }
+            }
+        }
+        return participatedProjects;
+    }
     
     public List<Project> getAllByOwner(User user) {
         if (user != null){
@@ -64,6 +75,15 @@ public class ProjectsService {
         updateProject(project);
     }
 
+    public void setParticipantsByLong(Set<Long> users, Project project) {
+        Set<Long> participants = new HashSet<>();
+        for (Long usr : users) {
+            participants.add(usr);
+        }
+        project.setParticipants(participants);
+        updateProject(project);
+    }
+
     public void setKeys(Set<Key> keys, Project project) {
         Set<Key> keysSet = new HashSet<>();
         for (Key key : keys) {
@@ -73,12 +93,35 @@ public class ProjectsService {
         updateProject(project);
     }
 
+    public Set<User> getAllParticipantsForProject(Long projectId) {
+        Set<Long> getAllIds = getAllParticipantIdsForProject(projectId);
+        Set<User> allParticipants = new HashSet<>();
+        for (Long id : getAllIds) {
+            Optional<User> userOptional = userRepository.findByUid(projectId);
+            if (userOptional.isPresent()){
+                allParticipants.add(userOptional.get());
+            }
+        }
+        return allParticipants;
+    }
+
     public Set<Long> getAllParticipantIdsForProject(Long projectId) {
         Optional<Project> projectOptional = projectRepository.findById(projectId);
         if (projectOptional.isPresent()) {
             return projectRepository.findById(projectId).get().getParticipants();
         }
         return new HashSet<>();
+    }
+
+    public List<String> getAllParticipantIdsForProjectAsString(Long projectId) {
+        List<String> lst = new ArrayList<>();
+        Optional<Project> projectOptional = projectRepository.findById(projectId);
+        if (projectOptional.isPresent()) {
+            for (Long id : projectRepository.findById(projectId).get().getParticipants()) {
+                lst.add(id.toString());
+            }
+        }
+        return lst;
     }
     
     // /**
@@ -283,5 +326,13 @@ public class ProjectsService {
             return 1;
         }
         else return projectRepository.findById(id).get().getProgress();
+    }
+
+    public String getOwner(Long projectId) {
+        Project proj = getById(projectId);
+        if (proj != null) {
+            return proj.getOwner().getUsername();
+        }
+        return "UNKNOWN";
     }
 }

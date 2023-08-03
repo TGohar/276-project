@@ -3,6 +3,7 @@ package trackour.trackour.views.dashboard;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -10,10 +11,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import trackour.trackour.views.components.camelotwheel.*;
+
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
@@ -23,13 +23,11 @@ import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.listbox.ListBox;
-import com.vaadin.flow.component.listbox.MultiSelectListBox;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LocalDateTimeRenderer;
@@ -41,12 +39,14 @@ import com.vaadin.flow.router.RouteAlias;
 import jakarta.annotation.security.PermitAll;
 import trackour.trackour.model.project.CollaborationMode;
 import trackour.trackour.model.project.Project;
-import trackour.trackour.model.project.ProjectStatus;
 import trackour.trackour.model.project.ProjectsService;
 import trackour.trackour.model.user.CustomUserDetailsService;
+import trackour.trackour.model.user.FriendshipService;
 import trackour.trackour.model.user.User;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.components.NavBar;
+import trackour.trackour.views.components.camelotwheel.Camelot;
+import trackour.trackour.views.components.camelotwheel.Key;
 import trackour.trackour.views.components.responsive.MyBlockResponsiveLayout;
 // import com.vaadin.flow.component.badge.Badge;
 
@@ -59,7 +59,7 @@ import trackour.trackour.views.components.responsive.MyBlockResponsiveLayout;
 // both users and admins should have the "admin" role specified as well
 @PermitAll
 public class Dashboard extends MyBlockResponsiveLayout{
-@Autowired
+    @Autowired
     SecurityViewService securityViewService;
     
     @Autowired
@@ -68,8 +68,12 @@ public class Dashboard extends MyBlockResponsiveLayout{
     @Autowired
     ProjectsService projectsService;
 
+    @Autowired
+    FriendshipService friendshipService;
+
     // Declare a grid to display the projects
-    private Grid<Project> grid;
+    private Grid<Project> ownedGrid;
+    private Grid<Project> participatedGrid;
 
     NavBar navbar;
 
@@ -78,203 +82,27 @@ public class Dashboard extends MyBlockResponsiveLayout{
     // Get the set of selected items from the grid
     Set<Project> selectedProjects;
 
-public Dashboard(SecurityViewService securityViewService, CustomUserDetailsService customUserDetailsService, ProjectsService projectsService) {
+public Dashboard(
+    SecurityViewService securityViewService, 
+    CustomUserDetailsService customUserDetailsService, 
+    ProjectsService projectsService,
+    FriendshipService friendshipService
+    ) {
     this.customUserDetailsService = customUserDetailsService;
     this.securityViewService = securityViewService;
     this.projectsService = projectsService;
-    
+    this.friendshipService = friendshipService;
+
     mainLayout = new VerticalLayout();
     navbar = new NavBar(customUserDetailsService, securityViewService);
     // Initialize the grid and set the column name
-    grid = new Grid<>();
+    ownedGrid = new Grid<>();
+    participatedGrid = new Grid<>();
     
-    // Add a column for the title
-    grid.addColumn(Project::getTitle).setHeader("Title").setKey("title");
+    generateGrid(ownedGrid);
+    generateGrid(participatedGrid);
 
-    // Add a column for the creation date
-    // Use the grid's addColumn method with a LocalDateTimeRenderer object instead of a lambda expression
-    // Specify the format and locale for the LocalDateTimeRenderer object
-    grid.addColumn(new LocalDateTimeRenderer <>(Project::getCreatedAt, "yyyy-MM-dd HH:mm:ss", Locale.CANADA))
-        .setHeader("Created at")
-        .setKey("createdAt")
-        .setSortable(true); // Set the sortable property to true for the column
-
-    // Add a column for the progress
-    // grid.addColumn(project -> Double.toString(project.getProgress())).setHeader("Progress").setKey("progress");
-    // Modify the progress column to make it resizable
-    // grid.getColumnByKey("progress").setResizable(true);
-    // Modify the title column to make it sortable
-    grid.getColumnByKey("title").setSortable(true);
-    
-    // Modify the creation date column to make it resizable
-    // grid.getColumnByKey("createdAt").setResizable(true);
-
-    // Use a ComponentRenderer to create the Span component for each project
-    grid.addColumn(new ComponentRenderer<>(project -> {
-        // Create a new Span object and set its text to the project's status value
-        Span statusSpan = new Span(project.getStatus().getValue());
-        // Use a switch statement to add the badge theme variants to the span according to the status value
-        switch (project.getStatus()) {
-            case COMPLETED:
-                statusSpan.getElement().getThemeList().add("badge success small");
-                break;
-            case IN_PROGRESS:
-                statusSpan.getElement().getThemeList().add("badge primary small");
-                break;
-        }
-        // Return the Span object
-        return statusSpan;
-    })).setHeader("Status").setKey("status").setSortable(true);
-
-    // Use a ComponentRenderer to create the Span component for each project
-    grid.addColumn(new ComponentRenderer<>(project -> {
-
-        Select<CollaborationMode> collabModeSelect = new Select<>();
-
-        // set the items from the enum values
-        collabModeSelect.setItems(EnumSet.allOf(CollaborationMode.class));
-
-        // set the label generator to use the getValue() method
-        collabModeSelect.setItemLabelGenerator(CollaborationMode::getValue);
-        collabModeSelect.setValue(project.getCollaborationMode());
-        
-        collabModeSelect.addValueChangeListener(event -> {
-            // get the new selected value
-            CollaborationMode mode = event.getValue();
-        
-            // show a notification with the new value
-            Notification.show("Selected mode: " + mode.getValue());
-            // update
-            project.setCollaborationMode(mode);
-            projectsService.updateProject(project);
-        });
-        // Return the Span object
-        return collabModeSelect;
-    })).setHeader("Collaboration mode").setKey("collaborationMode").setSortable(true);
-
-//     Set<User> partUsers = project.getParticipants().stream()
-//   .map(partId -> customUserDetailsService.getByUid(partId)).collect(Collectors.toSet());
-
-    grid.addColumn(new ComponentRenderer<>(proj -> {
-
-        Set<Long> parts = proj.getParticipants();
-        Set<User> partsUsers = parts.stream()
-        .map(p -> customUserDetailsService.getByUid(p))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .collect(Collectors.toSet());
-
-        Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
-        User user = userOptional.get();
-
-        MultiSelectComboBox<User> collabModeSelect = new MultiSelectComboBox<>();
-
-        // set the items from the enum values
-        collabModeSelect.setItems(customUserDetailsService.getAllFriends(user));
-
-        // collabModeSelect.select(proj.getParticipants());
-        // .map(id -> customUserDetailsService.getByUid(id)) // convert each id to a User
-        // .collect(Collectors.toSet()); // collect the Users into a new set
-
-        // set the label generator to use the getValue() method
-        collabModeSelect.setItemLabelGenerator(User::getUsername);
-        collabModeSelect.setValue(partsUsers);
-        
-        // Get the selected users from the multiselectcombobox
-        Set<User> selectedUsers = collabModeSelect.getValue();
-
-        // Do something with the selected users
-        // For example, print their usernames
-        for (User usr : selectedUsers) {
-            System.out.println(usr.getUsername());
-        }
-        // Add a value change listener to the multiselectcombobox
-        collabModeSelect.addValueChangeListener(event -> {
-            // Get the old and new values of the multiselectcombobox
-            // Set<User> oldValue = event.getOldValue();
-            Set<User> newValue = event.getValue();
-
-            // add some users to the set
-            String users = newValue.stream()
-            .map(User::getUsername) // convert each user to a string
-            .collect(Collectors.joining(", ")); // join them with commas
-            Notification.show("Selected users: " + users);
-
-            // Do something when the value changes
-            // For example, show a notification with the new value
-            Notification.show("Selected users: " + users);
-            projectsService.setParticipants(newValue, proj);
-        });
-
-        if (proj.getCollaborationMode().equals(CollaborationMode.SOLO)) {
-            collabModeSelect.setItems(new ArrayList<>());
-        }
-
-        // Return the Span object
-        return collabModeSelect;
-    })).setHeader("Participants");
-
-
-    grid.addColumn(new ComponentRenderer<>(proj -> {
-
-        Set<Key> parts = proj.getKeys();
-        // Set<User> partsUsers = parts.stream()
-        // .map(p -> customUserDetailsService.getByUid(p))
-        // .filter(Optional::isPresent)
-        // .map(Optional::get)
-        // .collect(Collectors.toSet());
-
-        MultiSelectComboBox<Key> collabModeSelect = new MultiSelectComboBox<>();
-
-        // set the items from the enum values
-        collabModeSelect.setItems(Camelot.getAllKeys());
-
-        // set the label generator to use the getValue() method
-        collabModeSelect.setItemLabelGenerator(k -> k.name);
-        collabModeSelect.setValue(parts);
-        
-        // Get the selected users from the multiselectcombobox
-        Set<Key> selectedUsers = collabModeSelect.getValue();
-
-        // Do something with the selected users
-        // For example, print their usernames
-        for (Key key : selectedUsers) {
-            System.out.println(key.name);
-        }
-
-        // Add a value change listener to the multiselectcombobox
-        collabModeSelect.addValueChangeListener(event -> {
-            // Get the old and new values of the multiselectcombobox
-            // Set<User> oldValue = event.getOldValue();
-            Set<Key> newValue = event.getValue();
-
-            // add some users to the set
-            String keys = newValue.stream()
-            .map(key -> key.name) // convert each user to a string
-            .collect(Collectors.joining(", ")); // join them with commas
-            Notification.show("Selected keys: " + keys);
-            projectsService.setKeys(newValue, proj);
-        });
-
-        // Return the Span object
-        return collabModeSelect;
-    })).setHeader("Keys:");
-    
-    // Use a ComponentRenderer to create the button component for each project 
-    grid.addColumn(new ComponentRenderer<>(project -> { 
-        // Create a new Button object and set its text, icon, theme and click listener 
-        Button button = new Button("Open", VaadinIcon.EXTERNAL_LINK.create()); 
-        button.addThemeVariants(ButtonVariant.LUMO_PRIMARY); 
-        button.addClickListener(e -> { 
-            // Open the project view in a new tab with the project id as a parameter 
-            // QueryParameters queryParameters = QueryParameters.simple(Map.of("query", searchValue));
-            //         ui.navigate("search", queryParameters);
-            UI.getCurrent().getPage().open("project/" + project.getId(), "_blank"); }); 
-            // Wrap the button object in a Div component and return it 
-            Div div = new Div(button); 
-            return div; 
-    })).setHeader("Open").setKey("open");
-
+    // participatedGrid
     // Remove the selectedProjects variable from the class
 
     // Create a new string variable to store the dialog's message
@@ -292,7 +120,7 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
     dialog.add(deleteMessage);
     dialog.add(new Button("Delete", e -> {
         // Get the set of selected items from the grid
-        Set<Project> selectedProjects = grid.getSelectedItems();
+        Set<Project> selectedProjects = ownedGrid.getSelectedItems();
         // Iterate over the set and delete each project from the database using the service
         for (Project project : selectedProjects) {
             System.out.println("delete proj " + project.getId());
@@ -373,12 +201,12 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
     });
 
     // Enable the grid's multi-select mode
-    grid.setSelectionMode(SelectionMode.MULTI);
+    ownedGrid.setSelectionMode(SelectionMode.MULTI);
 
     // Listen to the grid's selection change event and update the dialogMessage and dialogTitle variables accordingly
-    grid.addSelectionListener(e -> {
-        // Get the set of selected items from the grid
-        Set<Project> selectedProjects = grid.getSelectedItems();
+    ownedGrid.addSelectionListener(e -> {
+        // Get the set of selected items from the ownedGrid
+        Set<Project> selectedProjects = ownedGrid.getSelectedItems();
         
         // Update the deleteMessage text with the dialogMessage variable
         deleteMessage.setText("Are you sure you want to delete " + selectedProjects.size() + " projects?");
@@ -392,7 +220,7 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
     deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
     deleteButton.addClickListener(e -> {
         // Get the set of selected items from the grid
-        Set<Project> selectedProjects = grid.getSelectedItems();
+        Set<Project> selectedProjects = ownedGrid.getSelectedItems();
         // Open the dialog if there are any selected items, otherwise show a notification
         if (!selectedProjects.isEmpty()) {
             dialog.open();
@@ -401,15 +229,223 @@ public Dashboard(SecurityViewService securityViewService, CustomUserDetailsServi
         }
     });
 
-    // Add the grid and the button to the layout
-    mainLayout.add(dialog, grid, addButton, deleteButton);
+    VerticalLayout ownedProjects = new VerticalLayout();
+    ownedProjects.setSizeFull();
+    VerticalLayout participatedProjects = new VerticalLayout();
+    participatedProjects.setSizeFull();
+    
+    // Add the ownedGrid and the button to the layout
+    // dialog, ownedGrid, addButton, deleteButton
+    Text ownedProjectsHeader = new Text("Owned");
+    Text partProjectsHeader = new Text("Participated");
+    ownedProjects.add(ownedProjectsHeader, dialog, ownedGrid, addButton, deleteButton);
+    participatedProjects.add(partProjectsHeader, participatedGrid);
+    SplitLayout splitLayout = new SplitLayout();
+    splitLayout.setSizeFull();
+    splitLayout.setOrientation(SplitLayout.Orientation.VERTICAL);
+
+    // set left and right sections
+    splitLayout.addToPrimary(ownedProjects);
+    splitLayout.addToSecondary(participatedProjects);        
+    splitLayout.setSplitterPosition(90);
+    
+    // set the split layout as the content of the navbar's AppLayout
+    mainLayout.add(splitLayout);
+    navbar.setContent(splitLayout);
     // Add it to the view
     add(navbar);
-    // Add some content below the navbar
-    navbar.setContent(mainLayout);
     
     // Update the grid with the current projects
     updateGrid();
+}
+
+private void generateGrid(Grid<Project> grid) {
+    Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
+    User user = userOptional.get();
+    // Add a column for the title
+    grid.addColumn(Project::getTitle).setHeader("Title").setKey("title");
+    grid.getColumnByKey("title").setSortable(true);
+
+    // Add a column for the creation date
+    grid.addColumn(new LocalDateTimeRenderer <>(Project::getCreatedAt, "yyyy-MM-dd HH:mm:ss", Locale.CANADA))
+        .setHeader("Created at")
+        .setKey("createdAt")
+        .setSortable(true); // Set the sortable property to true for the column
+    // Use a ComponentRenderer to create the Span component for each project
+    grid.addColumn(new ComponentRenderer<>(project -> {
+        // Create a new Span object and set its text to the project's status value
+        Span statusSpan = new Span(project.getStatus().getValue());
+        // Use a switch statement to add the badge theme variants to the span according to the status value
+        switch (project.getStatus()) {
+            case COMPLETED:
+                statusSpan.getElement().getThemeList().add("badge success small");
+                break;
+            case IN_PROGRESS:
+                statusSpan.getElement().getThemeList().add("badge primary small");
+                break;
+        }
+
+        return statusSpan;
+    })).setHeader("Status").setKey("status").setSortable(true);
+    // Use a ComponentRenderer to create the Span component for each project
+    grid.addColumn(new ComponentRenderer<>(project -> {
+
+        Select<CollaborationMode> collabModeSelect = new Select<>();
+
+        // set the items from the enum values
+        collabModeSelect.setItems(EnumSet.allOf(CollaborationMode.class));
+
+        // set the label generator to use the getValue() method
+        collabModeSelect.setItemLabelGenerator(CollaborationMode::getValue);
+        collabModeSelect.setValue(project.getCollaborationMode());
+        
+        collabModeSelect.addValueChangeListener(event -> {
+            // get the new selected value
+            CollaborationMode mode = event.getValue();
+        
+            // show a notification with the new value
+            Notification.show("Selected mode: " + mode.getValue());
+            // update
+            project.setCollaborationMode(mode);
+            projectsService.updateProject(project);
+        });
+
+        User projectOwner = project.getOwner();
+
+        Span collab = new Span();
+        TextArea selecteStatus = new TextArea();
+        selecteStatus.setReadOnly(true);
+        String statStr = collabModeSelect.getValue().getValue();
+        selecteStatus.setValue(statStr);
+        collab.add(selecteStatus);
+
+        // Return the Span object
+        if (!projectOwner.getUid().equals(user.getUid())){
+            return collab;
+        }
+        return collabModeSelect;
+        // Return the Span object
+    })).setHeader("Collaboration mode").setKey("collaborationMode").setSortable(true);
+    //
+    grid.addColumn(new ComponentRenderer<>(proj -> {
+        
+        // ---------------------------------
+        Set<Long> parts = projectsService.getAllParticipantIdsForProject(proj.getId());
+        System.out.println("participants size: " + parts.size());
+        
+        MultiSelectComboBox<Long> collabModeSelect = new MultiSelectComboBox<>();
+
+        // set the items from the enum values
+        collabModeSelect.setItems(friendshipService.getFriendsUids(user.getUid()));
+
+        // set the label generator to use the getValue() method
+        collabModeSelect.setItemLabelGenerator(k -> customUserDetailsService.getByUid(k).get().getUsername());
+        collabModeSelect.setValue(parts);
+
+        // Add a value change listener to the multiselectcombobox
+        collabModeSelect.addValueChangeListener(event -> {
+            // Get the old and new values of the multiselectcombobox
+            // Set<User> oldValue = event.getOldValue();
+            Set<Long> newValue = event.getValue();
+            projectsService.setParticipantsByLong(newValue, proj);
+        });
+
+        User projectOwner = proj.getOwner();
+
+        Span collab = new Span();
+        TextArea selecteStatus = new TextArea();
+        selecteStatus.setReadOnly(true);
+        Set<Long> values = collabModeSelect.getValue();
+        // Convert the set to a list using a stream
+        List<String> list = values.stream().map(x->x.toString()).collect(Collectors.toList());
+        // Join the list elements with commas using String.join()
+        String statStr = String.join(", ", list);
+        selecteStatus.setValue(statStr);
+        collab.add(selecteStatus);
+
+        // Return the Span object
+        if (!projectOwner.getUid().equals(user.getUid())){
+            return collab;
+        }
+        // Return the Span object
+        return collabModeSelect;
+    })).setHeader("Participants");
+    //
+    grid.addColumn(new ComponentRenderer<>(proj -> {
+
+        Set<Key> parts = proj.getKeys();
+        // Set<User> partsUsers = parts.stream()
+        // .map(p -> customUserDetailsService.getByUid(p))
+        // .filter(Optional::isPresent)
+        // .map(Optional::get)
+        // .collect(Collectors.toSet());
+
+        MultiSelectComboBox<Key> collabModeSelect = new MultiSelectComboBox<>();
+
+        // set the items from the enum values
+        collabModeSelect.setItems(Camelot.getAllKeys());
+
+        // set the label generator to use the getValue() method
+        collabModeSelect.setItemLabelGenerator(k -> k.name);
+        collabModeSelect.setValue(parts);
+        
+        // Get the selected users from the multiselectcombobox
+        Set<Key> selectedUsers = collabModeSelect.getValue();
+
+        // Do something with the selected users
+        // For example, print their usernames
+        for (Key key : selectedUsers) {
+            System.out.println(key.name);
+        }
+
+        // Add a value change listener to the multiselectcombobox
+        collabModeSelect.addValueChangeListener(event -> {
+            // Get the old and new values of the multiselectcombobox
+            // Set<User> oldValue = event.getOldValue();
+            Set<Key> newValue = event.getValue();
+
+            // add some users to the set
+            String keys = newValue.stream()
+            .map(key -> key.name) // convert each user to a string
+            .collect(Collectors.joining(", ")); // join them with commas
+            Notification.show("Selected keys: " + keys);
+            projectsService.setKeys(newValue, proj);
+        });
+
+        User projectOwner = proj.getOwner();
+
+        Span collab = new Span();
+        TextArea selecteStatus = new TextArea();
+        selecteStatus.setReadOnly(true);
+        Set<Key> values = collabModeSelect.getSelectedItems();
+        // Convert the set to a list using a stream
+        List<String> list = values.stream().map(x->x.name).collect(Collectors.toList());
+        // Join the list elements with commas using String.join()
+        String statStr = String.join(", ", list);
+        selecteStatus.setValue(statStr);
+        collab.add(selecteStatus);
+
+        // Return the Span object
+        if (!projectOwner.getUid().equals(user.getUid())){
+            return collab;
+        }
+        // Return the Span object
+        return collabModeSelect;
+    })).setHeader("Keys:");
+    // Use a ComponentRenderer to create the button component for each project 
+    grid.addColumn(new ComponentRenderer<>(project -> { 
+        // Create a new Button object and set its text, icon, theme and click listener 
+        Button button = new Button("Open", VaadinIcon.EXTERNAL_LINK.create()); 
+        button.addThemeVariants(ButtonVariant.LUMO_PRIMARY); 
+        button.addClickListener(e -> { 
+            // Open the project view in a new tab with the project id as a parameter 
+            // QueryParameters queryParameters = QueryParameters.simple(Map.of("query", searchValue));
+            //         ui.navigate("search", queryParameters);
+            UI.getCurrent().getPage().open("project/" + project.getId(), "_blank"); }); 
+            // Wrap the button object in a Div component and return it 
+            Div div = new Div(button); 
+            return div; 
+    })).setHeader("Open").setKey("open");
 }
 
 // A method to update the grid with the latest projects from the database
@@ -419,22 +455,20 @@ private void updateGrid() {
     User user = userOptional.get();
 
     List<Project> projects = new ArrayList<>();
+    List<Project> participatedProjects = new ArrayList<>();
     
     if (userOptional.isPresent()){
         // get the projects you own
         projects = projectsService.getAllByOwner(user);
+        participatedProjects = projectsService.getAllByParticipation(user);
         // as well as the ones you don't own but  participated in
     
         System.out.println("projects size: " + projects.size());
-    
-        // Get the list of projects owned by the user from the service
-        // List<Project> projects = user.getOwnedProjects();
-        // List<Project> projects = projectsService.getAllByOwner(user.getUid());
+        System.out.println("participatedProjects size:" + participatedProjects.size());
     
         // Set the grid items to the project list
-        grid.setItems(projects);
+        ownedGrid.setItems(projects);
+        participatedGrid.setItems(participatedProjects);
     }
 }
 }
-
-
