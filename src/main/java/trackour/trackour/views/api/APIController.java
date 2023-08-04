@@ -18,13 +18,14 @@ import se.michaelthelin.spotify.model_objects.specification.Paging;
 import se.michaelthelin.spotify.model_objects.specification.Recommendations;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
-import se.michaelthelin.spotify.requests.authorization.client_credentials.ClientCredentialsRequest;
+// import se.michaelthelin.spotify.requests.authorization.client_credentials.ClientCredentialsRequest;
 import se.michaelthelin.spotify.requests.data.albums.GetAlbumRequest;
 import se.michaelthelin.spotify.requests.data.artists.GetArtistRequest;
 import se.michaelthelin.spotify.requests.data.browse.GetRecommendationsRequest;
 import se.michaelthelin.spotify.requests.data.search.simplified.SearchTracksRequest;
 import se.michaelthelin.spotify.requests.data.tracks.GetAudioFeaturesForTrackRequest;
 import se.michaelthelin.spotify.requests.data.tracks.GetTrackRequest;
+import trackour.trackour.spotify.SpotifySessionService;
 
 // Class to control the Spotify API and access its endpoints by using the Spotify Web API Java package
 // Each method is public and static to easily use them throughout the application.
@@ -32,20 +33,21 @@ import se.michaelthelin.spotify.requests.data.tracks.GetTrackRequest;
 public class APIController {
 
     // create a SpotifyApi Builder object and set the Client ID and Client Secret
-    private static final SpotifyApi spotifyAPI = new SpotifyApi.Builder()
-        .setClientId(ClientKeys.CLIENT_ID.getKey())
-        .setClientSecret(ClientKeys.CLIENT_SECRET.getKey())
-        .build();
+    // private static final SpotifyApi spotifyAPI = new SpotifyApi.Builder()
+    //     .setClientId(ClientKeys.CLIENT_ID.getKey())
+    //     .setClientSecret(ClientKeys.CLIENT_SECRET.getKey())
+    //     .build();
+    public static final SpotifyApi spotifyAPI = SpotifySessionService.getSpotifyApi();
 
     // create a ClientCredentialsRequest object which allows access to access tokens
-    private static final ClientCredentialsRequest clientCredentialsRequest = spotifyAPI.clientCredentials()
-        .build();
+    // private static final ClientCredentialsRequest clientCredentialsRequest = spotifyAPI.clientCredentials()
+    //     .build();
+    public static final ClientCredentials clientCredentials = SpotifySessionService.getClientCredentials();
 
     // Get the acousticness of the track as a value between 0.0 and 1.0. 
     // The higher the value, the higher the chance the track is acoustic.
     public static float getAcousticness(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -67,8 +69,6 @@ public class APIController {
     // The danceability depends on factors like tempo and rhythm stability. Higher is better.
     public static float getDanceability(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
-
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
             final GetAudioFeaturesForTrackRequest getAudioFeaturesForTrackRequest = spotifyAPI
@@ -90,7 +90,7 @@ public class APIController {
     // Fast and loud tracks feel more energetic than slow and quiet tracks.
     public static float getEnergy(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -112,7 +112,7 @@ public class APIController {
     // The higher the value, the higher the chance the track contains no vocals.
     public static float getInstrumentalness(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -134,7 +134,7 @@ public class APIController {
     // E.g. 0 = C, 1 = C♯/D♭, 2 = D, and so on. If no key was detected, the value is -1.
     public static int getKey(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -157,7 +157,7 @@ public class APIController {
     // The higher the value, the higher the chance the track was performed live.
     public static float getLiveness(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -179,7 +179,7 @@ public class APIController {
     // These values have mostly a range between -60 and 0 decibels.
     public static float getLoudness(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -201,7 +201,7 @@ public class APIController {
     // Major is represented by 1 and minor is 0.
     public static int getMode(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -227,7 +227,7 @@ public class APIController {
     // Tempo is the speed or pace of a given piece, derived from the average beat duration.
     public static float getTempo(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -249,7 +249,7 @@ public class APIController {
     // Example: A Viennese waltz has a three-quarters beat, so this method would return the value 3 in this case.
     public static int getTimeSignature(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -271,7 +271,7 @@ public class APIController {
     // A track with a high valence sounds more positive (happy, cheerful, euphoric) than a track with a low valence (sad, depressed, angry).
     public static float getValence(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -292,7 +292,7 @@ public class APIController {
     // Get the name of the track by the Spotify Track ID
     public static String getTrackName(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -311,7 +311,7 @@ public class APIController {
     // Get the Album of the specified Track by the Spotify Track ID
     public static AlbumSimplified getAlbum(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -331,7 +331,7 @@ public class APIController {
     // Get the Artist name by the Spotify Artist ID
     public static String getArtistName(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -351,7 +351,7 @@ public class APIController {
     // Get the name of the album using the Spotify Album ID
     public static String getAlbumName(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -370,7 +370,7 @@ public class APIController {
     // Get an array of Album Cover images in different sizes by the Spotify Album ID
     public static Image[] getAlbumImage(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -390,7 +390,7 @@ public class APIController {
     // Get an array of Artists from the Spotify Track ID
     public static ArtistSimplified[] getArtistFromTrack(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -410,7 +410,7 @@ public class APIController {
     // Get an Album from the Spotify Track ID
     public static AlbumSimplified getAlbumFromTrack(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -432,7 +432,7 @@ public class APIController {
                                                         int key, float loudness, int mode, float tempo, int timeSignature, float valence) {
 
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -463,7 +463,7 @@ public class APIController {
     // Search tracks based on a String and how many results you want returned
     public static Paging<Track> searchTracks(String title, int num) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 
@@ -485,7 +485,7 @@ public class APIController {
     // Get the Spotify URL using the Track ID
     public static String spotifyURL(String id) {
         try {
-            final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+            
 
             spotifyAPI.setAccessToken(clientCredentials.getAccessToken());
 

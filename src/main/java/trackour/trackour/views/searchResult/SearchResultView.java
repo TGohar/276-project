@@ -1,5 +1,6 @@
 package trackour.trackour.views.searchResult;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +39,7 @@ import trackour.trackour.spotify.SpotifySessionService;
 import trackour.trackour.views.api.APIController;
 import trackour.trackour.views.components.NavBar;
 import trackour.trackour.views.components.SimpleSearchField;
+import trackour.trackour.views.components.camelotwheel.Key;
 import trackour.trackour.views.login.LoginPage;
 
 @Route("searchResult")
@@ -196,17 +198,25 @@ public class SearchResultView extends VerticalLayout implements BeforeEnterObser
                     dialogLayout.add(trackImage);
                     dialogLayout.add(dialogHeader);
                     dialogLayout.add(new H3("Audio Features"));
+                    // List<Key> possibleKeys = new ArrayList<>();
+                    String keyString = "NULL";
+                    for (Key k : Key.values()) {
+                        if (k.spotifyKey == key && mode == k.spotifyMode){
+                            keyString = k.name;
+                        }
+                    }
+                    dialogLayout.add(new H5("Key: " + keyString));
+                    String modeString = mode == 1 ? "Major" : "Minor";
+                    dialogLayout.add(new H5("Mode: " + modeString));
+                    dialogLayout.add(new H5("Tempo: " + tempo));
                     dialogLayout.add(new H5("Acousticness: " + acousticness));
                     dialogLayout.add(new H5("Danceability: " + danceability));
                     dialogLayout.add(new H5("Energy: " + energy));
                     dialogLayout.add(new H5("Instrumentalness: " + instrumentalness));
                     dialogLayout.add(new H5("Liveness: " + liveness));
                     dialogLayout.add(new H5("Valence: " + valence));
-                    dialogLayout.add(new H5("Tempo: " + tempo));
                     dialogLayout.add(new H5("Time Signature: " + timeSignature));
                     dialogLayout.add(new H5("Loudness: " + loudness));
-                    dialogLayout.add(new H5("Key: " + key));
-                    dialogLayout.add(new H5("Mode: " + mode));
                     dialogLayout.add(new H5("Popularity: " + track.getPopularity()));
                     dialogLayout.add(new H5("Duration: " + track.getDurationMs() + " ms"));
 
