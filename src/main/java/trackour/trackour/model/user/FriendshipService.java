@@ -138,21 +138,24 @@ public FriendRequestEnum sendFriendRequest(User user, User friend) {
 }
 
   public void acceptFriendRequest(User user, User friend) {
+    
+    // check if the friendship already exists
     FriendshipId id = new FriendshipId(user.getUid(), friend.getUid());
-    FriendshipId id2 = new FriendshipId(friend.getUid(), user.getUid());
-    
-    Optional<Friendship> friendship = friendshipRepository.findById(id);
-    
-    Optional<Friendship> friendship2 = friendshipRepository.findById(id2);
-    
-    if (friendship.isPresent() || friendship2.isPresent()) {
-      if (friendship.isPresent()){
-        friendship.get().setStatus(Friendship.Status.ACCEPTED);
-        friendshipRepository.save(friendship.get());
-      }
-      if (friendship2.isPresent()){
-        friendship2.get().setStatus(Friendship.Status.ACCEPTED);
-        friendshipRepository.save(friendship2.get());
+    Optional<Friendship> existingFriendship = friendshipRepository.findById(id);
+    if (existingFriendship.isPresent()) {
+      Friendship requestedFriendship = existingFriendship.get();
+      System.out.println("requestedFriendship: " + requestedFriendship.getId().getFriend_id() + " sent to " + requestedFriendship.getId().getUser_id() + " " + requestedFriendship.getStatus().name());
+      // check if friendship is pending or accepted
+      Friendship.Status status = existingFriendship.get().getStatus();
+      if (status == Friendship.Status.PENDING) {
+        // request exists and is PENDING
+        // then accept
+        requestedFriendship.setStatus(Friendship.Status.ACCEPTED);
+        FriendshipId idAccept = new FriendshipId(friend.getUid(), user.getUid());
+        Friendship acceptedFriendship = new Friendship(idAccept, friend, user, Friendship.Status.ACCEPTED);
+        System.out.println("acceptedFriendship: " + acceptedFriendship.getId().getUser_id() + " sent to " + acceptedFriendship.getId().getFriend_id() + " " + acceptedFriendship.getStatus().name());
+        friendshipRepository.save(requestedFriendship);
+        friendshipRepository.save(acceptedFriendship);
       }
     }
     System.out.println(ADDING_FRIEND_MESSAGE);

@@ -257,11 +257,11 @@ public class ProjectsService {
         if (proj == null){
             return bpm;
         }
-        List<Integer> bpmValue = proj.getBpm().stream().map(Integer::parseInt).collect(Collectors.toList());
-        if (bpmValue.get(0) == null){
+        Integer bpmValue = proj.getBpm();
+        if (bpmValue == null){
             return bpm;
         }
-        bpm = bpmValue.get(0);
+        bpm = bpmValue;
         return bpm;
     }
 

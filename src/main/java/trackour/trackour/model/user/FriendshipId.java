@@ -16,8 +16,16 @@ public class FriendshipId implements Serializable {
 
   // parameterized constructor
   public FriendshipId(Long user_id, Long friend_id) {
-    this.user_id = user_id;
-    this.friend_id = friend_id;
+      this.user_id = user_id;
+      this.friend_id = friend_id;
+    // if (user_id < friend_id) {
+    //   this.user_id = user_id;
+    //   this.friend_id = friend_id;
+    // }
+    // else {
+    //   this.user_id = friend_id;
+    //   this.friend_id = user_id;
+    // }
   }
 
   // getters and setters

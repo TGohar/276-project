@@ -66,7 +66,7 @@ public class Project {
     private Set<Key> keys;
 
     @Column(name = "bpm")
-    private Set<String> bpm;
+    private Integer bpm;
 
     @OneToMany(mappedBy = "project", fetch = FetchType.EAGER)
     private List<Task> tasks;
@@ -89,7 +89,7 @@ public class Project {
         // Initialize the collections as empty sets
         this.participants = new HashSet<>();
         this.keys = new HashSet<>();
-        this.bpm = new HashSet<>();
+        this.bpm = 80;
     }
 
     public List<Task> getTasks() {
@@ -112,11 +112,11 @@ public class Project {
         this.keys = keys;
     }
     
-    public Set<String> getBpm() {
+    public Integer getBpm() {
         return bpm;
     }
     
-    public void setBpm(Set<String> bpm) {
+    public void setBpm(Integer bpm) {
         this.bpm = bpm;
     }
   

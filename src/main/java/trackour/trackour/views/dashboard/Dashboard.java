@@ -452,9 +452,7 @@ private void generateGrid(Grid<Project> grid) {
             adultsField.addValueChangeListener(ev -> {
                 // projectsService
                 Integer newValue = ev.getValue();
-                Set<String> setOfBpm = new HashSet<>();
-                setOfBpm.add(newValue.toString());
-                project.setBpm(setOfBpm);
+                project.setBpm(newValue);
                 projectsService.updateProject(project);
             });
             return adultsField; 
