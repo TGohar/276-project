@@ -279,6 +279,7 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
             resultsDialog.open();
         });
 
+        FlexLayout formFlexLayoutContainer = new FlexLayout();
         formFlexLayoutContainer.setSizeFull();
         FormLayout formLayout = new FormLayout();
         formLayout.add(genre, acousticness, danceability, energy, instrumentalness, key, 
@@ -287,7 +288,8 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
             new ResponsiveStep("0", 1),
             new ResponsiveStep("300px", 3)
         );
-        formLayout.setWidth("900px");
+        // formLayout.setWidth("900px");
+        formFlexLayoutContainer.add(formLayout);
         
         // main container contining cards area and button
         VerticalLayout verticalLayout = new VerticalLayout();
@@ -295,7 +297,7 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
         placeHolderTextContainer.add(new H3("Advanced Search"));
 
         HorizontalLayout main = new HorizontalLayout();
-        main.add(formLayout);
+        main.add(formFlexLayoutContainer);
 
         verticalLayout.add(placeHolderTextContainer, main);
         verticalLayout.setAlignItems(Alignment.CENTER);

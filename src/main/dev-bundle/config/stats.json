@@ -209,7 +209,6 @@
   "@vaadin/scroller/theme/lumo/vaadin-scroller.js",
   "@vaadin/select/theme/lumo/vaadin-select.js",
   "@vaadin/side-nav/theme/lumo/vaadin-side-nav-item.js",
-  "@vaadin/side-nav/theme/lumo/vaadin-side-nav.js",
   "@vaadin/split-layout/theme/lumo/vaadin-split-layout.js",
   "@vaadin/tabs/theme/lumo/vaadin-tab.js",
   "@vaadin/tabs/theme/lumo/vaadin-tabs.js",
@@ -230,6 +229,7 @@
   "@vaadin/vertical-layout/theme/lumo/vaadin-vertical-layout.js",
   "@vaadin/virtual-list/theme/lumo/vaadin-virtual-list.js",
   "Frontend/generated/jar-resources/buttonFunctions.js",
+  "Frontend/generated/jar-resources/circular-progress-bar.ts",
   "Frontend/generated/jar-resources/comboBoxConnector.js",
   "Frontend/generated/jar-resources/contextMenuConnector.js",
   "Frontend/generated/jar-resources/contextMenuTargetConnector.js",
@@ -253,6 +253,7 @@
  "frontendHashes": {
   "styles/my-block__responsive-layout.css": "c6530703fb5e9a5e11065ea7b46e1237da44a8078cba1062e871e2558666055d",
   "buttonFunctions.js": "c852123f9b2c44eb75e555119d3e05a7dbe78b91d0ab616feb9df1654474707d",
+  "circular-progress-bar.ts": "a7a67845f8467835c206347272520f5e940d1bd62332f7650a55896c3e0432a7",
   "comboBoxConnector.js": "1d004c3dae9c76f8bcc68678abe1b8f7bdc8b456f5c9c4c7f190df8ed25d66cd",
   "contextMenuConnector.js": "25a200f8086461635ddd92316ebeb5a868294c8650a190efbae120edb1088f4f",
   "contextMenuTargetConnector.js": "870f67643988dd5618c247bd3c28d843f70aa026ee89f44c3c7556b5e70856af",
@@ -276,12 +277,12 @@
   "trackour": "{\n  \"lumoImports\" : [ \"typography\", \"color\", \"spacing\", \"badge\", \"utility\" ]\n}"
  },
  "entryScripts": [
-  "VAADIN/build/indexhtml-a940bf20.js"
+  "VAADIN/build/indexhtml-e8f45a85.js"
  ],
  "webComponents": [],
  "cvdlModules": {},
  "packageJsonHash": "6152e091c37e8c014ff558cc366885e3f758e38311ab30a4104ddb0f904e9c84",
  "indexHtmlGenerated": [
-  "  <script type=\"module\" crossorigin src=\"./VAADIN/build/indexhtml-a940bf20.js\"></script>"
+  "  <script type=\"module\" crossorigin src=\"./VAADIN/build/indexhtml-e8f45a85.js\"></script>"
  ]
 }
