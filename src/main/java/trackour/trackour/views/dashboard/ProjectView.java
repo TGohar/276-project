@@ -5,11 +5,13 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.addons.tatu.CircularProgressBar;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -27,7 +29,6 @@ import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.data.renderer.Renderer;
@@ -88,6 +89,10 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
   private Binder<Task> binder;
   private Binder<Task> editBinder;
 
+  // private final UserInfo currentUserInfo;
+  private final User currentUser;
+  // CollaborationAvatarGroup avatarGroup;
+
   // Use @Autowired on the constructor parameters instead of the fields
   @Autowired
   public ProjectView(
@@ -102,6 +107,9 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
       this.friendshipService = friendshipService;
       this.projectsService = projectsService;
       this.taskService = taskService;
+      Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
+      currentUser = userOptional.get();
+
       grid = new Grid<>();
       progressGrid = new Grid<>();
       titleField = new TextField("Title");
@@ -231,12 +239,8 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
     }
 
     private boolean userIsAuthorizedToAccessProject(Long projectId) {
-      Optional<User> userOptional = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername());
-      if (userOptional.isPresent()) {
-        User user = userOptional.get();
-        if (projectsService.isValidParticipant(user.getUid(), projectId)){
-          return true;
-        }
+      if (projectsService.isValidParticipant(currentUser.getUid(), projectId)){
+        return true;
       }
       return false;
     }
@@ -256,9 +260,6 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
         grid.addColumn(new ComponentRenderer<>(tsk -> {
 
             Select<TaskStatus> collabModeSelect = new Select<>();
-            // bind collabModeSelect to editBinder
-            editBinder.forField(collabModeSelect)
-            .bind(Task::getStatus, Task::setStatus);
 
             // set the items from the enum values
             collabModeSelect.setItems(EnumSet.allOf(TaskStatus.class));
@@ -318,6 +319,9 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
           titleEditor.setValue(task.getTitle());
           titleEditor.setWidthFull();
 
+          // Set the bean instance to edit
+          editBinder.setBean(task);
+
           editBinder.forField(editor)
           .bind(Task::getDescription, Task::setDescription);
 
@@ -326,35 +330,30 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
           .withValidator(new StringLengthValidator("Please enter a title", 1, null))
           .bind(Task::getTitle, Task::setTitle);
           
+          
           // set proj description to the ediotor's value and save/update on value change
           // proj
           Button saveEditButton = new Button("Save Edit", ev -> {
-            System.out.println("new desc:" + editor.getValue());
-            System.out.println("new title:" + editor.getValue());
-
-            if (editBinder.validate().isOk()) {
-              // loads the bean that binds the fields to the Task obj 
-              Task editedTask = editBinder.getBean();
-              try {
-                // loads/writes the edit data from the fields to the bean
-                editBinder.writeBean(editedTask);
-
-                // save Task bean/obj to db
-                taskService.updateTask(editedTask);
-                
-                // Update the grid with the latest project list
-                updateTasksGrid(projectId);
-                updateProgressGrid(projectId);
-                
-              } catch (ValidationException e) {
-                e.printStackTrace();
-              }
-
+            
+            if (binder.validate().isOk()) {
+              System.out.println("new desc:" + task.getDescription());
+              System.out.println("new title:" + task.getTitle());
+              System.out.println("new status:" + task.getStatus());
+              // Get the updated bean from the binder
+              Task taskEdit = editBinder.getBean();
+              
+              // Save the bean to the database
+              taskService.updateTask(taskEdit);
+              
+              // Update the grid with the latest project list
+              updateTasksGrid(projectId);
+              updateProgressGrid(projectId);
             }
           });
           editingSection.add(titleEditor, editor, saveEditButton);  
           return editingSection;      
       }));
+
   
         // Add any other features you think it needs
         // For example, you can add a filter field to search by title
@@ -404,11 +403,11 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
         Button addButton = new Button("Add new task");
         addButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         addButton.addClickListener(e -> {
-          // Create a new task instance with the project id
-          Task task = new Task(project);
-          // Set the bean instance to edit
-          binder.setBean(task);
           // taskService.createNewTask(task);
+          // Create a new task instance with the project id
+          Task newtask = new Task(project);
+          // Set the bean instance to edit
+          binder.setBean(newtask);
           // Open the dialog
           dialog.open();
         });
@@ -418,7 +417,6 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
           if (binder.validate().isOk()) {
             Task task = binder.getBean();
             taskService.createNewTask(task);
-
             // translate binder's bean to editBinder
             editBinder.setBean(task);
             

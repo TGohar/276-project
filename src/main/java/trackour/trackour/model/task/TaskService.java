@@ -93,4 +93,14 @@ public class TaskService {
             e.printStackTrace();
         }
     }
+
+	public void deleteTasksByProject(Project project) {
+        for (Task task : getAllTasks()) {
+            if (task != null){
+                if (task.getProject().getId().equals(project.getId())) {
+                    deleteTask(task);
+                }
+            }
+        }
+	}
 }

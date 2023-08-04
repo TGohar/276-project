@@ -40,6 +40,7 @@ import jakarta.annotation.security.PermitAll;
 import trackour.trackour.model.project.CollaborationMode;
 import trackour.trackour.model.project.Project;
 import trackour.trackour.model.project.ProjectsService;
+import trackour.trackour.model.task.TaskService;
 import trackour.trackour.model.user.CustomUserDetailsService;
 import trackour.trackour.model.user.FriendshipService;
 import trackour.trackour.model.user.User;
@@ -71,6 +72,9 @@ public class Dashboard extends MyBlockResponsiveLayout{
     @Autowired
     FriendshipService friendshipService;
 
+    @Autowired
+    TaskService taskService;
+
     // Declare a grid to display the projects
     private Grid<Project> ownedGrid;
     private Grid<Project> participatedGrid;
@@ -86,7 +90,8 @@ public Dashboard(
     SecurityViewService securityViewService, 
     CustomUserDetailsService customUserDetailsService, 
     ProjectsService projectsService,
-    FriendshipService friendshipService
+    FriendshipService friendshipService,
+    TaskService taskService
     ) {
     this.customUserDetailsService = customUserDetailsService;
     this.securityViewService = securityViewService;
@@ -124,6 +129,7 @@ public Dashboard(
         // Iterate over the set and delete each project from the database using the service
         for (Project project : selectedProjects) {
             System.out.println("delete proj " + project.getId());
+            taskService.deleteTasksByProject(project);
             projectsService.deleteProject(project);
         }
         // Update the grid with the latest project list
