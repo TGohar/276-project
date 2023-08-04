@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.vaadin.flow.component.avatar.Avatar;
@@ -27,10 +28,11 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 
 import jakarta.annotation.security.PermitAll;
-import trackour.trackour.model.CustomUserDetailsService;
-import trackour.trackour.model.Project;
-import trackour.trackour.model.ProjectsService;
-import trackour.trackour.model.User;
+import trackour.trackour.model.project.Project;
+import trackour.trackour.model.project.ProjectsService;
+import trackour.trackour.model.user.CustomUserDetailsService;
+import trackour.trackour.model.user.FriendshipService;
+import trackour.trackour.model.user.User;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.components.NavBar;
 import trackour.trackour.views.components.responsive.MyBlockResponsiveLayout;
@@ -45,18 +47,33 @@ private final String emailValidationRegex = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Z
   + "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";;
 
 NavBar navBar;
+
+@Autowired
 CustomUserDetailsService customUserDetailsService;
+
+@Autowired
 SecurityViewService securityViewService;
+
+@Autowired
 ProjectsService projectsService;
+
+@Autowired
+FriendshipService friendshipService;
+
 User user;
 
-public ProfilePageView(CustomUserDetailsService customUserDetailsService, ProjectsService projectsService,
-                       SecurityViewService securityViewService) {
+public ProfilePageView(
+  CustomUserDetailsService customUserDetailsService, 
+  ProjectsService projectsService,
+  SecurityViewService securityViewService,
+  FriendshipService friendshipService
+  ) {
     navBar = new NavBar(customUserDetailsService, securityViewService);
 
     this.customUserDetailsService = customUserDetailsService;
     this.projectsService = projectsService;
     this.securityViewService = securityViewService;
+    this.friendshipService = friendshipService;
 
     this.user = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername()).get();
 
@@ -70,6 +87,14 @@ public ProfilePageView(CustomUserDetailsService customUserDetailsService, Projec
     navBar.setContent(mainLayout);
     add(navBar);
 }
+
+// private List<User> findFriends(User user) {
+//   return friendshipService.getFriends(user.getUid());
+// }
+
+// private List<User> findRequests(User user) {
+//   return friendshipService.getFriendRequests(user.getUid());
+// }
 
 private VerticalLayout createMainLayout() {
     VerticalLayout mainLayout = new VerticalLayout();
@@ -358,21 +383,21 @@ private VerticalLayout createInfoLayout() {
     .bind(User::getEmail,  User::setEmail);
   }
 
-  private boolean isUserNameUnique(String username) {
-    // is already present && then false
-    System.out.println("isPresent(): "
-     + username 
-     + " : " 
-     + customUserDetailsService.getByUsername(username).isPresent());
-    return !(customUserDetailsService.getByUsername(username).isPresent() && user.getUsername() != username);
-  }
+  // private boolean isUserNameUnique(String username) {
+  //   // is already present && then false
+  //   System.out.println("isPresent(): "
+  //    + username 
+  //    + " : " 
+  //    + customUserDetailsService.getByUsername(username).isPresent());
+  //   return !(customUserDetailsService.getByUsername(username).isPresent() && user.getUsername() != username);
+  // }
 
-  private boolean isValidUsername(String username) {
-    if (username.isEmpty()) return false;
-    // Perform validation logic and return true or false based on the result
-    // e.g., check if the username meets the required criteria
-    return !username.isEmpty() && username.length() >= 3;
-  }
+  // private boolean isValidUsername(String username) {
+  //   if (username.isEmpty()) return false;
+  //   // Perform validation logic and return true or false based on the result
+  //   // e.g., check if the username meets the required criteria
+  //   return !username.isEmpty() && username.length() >= 3;
+  // }
 
   public boolean isEmailAlreadyPresent(String emailValue) {
     return !(customUserDetailsService.getByEmail(emailValue).isPresent() && user.getEmail() != emailValue);
@@ -408,49 +433,52 @@ private VerticalLayout createInfoLayout() {
   //Delete Account
   private void deleteAccount() {
     //remove from friends' friends lists
-    List<Long> friends = user.getFriends();
-    if(friends != null) {
-      for(Long friendID : friends) {
-        if (customUserDetailsService.getByUid(friendID).isPresent()){
-          User friend = customUserDetailsService.getByUid(friendID).get();
-          List<Long> friendFriends = friend.getFriends();
-          friendFriends.remove(user.getUid());
-          friend.setFriends(friendFriends);
-          customUserDetailsService.update(friend);
-        }
-      }
-    }
-
-    //remove user from projects, delete any non-shared projects
-    Set<String> projects = user.getProjects();
-    if(projects != null) {
-      for(String projectID : projects) {
-        if(projectsService.findProjectById(projectID).isPresent()){
-          Project project = projectsService.findProjectById(projectID).get();
-          List<Long> projectParticipants = project.getParticipants();
-
+    // List<User> friends = findFriends(user);
+    // if(friends != null) {
+      //   for(Long friendID : friends) {
+        //     if (customUserDetailsService.getByUid(friendID).isPresent()){
+          //       User friend = customUserDetailsService.getByUid(friendID).get();
+          //       List<Long> friendFriends = friend.getFriends();
+          //       friendFriends.remove(user.getUid());
+          //       friend.setFriends(friendFriends);
+          //       customUserDetailsService.update(friend);
+          //     }
+          //   }
+          // }
+          
+          //remove user from projects, delete any non-shared projects
+          List<Project> projects = projectsService.getAllByOwner(user);
+          if(projects != null) {
+            for(Project project : projects) {
+              Long projectID = project.getId();
+              if(projectsService.findProjectById(projectID).isPresent()){
+                Set<Long> projectParticipants = projectsService.getAllParticipantIdsForProject(projectID);
+                
           //check if owner
-          if(project.getOwner() == user.getUid()) {
-            if(projectParticipants == null || projectParticipants.isEmpty()) {
-              projectsService.deleteTask(project);
+          User projectOwner = projectsService.getProjectOwner(projectID);
+          if (projectOwner != null) {
+            if(projectOwner.getUid() == user.getUid()) {
+              if(projectParticipants == null || projectParticipants.isEmpty()) {
+                projectsService.deleteProject(project);
+              } else {
+                project.setParticipants(projectParticipants);
+                
+                projectsService.updateProject(project);
+              }
             } else {
-              project.setOwner(projectParticipants.get(0));
-              projectParticipants.remove(0);
+              //remove from participants list
+              projectParticipants.remove(user.getUid());
               project.setParticipants(projectParticipants);
-
               projectsService.updateProject(project);
             }
-          } else {
-            //remove from participants list
-            projectParticipants.remove(user.getUid());
-            project.setParticipants(projectParticipants);
           }
         }
       }
     }
-
+    
     //delete account
-    customUserDetailsService.delete(user.getUid());
+    // customUserDetailsService.delete(user);
+    customUserDetailsService.deleteUser(user.getUid());
     securityViewService.logOut();
     this.getUI().get().getPage().setLocation("");
   }

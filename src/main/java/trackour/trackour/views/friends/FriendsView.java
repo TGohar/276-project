@@ -1,8 +1,10 @@
 package trackour.trackour.views.friends;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -19,8 +21,10 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 
 import jakarta.annotation.security.RolesAllowed;
-import trackour.trackour.model.CustomUserDetailsService;
-import trackour.trackour.model.User;
+import trackour.trackour.model.user.CustomUserDetailsService;
+import trackour.trackour.model.user.FriendRequestEnum;
+import trackour.trackour.model.user.FriendshipService;
+import trackour.trackour.model.user.User;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.components.NavBar;
 
@@ -30,9 +34,15 @@ import trackour.trackour.views.components.NavBar;
 @PreserveOnRefresh
 @RolesAllowed({"ADMIN", "USER"})
 public class FriendsView extends VerticalLayout {
-    SecurityViewService securityViewHandler;
-    SecurityViewService securityService;
+
+    @Autowired
+    SecurityViewService securityViewService;
+
+    @Autowired
     CustomUserDetailsService customUserDetailsService;
+
+    @Autowired
+    FriendshipService friendshipService;
 
     Grid<User> currentFriendsGrid = new Grid<>(User.class, false);
     Grid<User> friendRequestGrid = new Grid<>(User.class, false);
@@ -40,19 +50,23 @@ public class FriendsView extends VerticalLayout {
     User currentUser;
     User friend;
 
-    public FriendsView(SecurityViewService securityViewHandler, SecurityViewService securityService,
-        CustomUserDetailsService customUserDetailsService) {
+    public FriendsView(
+        SecurityViewService securityViewService,
+        CustomUserDetailsService customUserDetailsService,
+        FriendshipService friendshipService
+        ) {
 
-            this.securityViewHandler = securityViewHandler;
-            this.securityService = securityService;
+            this.securityViewService = securityViewService;
             this.customUserDetailsService = customUserDetailsService;
+            this.friendshipService = friendshipService;
 
-            this.currentUser = customUserDetailsService.getByUsername(securityService.getAuthenticatedRequestSession().getUsername()).get();
+            this.currentUser = customUserDetailsService.getByUsername(securityViewService.getAuthenticatedRequestSession().getUsername()).get();
+            
+            Span confirmationText = new Span("");
 
             H3 friendRequestTitle = new H3("Add a new friend");
             TextField friendRequestInput = new TextField("Enter Username");
-
-            Span confirmationText = new Span("");
+            friendRequestInput.addKeyUpListener(Key.ENTER, ev -> sendFriendRequest(friendRequestInput.getValue(), confirmationText));
 
             Button friendRequestButton = new Button("Submit", e -> sendFriendRequest(friendRequestInput.getValue(), confirmationText));
             friendRequestButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -110,7 +124,7 @@ public class FriendsView extends VerticalLayout {
             layout.add(friendRequestLayout, currentFriendsLayout);
 
             // Create a responsive navbar component
-            NavBar navbar = new NavBar(customUserDetailsService, securityViewHandler);
+            NavBar navbar = new NavBar(customUserDetailsService, securityViewService);
             // Add some content below the navbar
             navbar.setContent(layout);
             // Add it to the view
@@ -131,12 +145,30 @@ public class FriendsView extends VerticalLayout {
 
             currentUser = customUserDetailsService.getByUsername(securityService.getAuthenticatedUser().getUsername()).get();
             */
-            if(currentUser.getFriendRequests() != null) {
-                System.out.println("Friend requests: " + Arrays.toString(currentUser.getFriendRequests().toArray()));
+            if(findRequests(currentUser) != null) {
+                System.out.println("Friend requests: " + String.join(", ", friendshipService.getFriendRequestsUsernames(currentUser.getUid())));
             }
-            if(currentUser.getFriends() != null) {
-                System.out.println("Friends: " + Arrays.toString(currentUser.getFriends().toArray()));
+            if(findFriends(currentUser) != null) {
+                System.out.println("Friends: " + String.join(", ", friendshipService.getFriendsUsernames(currentUser.getUid())));
             }
+    }
+
+    private List<User> findFriends(User user) {
+        return friendshipService.getFriends(user.getUid());
+    }
+
+    private List<User> findRequests(User user) {
+        return friendshipService.getFriendRequests(user.getUid());
+    }
+
+    private void refreshRequestGrid() {
+        this.friendRequestGrid.setItems(findRequests(currentUser));
+        friendRequestGrid.getDataProvider().refreshAll();
+    }
+
+    private void refreshFriendsGrid() {
+        this.currentFriendsGrid.setItems(findFriends(currentUser));
+        currentFriendsGrid.getDataProvider().refreshAll();
     }
 
     //friend request grid
@@ -144,10 +176,10 @@ public class FriendsView extends VerticalLayout {
         this.friendRequestGrid.addClassNames("friend-requests-grid");
         // this.friendRequestGrid.setSizeFull();
         this.friendRequestGrid.addColumn(User::getUsername).setHeader("Username");
-        this.friendRequestGrid.addComponentColumn((ev) -> addFriendButton(ev));
-        this.friendRequestGrid.addComponentColumn((ev) -> deleteFriendRequestButton(ev));
+        this.friendRequestGrid.addComponentColumn((ev) -> accept(ev));
+        this.friendRequestGrid.addComponentColumn((ev) -> reject(ev));
         this.friendRequestGrid.getColumns().forEach(col -> col.setAutoWidth(true));
-        this.friendRequestGrid.setItems(findRequests());
+        refreshRequestGrid();
     }
 
     //friends grid
@@ -155,141 +187,81 @@ public class FriendsView extends VerticalLayout {
         this.currentFriendsGrid.addClassNames("friends-grid");
         // this.currentFriendsGrid.setSizeFull();
         this.currentFriendsGrid.addColumn(User::getUsername).setHeader("Username");
-        this.currentFriendsGrid.addComponentColumn((ev) -> deleteFriendButton(ev));
+        this.currentFriendsGrid.addComponentColumn((ev) -> unfriend(ev));
         this.currentFriendsGrid.getColumns().forEach(col -> col.setAutoWidth(true));
-        this.currentFriendsGrid.setItems(findFriends());
+        refreshFriendsGrid();
     }
 
     private void sendFriendRequest(String username, Span text) {
-        //Check if friend user exists
-        if (!customUserDetailsService.getByUsername(username).isPresent()) {
-            text.setText("Unable to find " + username + "!");
-            return;
+
+        Optional<User> optionFriend = customUserDetailsService.getByUsername(username); 
+        if(optionFriend.isPresent()) {
+            this.friend = optionFriend.get();
+            FriendRequestEnum friendRequestSubmittedRespone = friendshipService.sendFriendRequest(friend, currentUser);
+            //Check if friend user exists
+            if (friendRequestSubmittedRespone.equals(FriendRequestEnum.USER_DOES_NOT_EXIST)) {
+                text.setText("Unable to find " + username + "!");
+                return;
+            }
+            else if(friendRequestSubmittedRespone.equals(FriendRequestEnum.CANNOT_ADD_YOURSELF)) {
+                text.setText("You cannot add yourself as a friend!");
+                return;
+            }
+            //check if user has already sent a request, or is already friends with the user
+            else if (friendRequestSubmittedRespone.equals(FriendRequestEnum.REQUEST_ALREADY_SENT)){
+                text.setText("Request already sent to " + username + "!");
+                return;
+            }
+            else if (friendRequestSubmittedRespone.equals(FriendRequestEnum.ALREADY_FRIENDS)) {
+                text.setText("You are already friends with " + username + "!");
+                return;
+            }
+            else if (friendRequestSubmittedRespone.equals(FriendRequestEnum.SUCCESS)) {
+                text.setText("Friend request sent!");
+                return;
+            }
+            text.setText("Unknown action. Please try a different action.");
         }
-
-        this.friend = customUserDetailsService.getByUsername(username).get();
-
-        if(friend.getUid() == currentUser.getUid()) {
-            text.setText("You cannot add yourself as a friend!");
-            return;
-        }
-
-        List<Long> friendRequests = this.friend.getFriendRequests();
-        List<Long> friends = this.currentUser.getFriends();
-
-        if(friendRequests == null) {
-            friendRequests = new ArrayList<Long>();
-        }
-        //check if user has already sent a request, or is already friends with the user
-        if (friendRequests.contains(this.currentUser.getUid())){
-            text.setText("Request already sent to " + username + "!");
-            return;
-        }
-        if (friends.contains(this.friend.getUid())) {
-            text.setText("You are already friends with " + username + "!");
-            return;
-        }
-        
-        //add new friend request to friend's list and update DB
-        // friendRequests.contains(this.currentUser.getUid())
-        friendRequests.add(this.currentUser.getUid());
-        friend.setFriendRequests(friendRequests);
-
-        customUserDetailsService.updateUser(friend);
-
-        text.setText("Friend request sent!");
+        text.setText("Unable to find " + username + "!");
+        return;
     }
 
-    private List<User> findRequests() {
-        List<User> friendRequests = new ArrayList<User>();
-
-        if(currentUser.getFriendRequests() != null) {
-            for (Long request : currentUser.getFriendRequests()) {
-                if(customUserDetailsService.getByUid(request).isPresent()) {
-                    friendRequests.add(customUserDetailsService.getByUid(request).get());
-                }
-            } 
-        }
-        return friendRequests;
-    }
-
-    private Button deleteFriendRequestButton(User user) {
+    private Button reject(User user) {
         Icon icon = new Icon("lumo","cross");
-        Button button = new Button(icon, (ev) -> {
-            List<Long> requests = this.currentUser.getFriendRequests();
-            requests.remove(user.getUid());
-            this.currentUser.setFriendRequests(requests);
-            this.customUserDetailsService.updateUser(currentUser);
+        Span buttonText = new Span("Reject");
+        buttonText.add(icon);
+        Button button = new Button(buttonText, (ev) -> {
+            friendshipService.rejectFriendRequest(currentUser, user);
+            refreshRequestGrid();
+            refreshFriendsGrid();
             this.getUI().get().getPage().reload();
         });
 
         return button;
     }
 
-    private Button addFriendButton(User newFriend) {
+    private Button accept(User newFriend) {
         Icon icon = new Icon("lumo","checkmark");
-        Button button = new Button(icon, (ev) -> {
-            List<Long> requests = this.currentUser.getFriendRequests();
-            List<Long> friends = this.currentUser.getFriends();
-            var otherUserRequests = newFriend.getFriendRequests();
-            if (friends == null) {
-                friends = new ArrayList<Long>();
-            }
-
-            List<Long> newFriendFriends = newFriend.getFriends();
-            if (newFriendFriends == null) {
-                newFriendFriends = new ArrayList<Long>();
-            }
-
-            friends.add(newFriend.getUid());
-
-            // remove the requst from this user's requests list as well as from the added user's request list
-            requests.remove(newFriend.getUid());
-            otherUserRequests.remove(currentUser.getUid());
-
-            newFriendFriends.add(this.currentUser.getUid());
-
-            this.currentUser.setFriends(friends);
-            this.currentUser.setFriendRequests(requests);
-
-            newFriend.setFriends(newFriendFriends);
-
-            customUserDetailsService.updateUser(currentUser);
-            customUserDetailsService.updateUser(newFriend);
-
+        Span buttonText = new Span("Accept");
+        buttonText.add(icon);
+        Button button = new Button(buttonText, (ev) -> {
+            friendshipService.acceptFriendRequest(currentUser, newFriend);
+            refreshRequestGrid();
+            refreshFriendsGrid();
             this.getUI().get().getPage().reload();
         });
 
         return button;
     }
 
-    private List<User> findFriends() {
-        List<User> friends = new ArrayList<User>();
-
-        if(currentUser.getFriends() != null) {
-            for (Long friend : currentUser.getFriends()) {
-                if(customUserDetailsService.getByUid(friend).isPresent()) {
-                    friends.add(customUserDetailsService.getByUid(friend).get());
-                }
-            } 
-        }
-        return friends;
-    }
-
-    private Button deleteFriendButton(User friend) {
+    private Button unfriend(User friend) {
         Icon icon = new Icon("lumo","cross");
-        Button button = new Button(icon, (ev) -> {
-            List<Long> friends = this.currentUser.getFriends();
-            friends.remove(friend.getUid());
-
-            List<Long> friendFriends = friend.getFriends();
-            friendFriends.remove(this.currentUser.getUid());
-
-            this.currentUser.setFriends(friends);
-            this.customUserDetailsService.updateUser(currentUser);
-
-            friend.setFriends(friendFriends);
-            this.customUserDetailsService.updateUser(friend);
+        Span buttonText = new Span("Unfriend");
+        buttonText.add(icon);
+        Button button = new Button(buttonText, (ev) -> {
+            friendshipService.unfriend(currentUser.getUid(), friend.getUid());
+            refreshRequestGrid();
+            refreshFriendsGrid();
             this.getUI().get().getPage().reload();
         });
 

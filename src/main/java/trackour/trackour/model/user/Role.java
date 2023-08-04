@@ -1,4 +1,4 @@
-package trackour.trackour.model;
+package trackour.trackour.model.user;
 
 public enum Role {
     ADMIN("ADMIN"),

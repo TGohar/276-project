@@ -17,8 +17,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 
 import jakarta.annotation.security.RolesAllowed;
-import trackour.trackour.model.CustomUserDetailsService;
-import trackour.trackour.model.User;
+import trackour.trackour.model.user.CustomUserDetailsService;
+import trackour.trackour.model.user.User;
 // import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.components.NavBar;
@@ -41,8 +41,10 @@ public class AdminUsersView extends VerticalLayout {
 
         private NavBar navigationComponent;
 
-        public AdminUsersView(SecurityViewService securityViewHandler,
-                        CustomUserDetailsService customUserDetailsService) {
+        public AdminUsersView(
+                SecurityViewService securityViewHandler,
+                CustomUserDetailsService customUserDetailsService
+                ) {
                 this.securityViewHandler = securityViewHandler;
                 this.customUserDetailsService = customUserDetailsService;
 
@@ -109,7 +111,7 @@ public class AdminUsersView extends VerticalLayout {
                 Icon delBtnIcon = new Icon(VaadinIcon.TRASH);
                 Button delButton = new Button(delBtnIcon, (ev) -> {
                         // delete that user record
-                        this.customUserDetailsService.delete(userRecord.getUid());
+                        this.customUserDetailsService.deleteUser(userRecord.getUid());
                         boolean isAdminDeletingThemself = securityViewHandler.getSessionOptional().get().getUsername()
                                         .equals(userRecord.getUsername());
 

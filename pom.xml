@@ -147,7 +147,8 @@
             <artifactId>hypersistence-utils-hibernate-62</artifactId>
             <version>3.5.0</version>
         </dependency>
-        <!-- <dependency>
+        
+             <!-- <dependency>
             <groupId>se.michaelthelin.spotify</groupId>
             <artifactId>spotify-web-api-java</artifactId>
             <version>8.0.0</version>
@@ -170,6 +171,12 @@
             <artifactId>flow-html-components</artifactId>
             <version>${vaadin.version}</version>
         </dependency> -->
+
+        <dependency>
+            <groupId>org.vaadin.addons.tatu</groupId>
+            <artifactId>circular-progress-bar-flow</artifactId>
+            <version>1.3.2</version>
+        </dependency>
 
 
     </dependencies>

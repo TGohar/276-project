@@ -1,4 +1,4 @@
-package trackour.trackour.model;
+package trackour.trackour.model.user;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 // import java.util.Collection;
@@ -8,21 +8,29 @@ import java.util.Set;
 // import java.util.stream.Collectors;
 import java.util.UUID;
 
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import io.hypersistence.utils.hibernate.type.array.ListArrayType;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.transaction.Transactional;
+import trackour.trackour.model.project.Project;
 
 @Entity
 @Table(
@@ -33,34 +41,6 @@ import jakarta.persistence.UniqueConstraint;
             )
         )
 public class User {
-
-    public User() {
-        this.initRole();
-        this.friendRequests = new ArrayList<Long>();
-        this.friends = new ArrayList<Long>();
-        this.projects = new HashSet<>();
-    }
-
-    public User(String username, String displayName, String password, String email, Set<Role> roles) {
-        this.username = username;
-        this.displayName = displayName;
-        this.password = password;
-        this.email = email;
-        this.friendRequests = new ArrayList<Long>();
-        this.friends = new ArrayList<Long>();
-        this.projects = new HashSet<>();
-    }
-
-    public User(String username, String displayName, String password, String email) {
-        this.username = username;
-        this.displayName = displayName;
-        this.password = password;
-        this.email = email;
-        this.initRole();
-        this.friendRequests = new ArrayList<Long>();
-        this.friends = new ArrayList<Long>();
-        this.projects = new HashSet<>();
-    }
     
     @Id
     /**
@@ -73,6 +53,25 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "uid")
     private Long uid;
+
+    // Change this to User instead of Friendship
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JoinTable(
+        name = "friends_with",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "friend_id")
+    )
+    private List<User> friends;
+
+    // one user has many projects
+    @OneToMany(
+        mappedBy = "owner", 
+        fetch = FetchType.EAGER, 
+        cascade = CascadeType.MERGE
+        )
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @Column(name="owned_projects")
+    private List<Project> ownedProjects;
 
     @Column(name = "username")
     private String username;
@@ -93,30 +92,67 @@ public class User {
 
     @Column(name = "email")
     private String email;
-
-    @Type(ListArrayType.class)
-    @Column(name = "friend_requests", columnDefinition = "bigint[]")
-    private List<Long> friendRequests;
-
-    @Type(ListArrayType.class)
-    @Column(name = "friends", columnDefinition = "bigint[]")
-    private List<Long> friends;
     
-    @Type(ListArrayType.class)
-    @Column(name = "projects", columnDefinition = "text[]")
-    private Set<String> projects;
-
-
     // roles are now stored in a set directly in the roles column of the users table
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
 
-    private void initRole() {
+    // ---------------------------methods------------------------------------------------
+
+    public User() {
+        initCollections();
+    }
+    
+    public User(Long id) {
+        this.uid = id;
+        initCollections();
+    }
+
+    public User(String username, String displayName, String password, String email, Set<Role> roles) {
+        this.username = username;
+        this.displayName = displayName;
+        this.password = password;
+        this.email = email;
+        this.initCollections();
+    }
+
+    public User(String username, String displayName, String password, String email) {
+        this.username = username;
+        this.displayName = displayName;
+        this.password = password;
+        this.email = email;
+        ownedProjects = new ArrayList<>();
+        this.initCollections();
+    }
+    private void initCollections() {
+
+        this.ownedProjects = new ArrayList<>();
+        this.friends = new ArrayList<>();
+        
         // initialize default role as ["USER"]
         Set<Role> defaultRole = new HashSet<>();
-        // defaultRole.add(Role.USER);
-        defaultRole.add(Role.ADMIN);
+        defaultRole.add(Role.USER);
+        // defaultRole.add(Role.ADMIN);
         setRoles(defaultRole);
+    }
+
+    // getters and setters
+    public List<User> getFriendships() {
+        return friends;
+    }
+    
+    public void setFriendships(List<User> friends) {
+        this.friends = friends;
+    }
+
+    @Transactional
+    public List<Project> getOwnedProjects() {
+        return ownedProjects;
+    }
+
+    @Transactional
+    public void setOwnedProjects(List<Project> ownedProjects) {
+        this.ownedProjects = ownedProjects;
     }
 
     public void setRoles(Set<Role> roles) {
@@ -190,29 +226,5 @@ public class User {
 
     public String getEmail() {
         return this.email;
-    }
-
-    public List<Long> getFriendRequests() {
-        return friendRequests;
-    }
-
-    public void setFriendRequests(List<Long> friendRequests) {
-        this.friendRequests = friendRequests;
-    }
-
-    public List<Long> getFriends() {
-        return friends;
-    }
-
-    public void setFriends(List<Long> friends) {
-        this.friends = friends;
-    }
-
-    public Set<String> getProjects() {
-        return projects;
-    }
-
-    public void setProjects(Set<String> projects) {
-        this.projects = projects;
     }
 }

@@ -15,8 +15,8 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.RouterLink;
 
-import trackour.trackour.model.CustomUserDetailsService;
-import trackour.trackour.model.User;
+import trackour.trackour.model.user.CustomUserDetailsService;
+import trackour.trackour.model.user.User;
 
 public class ResetPasswordForm extends VerticalLayout {
 

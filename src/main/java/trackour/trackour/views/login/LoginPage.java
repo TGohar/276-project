@@ -14,6 +14,7 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import trackour.trackour.security.SecurityViewService;
+import trackour.trackour.spotify.SpotifySessionService;
 import trackour.trackour.views.signup.SignupPageView;
 
 @Route("login")
@@ -30,6 +31,8 @@ public class LoginPage extends VerticalLayout implements BeforeLeaveObserver, Be
     // inject view auth handler
     public LoginPage(SecurityViewService securityViewHandler) {
         this.securityViewHandler = securityViewHandler;
+        // initialize spotify-related session attributes that don't require user to have a spotify account
+        SpotifySessionService.setSpotifySessionWithoutAuthorization();
 
         addClassName("login-view");
         setSizeFull();

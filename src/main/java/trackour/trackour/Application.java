@@ -1,13 +1,16 @@
 package trackour.trackour;
 
-import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.lumo.Lumo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
 import org.springframework.scheduling.annotation.EnableScheduling;
+
+// import com.vaadin.collaborationengine.CollaborationEngineConfiguration;
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 
 /**
  * The entry point of the Spring Boot application.
@@ -16,6 +19,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * and some desktop browsers.
  *
  */
+@Push
 @SpringBootApplication(exclude=ErrorMvcAutoConfiguration.class)
 @PWA(name = "trackour", shortName = "trackour")
 @Theme(value = "trackour", variant = Lumo.DARK)
