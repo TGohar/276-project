@@ -17,6 +17,7 @@ import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -28,6 +29,7 @@ import com.vaadin.flow.router.RouteAlias;
 import jakarta.annotation.security.PermitAll;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
 import trackour.trackour.model.user.CustomUserDetailsService;
+import trackour.trackour.model.user.*;
 import trackour.trackour.security.SecurityViewService;
 import trackour.trackour.views.api.APIController;
 import trackour.trackour.views.components.NavBar;
@@ -241,6 +243,7 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
                     break;
             }
 
+            
             float loudnessValue = -Float.parseFloat(loudness.getValue());
             int modeValue;
             if (mode.getValue() == "Major") {
@@ -248,6 +251,7 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
             } else {
                 modeValue = 0;
             }
+
             float tempoValue = Float.parseFloat(tempo.getValue());
             int timeSignatureValue = Integer.parseInt(timeSignature.getValue());
             float valenceValue = Float.parseFloat(valence.getValue());
@@ -275,6 +279,7 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
             resultsDialog.open();
         });
 
+        formFlexLayoutContainer.setSizeFull();
         FormLayout formLayout = new FormLayout();
         formLayout.add(genre, acousticness, danceability, energy, instrumentalness, key, 
                         loudness, mode, tempo, timeSignature, valence, searchButton);
@@ -282,7 +287,6 @@ public class AdvancedSearch extends MyBlockResponsiveLayout{
             new ResponsiveStep("0", 1),
             new ResponsiveStep("300px", 3)
         );
-        formLayout.setHeight("400px");
         formLayout.setWidth("900px");
         
         // main container contining cards area and button
