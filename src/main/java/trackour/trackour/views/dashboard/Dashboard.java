@@ -27,6 +27,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -438,6 +439,27 @@ private void generateGrid(Grid<Project> grid) {
         // Return the Span object
         return collabModeSelect;
     })).setHeader("Keys:");
+
+
+    // Use a ComponentRenderer to create the button component for each project 
+    grid.addColumn(new ComponentRenderer<>(project -> { 
+            // Create a new Button object and set its text, icon, theme and click listener 
+            IntegerField adultsField = new IntegerField();
+            adultsField.setValue(projectsService.getBpm(project.getId()));
+            adultsField.setStepButtonsVisible(true);
+            adultsField.setMin(0);
+
+            adultsField.addValueChangeListener(ev -> {
+                // projectsService
+                Integer newValue = ev.getValue();
+                Set<String> setOfBpm = new HashSet<>();
+                setOfBpm.add(newValue.toString());
+                project.setBpm(setOfBpm);
+                projectsService.updateProject(project);
+            });
+            return adultsField; 
+    })).setHeader("Bpm").setKey("bpm");
+
     // Use a ComponentRenderer to create the button component for each project 
     grid.addColumn(new ComponentRenderer<>(project -> { 
         // Create a new Button object and set its text, icon, theme and click listener 

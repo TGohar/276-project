@@ -19,7 +19,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
  * and some desktop browsers.
  *
  */
-@Push
+// @Push
 @SpringBootApplication(exclude=ErrorMvcAutoConfiguration.class)
 @PWA(name = "trackour", shortName = "trackour")
 @Theme(value = "trackour", variant = Lumo.DARK)

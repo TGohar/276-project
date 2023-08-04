@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -82,6 +84,17 @@ public class ProjectsService {
         }
         project.setParticipants(participants);
         updateProject(project);
+    }
+
+    public List<Key> getKeys(Long id){
+        List<Key> keys = new ArrayList<>();
+        if (getById(id) == null){
+            return keys;
+        }
+        for (Key k : getById(id).getKeys()) {
+            keys.add(k);
+        }
+        return keys;
     }
 
     public void setKeys(Set<Key> keys, Project project) {
@@ -236,6 +249,20 @@ public class ProjectsService {
         if (project != null) {
             projectRepository.delete(project);
         }
+    }
+
+    public Integer getBpm(Long id) {
+        Integer bpm = 80;
+        Project proj = getById(id);
+        if (proj == null){
+            return bpm;
+        }
+        List<Integer> bpmValue = proj.getBpm().stream().map(Integer::parseInt).collect(Collectors.toList());
+        if (bpmValue.get(0) == null){
+            return bpm;
+        }
+        bpm = bpmValue.get(0);
+        return bpm;
     }
 
     public Project getById(Long id) {

@@ -169,20 +169,18 @@ public class ProjectView extends VerticalLayout implements BeforeEnterObserver ,
 
       TextArea selectedKeys = new TextArea("Keys");
       selectedKeys.setReadOnly(true);
-      // selectedKeys.setValue(null);
+      List<String> keysStr = projectsService.getKeys(projectId).stream()
+        .map(k -> k.name)
+        .collect(Collectors.toList());
+      selectedKeys.setValue(String.join(", ", keysStr));
+
       TextArea ownerTArea = new TextArea("Owner");
       ownerTArea.setValue(projectsService.getOwner(projectId));
       ownerTArea.setReadOnly(true);
       owner.add(ownerTArea);
       TextArea selectedBpm = new TextArea("BPM");
       selectedBpm.setReadOnly(true);
-      Set<String> bpmStr = projectsService.getAllParticipantIdsForProject(projectId).stream()
-        .map(p -> customUserDetailsService.getByUid(p))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .map(p -> p.getUsername())
-        .collect(Collectors.toSet());
-      selectedBpm.setValue(String.join(", ", bpmStr));
+      selectedBpm.setValue(String.join(", ", projectsService.getBpm(projectId).toString()));
 
       TextArea selecteStatus = new TextArea("Status");
       selecteStatus.setReadOnly(true);
